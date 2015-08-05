@@ -1,0 +1,24 @@
+fileFormatVersion: 2
+guid: ec79681b151069449abd420a394fc9e3
+labels:
+- PopcornFX
+- ParticleSystem
+- vfx
+- particles
+- effect
+PluginImporter:
+  serializedVersion: 1
+  iconMap: {}
+  executionOrder: {}
+  isPreloaded: 0
+  platformData:
+    Any:
+      enabled: 1
+      settings: {}
+    Editor:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
