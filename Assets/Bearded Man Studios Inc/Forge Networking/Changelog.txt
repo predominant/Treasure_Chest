@@ -1,0 +1,211 @@
+Support Email:  support@beardedmangames.com
+Main developer portal:  http://developers.forgearcade.com/
+Main tutorial portal:  http://developers.forgearcade.com/Tutorials
+Main Forums:  http://forums.forgearcade.com/
+Main Feedback Portal:  http://developers.forgearcade.com/Feedback
+Main Unity Forum Thread:  http://forum.unity3d.com/threads/superpowered-cross-platform-networking-library-including-windows-universal-apps.286900/
+Beginner Videos:   https://www.youtube.com/playlist?list=PLaMPnrbpanJ7DazlqTkZHHBSt8D5dx4Um
+Intermediate Videos:  https://www.youtube.com/playlist?list=PLaMPnrbpanJ6DC4RmaEbyHgcnqi6HrfTt
+
+Release V10.5:
+	Fixed issue with AddNetworkVariable having null NetSync causing null reference
+	Add a disconnect to the main thread manager check
+	Main thread manager is now created at runtime when connecting or hosting
+	Updated the NetworkedMonoBehavior UI bugs on lerping position, rotation and scale
+	Updated the NetworkedMonoBehavior UI so that the colors match the action better
+
+Release V10.4:
+	Fixed issues with iOS not connecting and creating a player properly because of race conditions
+
+Release V10.3:
+	Fixed issues with static cache causing problems with multiple open sockets
+	Fixed max player count for Master Server
+
+Release V10.2:
+	Fixed the Networking.Disconnect to not be dependent on the networking manager
+
+Release V10.1:
+	Fix for the servers not updating the player count on the master server
+	Fixed spamming of the ping for master server
+	Fixed max player count
+
+Release V10:
+	New master server
+	Server browser updated to work with master server
+	Striped out arbiter from menu as it will be revamped and current functionality can be replaced with master server
+	Cleaned up BMSByte code
+	Removed warnings on editor script
+	Updated UI for NetworkedMonoBehavior
+	Updated disconnect bug on UDP
+	Updated networking disconnect to validate owning netWorker before closing webplayer policy server
+	Updated the quick start menu
+	Fixed server list class to support new master server get hosts method
+	Added master server ip string to the start menu
+	Start menu will register a server if a master server ip address is provided
+	Fixed bugs related to multiple connections in networking manager
+
+Release V9.1:
+	Removed useless diagnostics log in the SimpleNetworkedMonoBehavior
+	Now you can have any derivitive of a SimpleNetworkedMonoBehavior on any child objects in a prefab and multiple ones
+
+Release V9:
+	Multiple SimpleNetworkedMonoBehavior scripts on one object
+	Fixed a bug that happens on a long running instance where rpc can cause out of range buffer issue
+
+Release V8:
+	Position, Rotation and Scale on the NetworkedMonoBehavior can now be independantly lerped
+	Updated the website tutorials to include running a headless linux server
+	Second upload to the Asset Store
+	Instantiate callbacks now only called on the machine that requested the instantiate
+
+Release V7.2 Hotfix:
+	Fixed new race condition with Networking Manager with Instantiate
+
+Release V7.1 Hotfix:
+	Fixed race condition with Networking Manager and its Awake method
+
+Release V7:
+	New callback method allowed for when you do a Networking.Instantiate
+	New NetworkStart virtual function that can be overridden and used rather than doing networked based things in the Start function
+	Fixed bug where 2 classes that derive from SimpleNetworkedMonoBehavior are sorting differently on different builds
+
+Release V6:
+	Updated the exception text when instantiating objects not in the lookup for better steps to fix
+	New packet loss simulation for UDP (Can be set in StartGame script inspector *See StartGame.cs for implementation*)
+	New latency simulation for UDP (Can be set in StartGame script inspector *See StartGame.cs for implementation*)
+	Fixed error with Unity 5.0.1 having issues with the editor window
+	Made time inbetween pings longer, it was just too short
+	Added experimental frame number on inputs for authoritative input
+
+Release V5:
+	New enforced input based authoritative server controls (including mouse) on NetworkedMonoBehavior
+	NetworkedMonoBehavior now has client side prediction as an optional boolean
+	Updated the layout for the NetworkedMonoBehavior editor (Will make it look pretty very soon)
+	New disconnect method for when application quits on SimpleNetworkedMonoBehaviors
+	New destroy on disconnect option for NetworkedMonoBehaviors
+	New documentation layout on the website so that it is easier to look through
+	New autostart scene and script.  Now you can have unity auto build and start (N) clients for testing
+
+Release V4:
+	Added some helper messages and exceptions for new users
+	Fixed bug where Type byte was having issues being sent as a parameter of RPC
+	serverDisconnected event is now called on client when the host forceully closes with a string message
+	The main player is now accessable statically through NetworkedMonoBehavior.Player
+	Added new BeardedManStudios.Network.Cache static class for easy transient key-value storage (to become persistent)
+	Added a indexer for the BMSByte (opperator overloading for the [])
+	Fixed WriteRaw to prepend with proper byte before sending
+	Added an optional bool to the BMSByte constructor to prepare for raw
+	Cache class now communicates with server/client and allows for storing of data bound to a string key
+	Fixed bug with using alternative BMSByte constructor
+	Now WriteRaw can be reliable if a reliable key string is provided
+	Updated documentation to use NetworkedMonoBehavior as to not confuse new users
+
+Release V3:
+	Fixed warnings with Unity 5 and the platform checks in StartGame
+	Added new [NetSync] attribute so that it is easier than ever to replicate a variable across the network
+	[NetSync] Now can have callbacks so that you can execute methods upon change of the value of the variables!
+	Added more comment documentation into NetworkedMonoBehavior
+	Commented NetRef
+	Added new global NetworkCallers enum
+	New Ping methods implemented in the core system to better track network latency
+	Added license (seat) count to your profile page on the developer portal
+	Fixed runtime warning in NetWorker for editor catch exception e log
+
+Release V2:
+	Removed the serialize easy position, rotation and scale
+	Added new serialization of position, rotation and scale so that you can serialize individual dimensions (like just x or both x and z, etc.)
+	Updated comments for Simple Networked Mono Behavior class
+	Updated Start Game to use main thread manager rather than depend on networking manager
+	Updated Start Game to not need the Update any longer
+	Added comments to the Start Game
+
+Release V1:
+	Moved all code from DLL to Unity
+	Fixed buffered RPCs not clearing correctly
+	Fixed issue with RealSenderId constantly being set to server identity
+	Using NETFX_CORE preprocessor so Windows Store and Windows Phone do not need a plugin DLL
+	Fixed connection issues with connecting Windows Store applications to servers on other operating systems
+	Added new MainThreadManager class, just call MainThreadManager.Run(method); to run a method on the main thread
+	Removed the duplication of main thread action handlers from NetWorkerKiller and ArbiterAPI
+	Updated ServerAPI to use new parse cloud RESTful methods
+	Update HTTP to have better support for get parameters
+	Improved stability of threaded HTTP request
+	Added HTTPS request fixes
+	Fixed Arbiter API to register online servers correctly
+	Fixed server browser
+
+
+Beta V15 Changelist:
+	Forge Networking
+		Fixed TCP so that it is now working along with the new UDP standards
+
+Beta V13.6 Changelist:
+	Forge Networking
+		Fixed server reading raw write bytes 2 times
+		Fixed issue with byte offset on raw read being 2 and not 1, ***** If anyone has their code to skip the first two bytes, this is not necessary as the extra 0 is no longer after the 1 (first byte).
+
+	Developer Portal
+		Now using heavily modified phpBB for forums
+
+Beta V13.5 Changelist:
+	Forge Networking
+		Fixed issue with NetworkingManager causing errors with no network
+		Added an initialization call to NetworkingManager once a connection is established
+		Fixed issue with Unity 5 having null refs on normal built in references
+
+
+	Developer Portal
+		Prevent setting username as email
+		Show the bug/feature reporter username (if not email address)
+		Show the username of the person who replied on bugs/features
+		Do not allow replies from users who have not finished setting up their accounts on bugs/features
+		Fixed issue with forum threads containing special characters
+		Fixed issues with forums not opening specific links
+
+Beta V13.4 Changelist:
+	Forge Networking
+		Fixed race condition on hosting/connecting and events
+
+	Bare Metal
+		Fixed non-connecting issues as they are related to CallOnMainThread issues
+
+Beta V13.3 Changelist:
+	Forge Networking
+		Fixed initialization issue with arbiter api
+		Updated Exception logic
+		Can now throw an exception event with NetWorker.ThrowException
+		New exception handling sample scene
+		The NetWorker error event now just takes in any exception
+
+Beta V13.2 Changelist:
+	Forge Networking
+		Re-connecting to the same port gets an error unless the application is fully closed
+		Make the server call the read raw event as it is sending it off to all of the clients
+		Client Timeout event added - If a client doesn't get a response from the server in the specified milliseconds it will timeout and fire the timeoutDisconnected event
+
+	Developer Portal
+		Thread following
+		Forum notifications for followed threads
+		Fixed feedback not filtering complete features
+		Fixed invalid access on posing threads
+
+Beta V13.1 Changelist:
+	Forge Networking
+		Fixed collision issues when spawning objects where there was "floating" collision
+
+	Developer Portal
+		Forum threads can now be followed
+		Forum notifications (on site in forums) for followed threads on posts
+
+Beta V13 Changelist:
+	Forge Networking
+		Networking class now can ping a host and get the response time
+		Fix issue with disconnect being called at start
+		Client hangs and doesn't close, the instance needs to be killed
+		Updated Win8.1 and WP8.1 libs
+
+	Developer Portal
+		Require account to finish setup before posting on forums
+		Prevent locked threads from showing input box
+		Developers can now respond to each others bug reports and feature requests
+		Updated parent database object to do correct valid checks on blank new objects
