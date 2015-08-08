@@ -1,0 +1,279 @@
+fileFormatVersion: 2
+guid: e11e906f054fee948ba780250da86e75
+SubstanceImporter:
+  serializedVersion: 5
+  materialInstances:
+  - serializedVersion: 16
+    name: New_Graph
+    prototypeName: New_Graph
+    shader: {fileID: 4, guid: 0000000000000000f000000000000000, type: 0}
+    shaderKeywords: 
+    renderQueue: -1
+    lightmapFlags: 5
+    inputs:
+    - name: $outputsize
+      value:
+        scalar[0]: 8
+        scalar[1]: 8
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: $randomseed
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Contrast
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color
+      value:
+        scalar[0]: .501960993
+        scalar[1]: .366140008
+        scalar[2]: .230304003
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Color_2
+      value:
+        scalar[0]: .247059003
+        scalar[1]: .225253999
+        scalar[2]: .203464001
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_2
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Contrast_3
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_3
+      value:
+        scalar[0]: .423528999
+        scalar[1]: .264026999
+        scalar[2]: .200960994
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_4
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_4
+      value:
+        scalar[0]: .572548985
+        scalar[1]: .443441987
+        scalar[2]: .262699008
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_5
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_5
+      value:
+        scalar[0]: .439215988
+        scalar[1]: .204973996
+        scalar[2]: .204973996
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_6
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_6
+      value:
+        scalar[0]: .423528999
+        scalar[1]: .282582015
+        scalar[2]: .200960994
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_7
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_7
+      value:
+        scalar[0]: .309803993
+        scalar[1]: .288823009
+        scalar[2]: .264851004
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_8
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_8
+      value:
+        scalar[0]: .396077991
+        scalar[1]: .156877995
+        scalar[2]: .156877995
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_9
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_9
+      value:
+        scalar[0]: .423528999
+        scalar[1]: .264026999
+        scalar[2]: .200960994
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_10
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_10
+      value:
+        scalar[0]: .200960994
+        scalar[1]: .304829001
+        scalar[2]: .423528999
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: Contrast_11
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: Color_11
+      value:
+        scalar[0]: .388235003
+        scalar[1]: .36205101
+        scalar[2]: .351689994
+        scalar[3]: 1
+        texture: {instanceID: 0}
+    - name: General_Hue
+      value:
+        scalar[0]: .5
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: General_Saturation
+      value:
+        scalar[0]: .5
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: General_Lightness
+      value:
+        scalar[0]: .5
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: General_Contrast
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    - name: General_Luminosity
+      value:
+        scalar[0]: 0
+        scalar[1]: 0
+        scalar[2]: 0
+        scalar[3]: 0
+        texture: {instanceID: 0}
+    materialInformation:
+      serializedVersion: 5
+      offset: {x: 0, y: 0}
+      scale: {x: 1, y: 1}
+      generateMipmaps: 1
+      generateAllOutputs: 0
+      animationUpdateRate: 42
+    materialProperties:
+      serializedVersion: 2
+      texEnvs:
+        data:
+          first:
+            name: _MainTex
+          second:
+            texture: {fileID: 1215447233, guid: 00000000000000000000000000000000,
+              type: 0}
+            scale: {x: 1, y: 1}
+            offset: {x: 0, y: 0}
+        data:
+          first:
+            name: _BumpMap
+          second:
+            texture: {instanceID: 0}
+            scale: {x: 1, y: 1}
+            offset: {x: 0, y: 0}
+      floats:
+        data:
+          first:
+            name: _Shininess
+          second: .078125
+      colors:
+        data:
+          first:
+            name: _Color
+          second: {r: 1, g: 1, b: 1, a: 1}
+        data:
+          first:
+            name: _SpecColor
+          second: {r: .5, g: .5, b: .5, a: 1}
+    textureParameters:
+    - name: New_Graph_diffuse
+      alphaSource: 5
+      filterMode: 0
+      aniso: 1
+      wrapMode: 0
+    textureAssignments:
+    - shaderProp:
+        name: _MainTex
+      material: {instanceID: 0}
+      baseUID: 679316527
+    buildTargetSettings:
+    - serializedVersion: 2
+      buildTarget: 
+      textureWidth: 1024
+      textureHeight: 1024
+      textureFormat: 0
+      loadingBehavior: 1
+  deletedPrototypes:
+  - New_Graph_1
+  - New_Graph_2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
