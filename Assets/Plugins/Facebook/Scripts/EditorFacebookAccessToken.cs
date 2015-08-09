@@ -50,7 +50,7 @@ public class EditorFacebookAccessToken : MonoBehaviour
         {
             greyButton = GUI.skin.button;
         }
-        GUI.ModalWindow(GetHashCode(), new Rect(windowLeft, windowTop, windowWidth, windowHeight), OnGUIDialog, "Unity Editor Facebook Login");
+        GUI.Window(GetHashCode(), new Rect(windowLeft, windowTop, windowWidth, windowHeight), OnGUIDialog, "Unity Editor Facebook Login");
     }
 
     private void OnGUIDialog(int windowId)
