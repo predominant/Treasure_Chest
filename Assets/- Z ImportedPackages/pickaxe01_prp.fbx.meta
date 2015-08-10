@@ -36,6 +36,7 @@ ModelImporter:
     3300000: pickaxe01_prp_1
     4300000: pickaxe01_prp_1
     11100000: //RootNode
+    11400000: //RootNode
   materials:
     importMaterials: 1
     materialName: 3
