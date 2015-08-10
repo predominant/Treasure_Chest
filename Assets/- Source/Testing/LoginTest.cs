@@ -9,6 +9,7 @@ public class LoginTest : MonoBehaviour
     public GameObject m_OnlinePanel = null;
 
     private bool m_ProfileReady = false;
+    private bool m_UIHidden = false;
 
     void Start()
     {
@@ -70,6 +71,22 @@ public class LoginTest : MonoBehaviour
         SoomlaProfile.Logout(Provider.FACEBOOK);
         m_OnlinePanel.SetActive(false);
         m_OfflinePanel.SetActive(true);
+    }
+
+    public void BtnToggleUI()
+    {
+        if (!FB.IsLoggedIn) return;
+
+        m_UIHidden = !m_UIHidden;
+
+        Transform onlinePanel = transform.FindChild("Online Panel");
+        onlinePanel.FindChild("Status").gameObject.SetActive(!m_UIHidden);
+        onlinePanel.FindChild("Post").gameObject.SetActive(!m_UIHidden);
+        onlinePanel.FindChild("Logout").gameObject.SetActive(!m_UIHidden);
+
+        string btnText = m_UIHidden ? "Show" : "Hide";
+        onlinePanel.FindChild("Status").gameObject.SetActive(!m_UIHidden);
+        onlinePanel.FindChild("Hide UI").FindChild("Text").GetComponent<UnityEngine.UI.Text>().text = btnText;
     }
     #endregion
 }
