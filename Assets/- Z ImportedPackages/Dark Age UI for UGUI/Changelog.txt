@@ -1,0 +1,13 @@
+Version 1.2:
+- Fixed WP8 compile error (note that the internal bug is fixed in Unity Patch 5.0.1p1).
+
+Version 1.1:
+- Fixed highlight transition editor script.
+- Moved the database creation menu to section assets.
+- Fixed SelectField Label editor script.
+- Improved UIDragObject inertia dampening.
+- Added constrain within canvas option to the UIDragObject script.
+- Fixed the Circular Raycast filter editor script not including the canvas scaling factor.
+
+Version 1.0:
+- Initial release.
