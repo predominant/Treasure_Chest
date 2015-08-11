@@ -12,13 +12,27 @@ public class LoginMenuController : MonoBehaviour
     private bool m_ProfileReady = false;
     private bool m_UIHidden = false;
 
+    #region Unity Events
     void Start()
     {
         m_OnlinePanel.SetActive(false);
         m_WaitingPanel.SetActive(false);
         m_OfflinePanel.SetActive(true);
         ProfileManager.OnStateChanged += ProfileManager_OnStateChanged;
+
+        if( ProfileManager.IsLoggedIn )
+        {
+            m_OnlinePanel.SetActive(true);
+            m_WaitingPanel.SetActive(false);
+            m_OfflinePanel.SetActive(false);
+        }
     }
+
+    void OnDestroy()
+    {
+        ProfileManager.OnStateChanged -= ProfileManager_OnStateChanged;        
+    }
+    #endregion
 
     #region Profile Event Handlers
     void ProfileManager_OnStateChanged(ProfileManager.ProviderState _state)
