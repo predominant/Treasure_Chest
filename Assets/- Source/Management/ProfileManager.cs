@@ -1,6 +1,7 @@
 using System;
-using Soomla.Profile;
 using UnityEngine;
+using Soomla.Highway;
+using Soomla.Profile;
 
 public static class ProfileManager
 {
