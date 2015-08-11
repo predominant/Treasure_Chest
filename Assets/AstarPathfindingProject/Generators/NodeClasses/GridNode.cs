@@ -1,4 +1,3 @@
-#define ASTAR_CONSTANT_PENALTY
 using Pathfinding;
 using System.Collections.Generic;
 using Pathfinding.Serialization;
@@ -918,12 +917,7 @@ Cyclic
 
 						PathNode otherPN = handler.GetPathNode (other);
 
-#if ASTAR_CONSTANT_PENALTY
 						uint tmpCost = neighbourCosts[i];
-#else
-						// Multiply the connection cost with 1 + the average of the traversal costs for the two nodes
-						uint tmpCost = (neighbourCosts[i] * (256 + path.GetTraversalCost(this) + path.GetTraversalCost(other)))/128;
-#endif
 
 						if (otherPN.pathID != pid) {
 							otherPN.parent = pathNode;
@@ -943,10 +937,10 @@ Cyclic
 
 							//If not we can test if the path from the current node to this one is a better one then the one already used
 
-#if ASTAR_CONSTANT_PENALTY
-							if (pathNode.G+tmpCost+path.GetTraversalCost(other) < otherPN.G)
-#else
+#if ASTAR_NO_TRAVERSAL_COST
 							if (pathNode.G+tmpCost < otherPN.G)
+#else
+							if (pathNode.G+tmpCost+path.GetTraversalCost(other) < otherPN.G)
 #endif
 							{
 								//Debug.Log ("Path better from " + NodeIndex + " to " + otherPN.node.NodeIndex + " " + (pathNode.G+tmpCost+path.GetTraversalCost(other)) + " < " + otherPN.G);
@@ -958,10 +952,10 @@ Cyclic
 
 							//Or if the path from this node ("other") to the current ("current") is better
 							}
-#if ASTAR_CONSTANT_PENALTY
-							else if (otherPN.G+tmpCost+path.GetTraversalCost (this) < pathNode.G)
-#else
+#if ASTAR_NO_TRAVERSAL_COST
 							else if (otherPN.G+tmpCost < pathNode.G)
+#else
+							else if (otherPN.G+tmpCost+path.GetTraversalCost (this) < pathNode.G)
 #endif
 							{
 
@@ -984,11 +978,7 @@ Cyclic
 
 				PathNode otherPN = handler.GetPathNode (other);
 
-#if ASTAR_CONSTANT_PENALTY
 				uint tmpCost = connectionCosts[i];
-#else
-				uint tmpCost = (connectionCosts[i] * (256 + path.GetTraversalCost(this) + path.GetTraversalCost(other)))/128;
-#endif
 
 				if (otherPN.pathID != pid) {
 					otherPN.parent = pathNode;
@@ -1008,10 +998,10 @@ Cyclic
 
 					//If not we can test if the path from the current node to this one is a better one then the one already used
 
-#if ASTAR_CONSTANT_PENALTY
-					if (pathNode.G+tmpCost+path.GetTraversalCost(other) < otherPN.G)
-#else
+#if ASTAR_NO_TRAVERSAL_COST
 					if (pathNode.G+tmpCost < otherPN.G)
+#else
+					if (pathNode.G+tmpCost+path.GetTraversalCost(other) < otherPN.G)
 #endif
 					{
 						//Debug.Log ("Path better from " + NodeIndex + " to " + otherPN.node.NodeIndex + " " + (pathNode.G+tmpCost+path.GetTraversalCost(other)) + " < " + otherPN.G);
@@ -1023,10 +1013,10 @@ Cyclic
 
 					//Or if the path from this node ("other") to the current ("current") is better
 					}
-#if ASTAR_CONSTANT_PENALTY
-					else if (otherPN.G+tmpCost+path.GetTraversalCost (this) < pathNode.G && other.ContainsConnection (this))
-#else
+#if ASTAR_NO_TRAVERSAL_COST
 					else if (otherPN.G+tmpCost < pathNode.G && other.ContainsConnection (this))
+#else
+					else if (otherPN.G+tmpCost+path.GetTraversalCost (this) < pathNode.G && other.ContainsConnection (this))
 #endif
 					{
 						//Debug.Log ("Path better from " + otherPN.node.NodeIndex + " to " + NodeIndex + " " + (otherPN.G+tmpCost+path.GetTraversalCost (this)) + " < " + pathNode.G);

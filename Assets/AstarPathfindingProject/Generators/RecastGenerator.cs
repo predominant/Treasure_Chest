@@ -289,9 +289,6 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			}
 		}
 
-		/** Bounding Box Tree. Enables really fast lookups of nodes. */
-		public BBTree bbTree {get; set;}
-
 		/** Number of tiles along the X-axis */
 		public int tileXCount;
 		/** Number of tiles along the Z-axis */
@@ -494,12 +491,11 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 							tileVerts[vertexIndex] = ((Int3)m.MultiplyPoint ((Vector3)tileVerts[vertexIndex]));
 						}
 
-						tile.bbTree.Clear ();
 						for (int nodeIndex = 0; nodeIndex < tile.nodes.Length; nodeIndex++) {
 							var node = tile.nodes[nodeIndex];
 							node.UpdatePositionFromVertices();
-							tile.bbTree.Insert(node);
 						}
+						tile.bbTree.RebuildFrom(tile.nodes);
 					}
 				}
 			}
@@ -517,7 +513,7 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			tile.verts = new Int3[0];
 			tile.tris = new int[0];
 			tile.nodes = new TriangleMeshNode[0];
-			tile.bbTree = new BBTree(tile);
+			tile.bbTree = new BBTree();
 			return tile;
 		}
 
@@ -1445,7 +1441,7 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			tile.d = 1;
 			tile.tris = mesh.tris;
 			tile.verts = mesh.verts;
-			tile.bbTree = new BBTree(tile);
+			tile.bbTree = new BBTree();
 
 			if (tile.tris.Length % 3 != 0) throw new System.ArgumentException ("Indices array's length must be a multiple of 3 (mesh.tris)");
 
@@ -1460,13 +1456,13 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 
 			int count = 0;
 			for (int i=0;i<tile.verts.Length;i++) {
-				try {
+				if (!firstVerts.ContainsKey(tile.verts[i])) {
 					firstVerts.Add (tile.verts[i], count);
 					compressedPointers[i] = count;
 					tile.verts[count] = tile.verts[i];
 					count++;
-				} catch {
-					//There are some cases, rare but still there, that vertices are identical
+				} else {
+					// There are some cases, rare but still there, that vertices are identical
 					compressedPointers[i] = firstVerts[tile.verts[i]];
 				}
 			}
@@ -1519,9 +1515,9 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 				node.Walkable = true;
 				node.Penalty = initialPenalty;
 				node.UpdatePositionFromVertices();
-				tile.bbTree.Insert (node);
 			}
 
+			tile.bbTree.RebuildFrom(nodes);
 			CreateNodeConnections (tile.nodes);
 
 			//Remove the fake graph
@@ -1541,7 +1537,7 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			Dictionary<Int2,int> nodeRefs = cachedInt2_int_dict;
 			nodeRefs.Clear();
 
-			//Build node neighbours
+			// Build node neighbours
 			for (int i=0;i<nodes.Length;i++) {
 
 				TriangleMeshNode node = nodes[i];
@@ -1550,12 +1546,12 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 
 				for (int a=0;a<av;a++) {
 
-					//Recast can in some very special cases generate degenerate triangles which are simply lines
-					//In that case, duplicate keys might be added and thus an exception will be thrown
-					//It is safe to ignore the second edge though... I think (only found one case where this happens)
-					try {
-						nodeRefs.Add (new Int2 (node.GetVertexIndex(a), node.GetVertexIndex ((a+1) % av)), i);
-					} catch (System.Exception) {
+					// Recast can in some very special cases generate degenerate triangles which are simply lines
+					// In that case, duplicate keys might be added and thus an exception will be thrown
+					// It is safe to ignore the second edge though... I think (only found one case where this happens)
+					var key = new Int2 (node.GetVertexIndex(a), node.GetVertexIndex ((a+1) % av));
+					if (!nodeRefs.ContainsKey(key)) {
+						nodeRefs.Add (key, i);
 					}
 				}
 			}
@@ -1825,7 +1821,7 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			tile.d = d;
 			tile.tris = tris;
 			tile.verts = verts;
-			tile.bbTree = new BBTree(tile);
+			tile.bbTree = new BBTree();
 
 			if (tile.tris.Length % 3 != 0) throw new System.ArgumentException ("Triangle array's length must be a multiple of 3 (tris)");
 
@@ -1882,9 +1878,9 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 				node.Walkable = true;
 				node.Penalty = initialPenalty;
 				node.UpdatePositionFromVertices();
-
-				tile.bbTree.Insert (node);
 			}
+
+			tile.bbTree.RebuildFrom(nodes);
 
 			CreateNodeConnections (tile.nodes);
 
@@ -1922,6 +1918,11 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 			for (int i=0;i<data.treeInstances.Length;i++) {
 				TreeInstance instance = data.treeInstances[i];
 				TreePrototype prot = data.treePrototypes[instance.prototypeIndex];
+
+				// Make sure that the tree prefab exists
+				if (prot.prefab == null) {
+					continue;
+				}
 
 				var collider = prot.prefab.GetComponent<Collider>();
 
@@ -2327,10 +2328,6 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 				return;
 			}
 
-			if (bbTree != null) {
-				bbTree.OnDrawGizmos ();
-			}
-
 			Gizmos.color = Color.white;
 			Gizmos.DrawWireCube (forcedBounds.center,forcedBounds.size);
 
@@ -2578,7 +2575,7 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 					tile.z = tz;
 					tile.w = reader.ReadInt32();
 					tile.d = reader.ReadInt32();
-					tile.bbTree = new BBTree (tile);
+					tile.bbTree = new BBTree ();
 
 					tiles[tileIndex] = tile;
 
@@ -2610,9 +2607,9 @@ But this time, edit the setting named "Forward" to "Z forward" (not -Z as it is 
 						node.v1 = tile.tris[i*3+1] | tileIndex;
 						node.v2 = tile.tris[i*3+2] | tileIndex;
 						node.UpdatePositionFromVertices();
-
-						tile.bbTree.Insert (node);
 					}
+
+					tile.bbTree.RebuildFrom(tile.nodes);
 				}
 			}
 		}

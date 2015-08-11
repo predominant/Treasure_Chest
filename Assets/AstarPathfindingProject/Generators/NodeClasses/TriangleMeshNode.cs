@@ -3,16 +3,16 @@ using Pathfinding;
 using Pathfinding.Serialization;
 
 namespace Pathfinding {
-	
+
 	public interface INavmeshHolder {
 		Int3 GetVertex (int i);
 		int GetVertexArrayIndex(int index);
 		void GetTileCoordinates (int tileIndex, out int x, out int z);
 	}
-	
+
 	/** Node represented by a triangle */
 	public class TriangleMeshNode : MeshNode {
-		
+
 		public TriangleMeshNode (AstarPath astar) : base(astar) {}
 
 		/** Internal vertex index for the first vertex */
@@ -23,7 +23,7 @@ namespace Pathfinding {
 
 		/** Internal vertex index for the third vertex */
 		public int v2;
-		
+
 		protected static INavmeshHolder[] _navmeshHolders = new INavmeshHolder[0];
 		public static INavmeshHolder GetNavmeshHolder (uint graphIndex) {
 			return _navmeshHolders[(int)graphIndex];
@@ -46,7 +46,7 @@ namespace Pathfinding {
 			INavmeshHolder g = GetNavmeshHolder(GraphIndex);
 			position = (g.GetVertex(v0) + g.GetVertex(v1) + g.GetVertex(v2)) * 0.333333f;
 		}
-		
+
 		/** Return a number identifying a vertex.
 		 * This number does not necessarily need to be a index in an array but two different vertices (in the same graph) should
 		 * not have the same vertex numbers.
@@ -54,7 +54,7 @@ namespace Pathfinding {
 		public int GetVertexIndex (int i) {
 			return i == 0 ? v0 : (i == 1 ? v1 : v2);
 		}
-		
+
 		/** Return a number specifying an index in the source vertex array.
 		 * The vertex array can for example be contained in a recast tile, or be a navmesh graph, that is graph dependant.
 		 * This is slower than GetVertexIndex, if you only need to compare vertices, use GetVertexIndex.
@@ -62,21 +62,21 @@ namespace Pathfinding {
 		public int GetVertexArrayIndex (int i) {
 			return GetNavmeshHolder(GraphIndex).GetVertexArrayIndex (i == 0 ? v0 : (i == 1 ? v1 : v2));
 		}
-		
+
 		public override Int3 GetVertex (int i) {
 			return GetNavmeshHolder(GraphIndex).GetVertex (GetVertexIndex(i));
 		}
-		
+
 		public override int GetVertexCount () {
 			// A triangle has 3 vertices
 			return 3;
 		}
-		
+
 		public override Vector3 ClosestPointOnNode (Vector3 p) {
 			INavmeshHolder g = GetNavmeshHolder(GraphIndex);
 			return Pathfinding.Polygon.ClosestPointOnTriangle ((Vector3)g.GetVertex(v0), (Vector3)g.GetVertex(v1), (Vector3)g.GetVertex(v2), p);
 		}
-		
+
 		public override Vector3 ClosestPointOnNodeXZ (Vector3 _p) {
 			// Get the object holding the vertex data for this node
 			// This is usually a graph or a recast graph tile
@@ -92,14 +92,14 @@ namespace Pathfinding {
 
 			// Save the original y coordinate, we will return a point with the same y coordinate
 			int oy = p.y;
-			
+
 			// Assumes the triangle vertices are laid out in (counter?)clockwise order
-			
+
 			tp1.y = 0;
 			tp2.y = 0;
 			tp3.y = 0;
 			p.y = 0;
-			
+
 			if ((long)(tp2.x - tp1.x) * (long)(p.z - tp1.z) - (long)(p.x - tp1.x) * (long)(tp2.z - tp1.z) > 0) {
 				float f = Mathf.Clamp01 (AstarMath.NearestPointFactor (tp1, tp2, p));
 				return new Vector3(tp1.x + (tp2.x-tp1.x)*f, oy, tp1.z + (tp2.z-tp1.z)*f)*Int3.PrecisionFactor;
@@ -112,7 +112,7 @@ namespace Pathfinding {
 			} else {
 				return _p;
 			}
-			
+
 			/*
 			 * Equivalent to the above, but the above uses manual inlining
 			if (!Polygon.Left (tp1, tp2, p)) {
@@ -138,7 +138,7 @@ namespace Pathfinding {
 			_p.y = 0;
 			return Pathfinding.Polygon.ClosestPointOnTriangle (tp1,tp2,tp3,_p);*/
 		}
-		
+
 		public override bool ContainsPoint (Int3 p) {
 			// Get the object holding the vertex data for this node
 			// This is usually a graph or a recast graph tile
@@ -150,32 +150,32 @@ namespace Pathfinding {
 			Int3 c = navmeshHolder.GetVertex(v2);
 
 			if ((long)(b.x - a.x) * (long)(p.z - a.z) - (long)(p.x - a.x) * (long)(b.z - a.z) > 0) return false;
-			
+
 			if ((long)(c.x - b.x) * (long)(p.z - b.z) - (long)(p.x - b.x) * (long)(c.z - b.z) > 0) return false;
-			
+
 			if ((long)(a.x - c.x) * (long)(p.z - c.z) - (long)(p.x - c.x) * (long)(a.z - c.z) > 0) return false;
-			
+
 			return true;
 			// Equivalent code, but the above code is faster
 			//return Polygon.IsClockwiseMargin (a,b, p) && Polygon.IsClockwiseMargin (b,c, p) && Polygon.IsClockwiseMargin (c,a, p);
-			
+
 			//return Polygon.ContainsPoint(g.GetVertex(v0),g.GetVertex(v1),g.GetVertex(v2),p);
 		}
-		
+
 		public override void UpdateRecursiveG (Path path, PathNode pathNode, PathHandler handler) {
 			UpdateG (path,pathNode);
-			
+
 			handler.PushNode (pathNode);
-			
+
 			if (connections == null) return;
-			
+
 			for (int i=0;i<connections.Length;i++) {
 				GraphNode other = connections[i];
 				PathNode otherPN = handler.GetPathNode (other);
 				if (otherPN.parent == pathNode && otherPN.pathID == handler.PathID) other.UpdateRecursiveG (path, otherPN,handler);
 			}
 		}
-		
+
 		public override void Open (Path path, PathNode pathNode, PathHandler handler) {
 			if (connections == null) return;
 
@@ -189,9 +189,9 @@ namespace Pathfinding {
 
 				// Make sure we can traverse the neighbour
 				if (path.CanTraverse (other)) {
-					
+
 					PathNode pathOther = handler.GetPathNode (other);
-					
+
 					// Fast path out, worth it for triangle mesh nodes since they usually have degree 2 or 3
 					if (pathOther == pathNode.parent) {
 						continue;
@@ -213,39 +213,39 @@ namespace Pathfinding {
 
 						// Might not be assigned
 						pathOther.node = other;
-						
+
 						pathOther.parent = pathNode;
 						pathOther.pathID = handler.PathID;
-						
+
 						pathOther.cost = cost;
-						
+
 						pathOther.H = path.CalculateHScore (other);
 						other.UpdateG (path, pathOther);
-						
+
 						handler.PushNode (pathOther);
 					} else {
 
 						// If not we can test if the path from this node to the other one is a better one than the one already used
 						if (pathNode.G + cost + path.GetTraversalCost(other) < pathOther.G) {
-							
+
 							pathOther.cost = cost;
 							pathOther.parent = pathNode;
-							
+
 							other.UpdateRecursiveG (path, pathOther,handler);
 						}
 						else if (pathOther.G+cost+path.GetTraversalCost(this) < pathNode.G && other.ContainsConnection (this)) {
 							// Or if the path from the other node to this one is better
-							
+
 							pathNode.parent = pathOther;
 							pathNode.cost = cost;
-							
+
 							UpdateRecursiveG (path, pathNode,handler);
 						}
 					}
 				}
 			}
 		}
-		
+
 		/** Returns the edge which is shared with \a other.
 		 * If no edge is shared, -1 is returned.
 		 * The edge is GetVertex(result) - GetVertex((result+1) % GetVertexCount()).
@@ -258,40 +258,40 @@ namespace Pathfinding {
 			GetPortal(other, null, null, false, out a, out b);
 			return a;
 		}
-		
+
 		public override bool GetPortal (GraphNode _other, System.Collections.Generic.List<Vector3> left, System.Collections.Generic.List<Vector3> right, bool backwards) {
 			int aIndex, bIndex;
 			return GetPortal (_other,left,right,backwards, out aIndex, out bIndex);
 		}
-		
+
 		public bool GetPortal (GraphNode _other, System.Collections.Generic.List<Vector3> left, System.Collections.Generic.List<Vector3> right, bool backwards, out int aIndex, out int bIndex) {
 			aIndex = -1;
 			bIndex = -1;
-			
+
 			//If the nodes are in different graphs, this function has no idea on how to find a shared edge.
 			if (_other.GraphIndex != GraphIndex) return false;
-			
+
 			// Since the nodes are in the same graph, they are both TriangleMeshNodes
 			// So we don't need to care about other types of nodes
 			var other = _other as TriangleMeshNode;
-			
+
 			//Get tile indices
 			int tileIndex = (GetVertexIndex(0) >> RecastGraph.TileIndexOffset) & RecastGraph.TileIndexMask;
 			int tileIndex2 = (other.GetVertexIndex(0) >> RecastGraph.TileIndexOffset) & RecastGraph.TileIndexMask;
-			
+
 			//When the nodes are in different tiles, the edges might not be completely identical
 			//so another technique is needed
 			//Only do this on recast graphs
 			if (tileIndex != tileIndex2 && ( GetNavmeshHolder(GraphIndex) is RecastGraph)) {
 
 				for ( int i=0;i<connections.Length;i++) {
-					
+
 					if ( connections[i].GraphIndex != GraphIndex ) {
 #if !ASTAR_NO_POINT_GRAPH
 						var mid = connections[i] as NodeLink3Node;
 						if ( mid != null && mid.GetOther (this) == other ) {
 							// We have found a node which is connected through a NodeLink3Node
-							
+
 							if ( left != null ) {
 								mid.GetPortal ( other, left, right, false );
 								return true;
@@ -307,19 +307,19 @@ namespace Pathfinding {
 				INavmeshHolder nm = GetNavmeshHolder (GraphIndex);
 				nm.GetTileCoordinates(tileIndex, out x1, out z1);
 				nm.GetTileCoordinates(tileIndex2, out x2, out z2);
-				
+
 				if (System.Math.Abs(x1-x2) == 1) coord = 0;
 				else if (System.Math.Abs(z1-z2) == 1) coord = 2;
 				else throw new System.Exception ("Tiles not adjacent (" + x1+", " + z1 +") (" + x2 + ", " + z2+")");
-				
+
 				int av = GetVertexCount ();
 				int bv = other.GetVertexCount ();
-				
+
 				//Try the X and Z coordinate. For one of them the coordinates should be equal for one of the two nodes' edges
 				//The midpoint between the tiles is the only place where they will be equal
-				
+
 				int first = -1, second = -1;
-				
+
 				//Find the shared edge
 				for (int a=0;a<av;a++) {
 					int va = GetVertex(a)[coord];
@@ -332,26 +332,26 @@ namespace Pathfinding {
 						}
 					}
 				}
-				
+
 				aIndex = first;
 				bIndex = second;
-				
+
 				if (first != -1) {
-					
+
 					Int3 a = GetVertex(first);
 					Int3 b = GetVertex((first+1)%av);
-					
+
 					//The coordinate which is not the same for the vertices
 					int ocoord = coord == 2 ? 0 : 2;
-					
+
 					//When the nodes are in different tiles, they might not share exactly the same edge
 					//so we clamp the portal to the segment of the edges which they both have.
 					int mincoord = System.Math.Min(a[ocoord], b[ocoord]);
 					int maxcoord = System.Math.Max(a[ocoord], b[ocoord]);
-					
+
 					mincoord = System.Math.Max (mincoord, System.Math.Min(other.GetVertex(second)[ocoord], other.GetVertex((second+1)%bv)[ocoord]));
 					maxcoord = System.Math.Min (maxcoord, System.Math.Max(other.GetVertex(second)[ocoord], other.GetVertex((second+1)%bv)[ocoord]));
-					
+
 					if (a[ocoord] < b[ocoord]) {
 						a[ocoord] = mincoord;
 						b[ocoord] = maxcoord;
@@ -359,7 +359,7 @@ namespace Pathfinding {
 						a[ocoord] = maxcoord;
 						b[ocoord] = mincoord;
 					}
-					
+
 					if (left != null) {
 						//All triangles should be clockwise so second is the rightmost vertex (seen from this node)
 						left.Add ((Vector3)a);
@@ -369,13 +369,13 @@ namespace Pathfinding {
 				}
 			} else
 			if (!backwards) {
-				
+
 				int first = -1;
 				int second = -1;
-				
+
 				int av = GetVertexCount ();
 				int bv = other.GetVertexCount ();
-				
+
 				/** \todo Maybe optimize with pa=av-1 instead of modulus... */
 				for (int a=0;a<av;a++) {
 					int va = GetVertexIndex(a);
@@ -386,15 +386,15 @@ namespace Pathfinding {
 							a = av;
 							break;
 						}
-						
+
 					}
 				}
-				
+
 				aIndex = first;
 				bIndex = second;
-				
+
 				if (first != -1) {
-					
+
 					if (left != null) {
 						//All triangles should be clockwise so second is the rightmost vertex (seen from this node)
 						left.Add ((Vector3)GetVertex(first));
@@ -402,13 +402,13 @@ namespace Pathfinding {
 					}
 				} else {
 					for ( int i=0;i<connections.Length;i++) {
-						
+
 						if ( connections[i].GraphIndex != GraphIndex ) {
 #if !ASTAR_NO_POINT_GRAPH
 							var mid = connections[i] as NodeLink3Node;
 							if ( mid != null && mid.GetOther (this) == other ) {
 								// We have found a node which is connected through a NodeLink3Node
-								
+
 								if ( left != null ) {
 									mid.GetPortal ( other, left, right, false );
 									return true;
@@ -420,10 +420,10 @@ namespace Pathfinding {
 					return false;
 				}
 			}
-			
+
 			return true;
 		}
-		
+
 		public override void SerializeNode (GraphSerializationContext ctx)
 		{
 			base.SerializeNode (ctx);
@@ -431,7 +431,7 @@ namespace Pathfinding {
 			ctx.writer.Write(v1);
 			ctx.writer.Write(v2);
 		}
-		
+
 		public override void DeserializeNode (GraphSerializationContext ctx)
 		{
 			base.DeserializeNode (ctx);
@@ -440,117 +440,115 @@ namespace Pathfinding {
 			v2 = ctx.reader.ReadInt32();
 		}
 	}
-	
+
 	public class ConvexMeshNode : MeshNode {
-		
+
 		public ConvexMeshNode (AstarPath astar) : base(astar) {
 			indices = new int[0];//\todo Set indices to some reasonable value
 		}
-		
+
 		private int[] indices;
-		//private new Int3 position;
-		
+
 		static ConvexMeshNode () {
-			
 			//Should register to a delegate to receive updates whenever graph lists are changed
 		}
-		
+
 		protected static INavmeshHolder[] navmeshHolders = new INavmeshHolder[0];
 		protected static INavmeshHolder GetNavmeshHolder (uint graphIndex) { return navmeshHolders[(int)graphIndex]; }
-		
-		/*public override Int3 Position {
-			get {
-				return position;
-			}
-		}*/
-		
+
 		public void SetPosition (Int3 p) {
 			position = p;
 		}
-		
+
 		public int GetVertexIndex (int i) {
 			return indices[i];
 		}
-		
+
 		public override Int3 GetVertex (int i) {
 			return GetNavmeshHolder(GraphIndex).GetVertex (GetVertexIndex(i));
 		}
-		
+
 		public override int GetVertexCount () {
 			return indices.Length;
 		}
-		
+
 		public override Vector3 ClosestPointOnNode (Vector3 p)
 		{
 			throw new System.NotImplementedException ();
 		}
-		
+
 		public override Vector3 ClosestPointOnNodeXZ (Vector3 p)
 		{
 			throw new System.NotImplementedException ();
 		}
-		
+
 		public override void GetConnections (GraphNodeDelegate del) {
 			if (connections == null) return;
 			for (int i=0;i<connections.Length;i++) del (connections[i]);
 		}
-		
+
 		public override void Open (Path path, PathNode pathNode, PathHandler handler) {
 			if (connections == null) return;
-			
+
 			for (int i=0;i<connections.Length;i++) {
 				GraphNode other = connections[i];
-				
+
 				if (path.CanTraverse (other)) {
-					
+
 					PathNode pathOther = handler.GetPathNode (other);
-				
+
 					if (pathOther.pathID != handler.PathID) {
-						
+
 						pathOther.parent = pathNode;
 						pathOther.pathID = handler.PathID;
-						
+
 						pathOther.cost = connectionCosts[i];
-						
+
 						pathOther.H = path.CalculateHScore (other);
 						other.UpdateG (path, pathOther);
-						
+
 						handler.PushNode (pathOther);
 					} else {
 						//If not we can test if the path from this node to the other one is a better one then the one already used
 						uint tmpCost = connectionCosts[i];
-						
-						if (pathNode.G + tmpCost + path.GetTraversalCost(other) < pathOther.G) {
-							
+
+#if ASTAR_NO_TRAVERSAL_COST
+						if (pathNode.G + tmpCost < pathOther.G)
+#else
+						if (pathNode.G + tmpCost + path.GetTraversalCost(other) < pathOther.G)
+#endif
+						{
+
 							pathOther.cost = tmpCost;
 							pathOther.parent = pathNode;
-							
+
 							other.UpdateRecursiveG (path, pathOther,handler);
-							
-							//handler.PushNode (pathOther);
 						}
-						else if (pathOther.G+tmpCost+path.GetTraversalCost(this) < pathNode.G && other.ContainsConnection (this)) {
+#if ASTAR_NO_TRAVERSAL_COST
+						else if (pathOther.G+tmpCost < pathNode.G && other.ContainsConnection (this))
+#else
+						else if (pathOther.G+tmpCost+path.GetTraversalCost(this) < pathNode.G && other.ContainsConnection (this))
+#endif
+						{
 							//Or if the path from the other node to this one is better
-							
+
 							pathNode.parent = pathOther;
 							pathNode.cost = tmpCost;
-							
+
 							UpdateRecursiveG (path, pathNode,handler);
-							
-							//handler.PushNode (pathNode);
 						}
 					}
 				}
 			}
 		}
 	}
-	
+
 	/*public class ConvexMeshNode : GraphNode {
 		//Vertices
 		public int v1;
 		public int v2;
 		public int v3;
-		
+
 		public int GetVertexIndex (int i) {
 			if (i == 0) {
 				return v1;
@@ -562,7 +560,7 @@ namespace Pathfinding {
 				throw new System.ArgumentOutOfRangeException ("A MeshNode only contains 3 vertices");
 			}
 		}
-		
+
 		public int this[int i]
 	    {
 	        get
@@ -578,7 +576,7 @@ namespace Pathfinding {
 				}
 	        }
 	    }
-	    
+
 	    public Vector3 ClosestPoint (Vector3 p, Int3[] vertices) {
 	    	return Polygon.ClosestPointOnTriangle ((Vector3)vertices[v1],(Vector3)vertices[v2],(Vector3)vertices[v3],p);
 	    }
