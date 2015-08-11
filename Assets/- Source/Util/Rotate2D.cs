@@ -10,6 +10,6 @@ public class Rotate2D : MonoBehaviour {
 	}
 	
 	void Update () {
-        transform.localRotation *= Quaternion.EulerRotation(0f, 0f, m_RotateSpeed * Time.deltaTime);
+        transform.localRotation *= Quaternion.Euler(0f, 0f, m_RotateSpeed * Time.deltaTime);
 	}
 }
