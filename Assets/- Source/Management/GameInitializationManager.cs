@@ -11,11 +11,8 @@ public class GameInitializationManager : MonoBehaviour
         Screen.autorotateToLandscapeLeft = true;
         Screen.autorotateToLandscapeRight = true;
         Screen.autorotateToPortrait = false;
-        //Screen.autorotateToPortraitUpsideDown = false;
 
-#if !UNITY_EDITOR
-        SoomlaHighway.Initialize();
-#endif
-        SoomlaProfile.Initialize();
+        //Screen.autorotateToPortraitUpsideDown = false;
+        ProfileManager.Initialize();
 	}
 }

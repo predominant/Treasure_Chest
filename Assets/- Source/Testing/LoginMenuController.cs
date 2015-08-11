@@ -3,9 +3,10 @@ using System.Collections;
 using Soomla.Profile;
 using Soomla;
 
-public class LoginTest : MonoBehaviour 
+public class LoginMenuController : MonoBehaviour
 {
     public GameObject m_OfflinePanel = null;
+    public GameObject m_WaitingPanel = null;
     public GameObject m_OnlinePanel = null;
 
     private bool m_ProfileReady = false;
@@ -14,31 +15,57 @@ public class LoginTest : MonoBehaviour
     void Start()
     {
         m_OnlinePanel.SetActive(false);
+        m_WaitingPanel.SetActive(false);
         m_OfflinePanel.SetActive(true);
+        ProfileManager.OnStateChanged += ProfileManager_OnStateChanged;
     }
 
-    #region Offline
-    public void BtnLoginClicked()
+    #region Profile Event Handlers
+    void ProfileManager_OnStateChanged(ProfileManager.ProviderState _state)
     {
-        //// If the user clicks on the login button you provide, call the Login function:
-        //SoomlaProfile.Login(
-        //    Provider.FACEBOOK                        // Provider
-        //);
+        switch (_state)
+        {
+            case ProfileManager.ProviderState.LoggedIn:
+                m_OnlinePanel.SetActive(true);
+                m_WaitingPanel.SetActive(false);
+                m_OfflinePanel.SetActive(false);
+                break;
 
-        // If you'd like to give your users a reward for logging in, use:
-        SoomlaProfile.Login(
-            Provider.FACEBOOK                       // Provider
-            //"",                                      // Payload
-            //new BadgeReward("reward", "Logged In!")  // Reward
-        );
+            case ProfileManager.ProviderState.LoggingIn:
+                m_OnlinePanel.SetActive(false);
+                m_WaitingPanel.SetActive(true);
+                m_OfflinePanel.SetActive(false);
+                break;
 
-        //// If the user would like to logout:
-        //SoomlaProfile.Logout(
-        //    Provider.FACEBOOK                        // Provider
-        //);
+            case ProfileManager.ProviderState.LoggedOut:
+                m_OnlinePanel.SetActive(false);
+                m_WaitingPanel.SetActive(false);
+                m_OfflinePanel.SetActive(true);
+                break;
 
-        m_OnlinePanel.SetActive(true);
-        m_OfflinePanel.SetActive(false);
+            case ProfileManager.ProviderState.LoggingOut:
+                m_OnlinePanel.SetActive(false);
+                m_WaitingPanel.SetActive(true);
+                m_OfflinePanel.SetActive(false);
+                break;
+        }
+    }
+    #endregion
+
+    #region Offline
+    public void BtnFBLoginClicked()
+    {
+        ProfileManager.Login(Provider.FACEBOOK);
+    }
+
+    public void BtnGPLoginClicked()
+    {
+        ProfileManager.Login(Provider.GOOGLE);
+    }
+
+    public void BtnTWLoginClicked()
+    {
+        ProfileManager.Login(Provider.TWITTER);
     }
     #endregion
 
