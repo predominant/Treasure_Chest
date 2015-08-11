@@ -25,7 +25,7 @@ public class AstarPath : MonoBehaviour {
 	 */
 	public static System.Version Version {
 		get {
-			return new System.Version (3,7);
+			return new System.Version (3,7,2);
 		}
 	}
 
@@ -33,7 +33,7 @@ public class AstarPath : MonoBehaviour {
 	public enum AstarDistribution { WebsiteDownload, AssetStore };
 
 	/** Used by the editor to guide the user to the correct place to download updates */
-	public static readonly AstarDistribution Distribution = AstarDistribution.AssetStore;
+	public static readonly AstarDistribution Distribution = AstarDistribution.WebsiteDownload;
 
 	/** Which branch of the A* %Pathfinding Project is this release.
 	 * Used when checking for updates so that
@@ -246,7 +246,7 @@ public class AstarPath : MonoBehaviour {
 	 * threads, it will not calculate individual paths any faster.
 	 *
 	 * Note that if you are modifying the pathfinding core scripts or if you are directly modifying graph data without using any of the
-	 * safe wrappers (like RegisterSafeUpdate) multithreading can cause strange errors and pathfinding stopping to work if you are not carefull.
+	 * safe wrappers (like RegisterSafeUpdate) multithreading can cause strange errors and pathfinding stopping to work if you are not careful.
 	 * For basic usage (not modding the pathfinding core) it should be safe.\n
 	 *
 	 * \note WebGL does not support threads at all (since javascript is single-threaded)
@@ -434,10 +434,10 @@ public class AstarPath : MonoBehaviour {
 	/** Called for each graph after they have been scanned. All other graphs might not have been scanned yet. */
 	public static OnGraphDelegate OnGraphPostScan;
 
-	/** Called for each path before searching. Be carefull when using multithreading since this will be called from a different thread. */
+	/** Called for each path before searching. Be careful when using multithreading since this will be called from a different thread. */
 	public static OnPathDelegate OnPathPreSearch;
 
-	/** Called for each path after searching. Be carefull when using multithreading since this will be called from a different thread. */
+	/** Called for each path after searching. Be careful when using multithreading since this will be called from a different thread. */
 	public static OnPathDelegate OnPathPostSearch;
 
 	/** Called before starting the scanning */
@@ -868,7 +868,6 @@ public class AstarPath : MonoBehaviour {
 		if (threadEnumerator != null) {
 			try {
 				threadEnumerator.MoveNext ();
-
 			} catch (System.Exception e) {
 				//This will kill pathfinding
 				threadEnumerator = null;

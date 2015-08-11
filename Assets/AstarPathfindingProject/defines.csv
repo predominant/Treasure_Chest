@@ -8,7 +8,6 @@ ASTAR_NO_LOGGING                     ; Disables path error logging completely. T
 ASTAR_NO_PENALTY                     ; Enabling this disables the use of penalties. Reduces memory usage.
 ASTAR_NO_POOLING                     ; Disable pooling for some reason. Could be debugging or just for measuring the difference.
 ASTAR_NoGUI                          ; Disables the use of the OnGUI function, can possibly improve performance by a tiny bit (disables the InGame option for path debugging).
-ASTAR_OLD_BBTREE                     ; Use class based BBTree implementation instead of struct based. Struct based is better for runtime performance and memory, but class based scans slightly faster.
 ASTAR_POOL_DEBUG                     ; Enables debugging of path pooling. Will log warnings and info messages about paths not beeing pooled correctly.
 ASTAR_RECAST_CLASS_BASED_LINKED_LIST ; Disables the array based linked list. This might handle very large tiles better, however it is usually slower to scan and uses more memory (during scanning).
 ASTAR_RECAST_BFS                     ; Enables an experimental optimization to recast. Faster scanning and updating but can sometimes fail to generate any navmesh at all (this is relatively rare though).

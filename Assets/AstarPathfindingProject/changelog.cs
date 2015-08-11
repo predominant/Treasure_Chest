@@ -1,6 +1,22 @@
 /** \page changelog Changelog
 
-- 3.7
+- 3.7.2 (2015-08-06)
+	- Fixed penalties not working on navmesh based graphs (navmesh graphs and recast graphs) due to incorrectly configured compiler directives.
+	- Removed undocumented compiler directive ASTAR_CONSTANT_PENALTY and replaced with ASTAR_NO_TRAVERSAL_COST which
+		can strip out code handling penalties to get slightly better pathfinding performance (still not documented though as it is not really a big performance boost).
+
+- 3.7.1 (2015-08-01)
+	- Removed a few cases where exceptions where needed to better support WebGL when exception handling is disabled.
+	- Fixed MultiTargetPath could return the wrong path if the target of the path was the same as the start point.
+	- Fixed MultiTargetPath could sometimes throw exceptions when using more than one pathfinding thread.
+	- MultiTargetPath will now set path and vectorPath to the shortest path even if pathsForAll is true.
+	- The log output for MultiTargetPath now contains the length (in nodes) of the shortest path.
+	- Fixed RecastGraph throwing exceptions when trying to rasterize trees with missing (null) prefabs. Now they will simply be ignored.
+	- Removed RecastGraph.bbTree since it was not used for anything (bbTrees are stored inside each tile since a few versions)
+	- Improved performance of loading and updating large recast graph tiles (improved performance of internal AABB tree).
+	- Removed support for the compiler directive ASTAR_OLD_BBTREE.
+
+- 3.7 (2015-07-22)
 	- The last version that was released on the Unity Asset Store
 	  was version 3.6 so if you are upgrading from that version also check out the release
 	  notes for 3.6.1 through 3.6.7.

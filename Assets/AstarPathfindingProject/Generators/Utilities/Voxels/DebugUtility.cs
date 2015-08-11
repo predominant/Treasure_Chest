@@ -264,41 +264,5 @@ namespace Pathfinding {
 			rend.material = active.defaultMaterial;
 			(go.AddComponent (typeof(MeshFilter)) as MeshFilter).mesh = mesh;
 		}
-		
-		public static void TestMeshLimit () {
-			
-			Vector3[] vertices = new Vector3[16000*4];
-			int[] tris = new int[16000*6];
-			
-			for (int i=0;i<16000;i++) {
-				Vector3 p = Random.onUnitSphere*10;
-				
-				int vIndex = i*4;
-				vertices[vIndex] = p + new Vector3 (-0.1F,0,-0.1F);
-				vertices[vIndex+1] = p + new Vector3 (-0.1F,0,0.1F);
-				vertices[vIndex+2] = p + new Vector3 (0.1F,0,0.1F);
-				vertices[vIndex+3] = p + new Vector3 (0.1F,0,-0.1F);
-				
-				int tIndex = i*6;
-				tris[tIndex] = vIndex;
-				tris[tIndex+1] = vIndex+1;
-				tris[tIndex+2] = vIndex+2;
-				
-				tris[tIndex+3] = vIndex;
-				tris[tIndex+4] = vIndex+2;
-				tris[tIndex+5] = vIndex+3;
-			}
-			
-			Mesh mesh = new Mesh ();
-			mesh.vertices = vertices;
-			mesh.triangles = tris;
-			
-			mesh.RecalculateNormals ();
-			mesh.RecalculateBounds ();
-			
-			GameObject go = new GameObject ("DebugMesh");
-			go.AddComponent (typeof(MeshRenderer));
-			(go.AddComponent (typeof(MeshFilter)) as MeshFilter).mesh = mesh;
-		}
 	}
 }

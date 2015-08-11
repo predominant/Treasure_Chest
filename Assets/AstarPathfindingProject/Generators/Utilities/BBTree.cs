@@ -2,31 +2,30 @@
 
 using System;
 using UnityEngine;
-using Pathfinding;
 
 namespace Pathfinding {
+	using Pathfinding;
+
 	/** Axis Aligned Bounding Box Tree.
 	 * Holds a bounding box tree of triangles.
 	 *
 	 * \astarpro
 	 */
 	public class BBTree {
-
-#if !ASTAR_OLD_BBTREE
-
 		/** Holds an Axis Aligned Bounding Box Tree used for faster node lookups.
-		 * \astarpro */
+		 * \astarpro
+		 */
 		BBTreeBox[] arr = new BBTreeBox[6];
 		int count;
-		public INavmeshHolder graph;
 
-		public BBTree (INavmeshHolder graph) {
-			this.graph = graph;
-		}
-		
 		public Rect Size {
 			get {
-				return count != 0 ? arr[0].rect : new Rect (0,0,0,0);
+				if (count == 0) {
+					return new Rect(0,0,0,0);
+				} else {
+					var rect = arr[0].rect;
+					return Rect.MinMaxRect(rect.xmin*Int3.PrecisionFactor, rect.ymin*Int3.PrecisionFactor, rect.xmax*Int3.PrecisionFactor, rect.ymax*Int3.PrecisionFactor);
+				}
 			}
 		}
 
@@ -50,11 +49,150 @@ namespace Pathfinding {
 		int GetBox ( MeshNode node ) {
 			if ( count >= arr.Length ) EnsureCapacity ( count+1 );
 
-			arr[count] = new BBTreeBox ( this, node );
+			arr[count] = new BBTreeBox ( node );
 			count++;
 			return count-1;
 		}
 
+		int GetBox ( IntRect rect ) {
+			if ( count >= arr.Length ) EnsureCapacity ( count+1 );
+
+			arr[count] = new BBTreeBox ( rect );
+			count++;
+			return count-1;
+		}
+
+		/** Rebuilds the tree using the specified nodes.
+		 * This is faster and gives better quality results compared to calling Insert with all nodes
+		 */
+		public void RebuildFrom (MeshNode[] nodes) {
+			Clear();
+
+			if (nodes.Length == 0) {
+				return;
+			}
+
+			if (nodes.Length == 1) {
+				GetBox(nodes[0]);
+				return;
+			}
+
+			// We will use approximately 2N tree nodes
+			EnsureCapacity(Mathf.CeilToInt (nodes.Length * 2.1f));
+
+			// Make a copy of the nodes array since we will be modifying it
+			var nodeCopies = new MeshNode[nodes.Length];
+			for (int i = 0; i < nodes.Length; i++) nodeCopies[i] = nodes[i];
+
+			RebuildFromInternal(nodeCopies, 0, nodes.Length, false);
+		}
+
+		static int SplitByX (MeshNode[] nodes, int from, int to, int divider) {
+			int mx = to;
+			for (int i = from; i < mx; i++) {
+				if (nodes[i].position.x > divider) {
+					// swap with mx
+					mx--;
+					var tmp = nodes[mx];
+					nodes[mx] = nodes[i];
+					nodes[i] = tmp;
+					i--;
+				}
+			}
+			return mx;
+		}
+
+		static int SplitByZ (MeshNode[] nodes, int from, int to, int divider) {
+			int mx = to;
+			for (int i = from; i < mx; i++) {
+				if (nodes[i].position.z > divider) {
+					// swap with mx
+					mx--;
+					var tmp = nodes[mx];
+					nodes[mx] = nodes[i];
+					nodes[i] = tmp;
+					i--;
+				}
+			}
+			return mx;
+		}
+
+		int RebuildFromInternal (MeshNode[] nodes, int from, int to, bool odd) {
+			if (to - from <= 0) throw new ArgumentException();
+
+			if (to - from == 1) {
+				return GetBox(nodes[from]);
+			}
+
+			var rect = NodeBounds(nodes, from, to);
+			int box = GetBox(rect);
+
+			// Performance optimization for a common case
+			if (to - from == 2) {
+				arr[box].left = GetBox(nodes[from]);
+				arr[box].right = GetBox(nodes[from+1]);
+				return box;
+			}
+
+			int mx;
+			if (odd) {
+				// X
+				int divider = (rect.xmin + rect.xmax)/2;
+				mx = SplitByX (nodes, from, to, divider);
+			} else {
+				// Y/Z
+				int divider = (rect.ymin + rect.ymax)/2;
+				mx = SplitByZ (nodes, from, to, divider);
+			}
+
+			if (mx == from || mx == to) {
+				// All nodes were on one side of the divider
+				// Try to split along the other axis
+
+				if (!odd) {
+					// X
+					int divider = (rect.xmin + rect.xmax)/2;
+					mx = SplitByX (nodes, from, to, divider);
+				} else {
+					// Y/Z
+					int divider = (rect.ymin + rect.ymax)/2;
+					mx = SplitByZ (nodes, from, to, divider);
+				}
+
+				if (mx == from || mx == to) {
+					// All nodes were on one side of the divider
+					// Just pick one half
+					mx = (from+to)/2;
+				}
+			}
+
+			arr[box].left = RebuildFromInternal(nodes, from, mx, !odd);
+			arr[box].right = RebuildFromInternal(nodes, mx, to, !odd);
+
+			return box;
+		}
+
+		static IntRect NodeBounds (MeshNode[] nodes, int from, int to) {
+			if (to - from <= 0) throw new ArgumentException();
+
+			var first = nodes[from].GetVertex(0);
+			var min = new Int2(first.x,first.z);
+			Int2 max = min;
+
+			for (int j = from; j < to; j++) {
+				var node = nodes[j];
+				for (int i=1;i<node.GetVertexCount();i++) {
+					var p = node.GetVertex(i);
+					min.x = Math.Min (min.x,p.x);
+					min.y = Math.Min (min.y,p.z);
+
+					max.x = Math.Max (max.x,p.x);
+					max.y = Math.Max (max.y,p.z);
+				}
+			}
+
+			return new IntRect (min.x, min.y, max.x, max.y);
+		}
 
 		/** Inserts a mesh node in the tree */
 		public void Insert (MeshNode node) {
@@ -81,11 +219,11 @@ namespace Pathfinding {
 
 					int box2 = GetBox (cb.node);
 					//BBTreeBox box2 = new BBTreeBox (this,c.node);
-					
+
 					//Console.WriteLine ("Inserted "+box.node+", rect "+box.rect.ToString ());
 					cb.right = box2;
-					
-					
+
+
 					cb.node = null;
 					//cb.depth++;
 
@@ -98,9 +236,9 @@ namespace Pathfinding {
 					//cb.depth++;
 					arr[c] = cb;
 
-					float e1 = ExpansionRequired (arr[cb.left].rect,box.rect);// * arr[cb.left].depth;
-					float e2 =  ExpansionRequired (arr[cb.right].rect,box.rect);// * arr[cb.left].depth;
-					
+					int e1 = ExpansionRequired (arr[cb.left].rect,box.rect);// * arr[cb.left].depth;
+					int e2 =  ExpansionRequired (arr[cb.right].rect,box.rect);// * arr[cb.left].depth;
+
 					//Choose the rect requiring the least expansion to contain box.rect
 					if (e1 < e2) {
 						c = cb.left;
@@ -115,40 +253,40 @@ namespace Pathfinding {
 		}
 
 		public NNInfo Query (Vector3 p, NNConstraint constraint) {
-			
+
 			if ( count == 0 ) return new NNInfo(null);
-			
+
 			var nnInfo = new NNInfo ();
-			
+
 			SearchBox (0,p, constraint, ref nnInfo);
-			
+
 			nnInfo.UpdateInfo ();
-			
+
 			return nnInfo;
 		}
-		
+
 		/** Queries the tree for the best node, searching within a circle around \a p with the specified radius.
 		  * Will fill in both the constrained node and the not constrained node in the NNInfo.
-		  * 
+		  *
 		  * \see QueryClosest
 		  */
 		public NNInfo QueryCircle (Vector3 p, float radius, NNConstraint constraint) {
 
 			if ( count == 0 ) return new NNInfo(null);
-			
+
 			var nnInfo = new NNInfo (null);
-			
+
 			SearchBoxCircle (0,p, radius, constraint, ref nnInfo);
-			
+
 			nnInfo.UpdateInfo ();
-			
+
 			return nnInfo;
 		}
 
 		/** Queries the tree for the closest node to \a p constrained by the NNConstraint.
 		  * Note that this function will, unlike QueryCircle, only fill in the constrained node.
 		  * If you want a node not constrained by any NNConstraint, do an additional search with constraint = NNConstraint.None
-		  * 
+		  *
 		  * \see QueryCircle
 		  */
 		public NNInfo QueryClosest (Vector3 p, NNConstraint constraint, out float distance) {
@@ -177,9 +315,9 @@ namespace Pathfinding {
 			if (count == 0) {
 				return previous;
 			}
-			
+
 			SearchBoxClosestXZ (0,p, ref distance, constraint, ref previous);
-			
+
 			return previous;
 		}
 
@@ -221,19 +359,19 @@ namespace Pathfinding {
 				#endif
 
 			} else {
-				
+
 				#if ASTARDEBUG
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				#endif
-				
+
 				//Search children
 				if (RectIntersectsCircle (arr[box.left].rect,p,closestDist)) {
 					SearchBoxClosestXZ (box.left,p, ref closestDist, constraint, ref nnInfo);
 				}
-				
+
 				if (RectIntersectsCircle (arr[box.right].rect,p,closestDist)) {
 					SearchBoxClosestXZ (box.right,p, ref closestDist, constraint, ref nnInfo);
 				}
@@ -255,14 +393,14 @@ namespace Pathfinding {
 		  * \see QueryCircle
 		  */
 		public NNInfo QueryClosest (Vector3 p, NNConstraint constraint, ref float distance, NNInfo previous) {
-		
+
 			if ( count == 0 ) return previous;
-			
+
 			SearchBoxClosest (0,p, ref distance, constraint, ref previous);
-			
+
 			return previous;
 		}
-		
+
 		void SearchBoxClosest (int boxi, Vector3 p, ref float closestDist, NNConstraint constraint, ref NNInfo nnInfo) {
 
 			BBTreeBox box = arr[boxi];
@@ -276,9 +414,9 @@ namespace Pathfinding {
 					Debug.DrawLine ((Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,Color.red);
 					Debug.DrawLine ((Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,Color.red);
 					#endif
-					
+
 					Vector3 closest = box.node.ClosestPointOnNode (p);
-					
+
 					if (constraint == null || constraint.Suitable (box.node)) {
 						float dist = (closest-p).sqrMagnitude;
 
@@ -300,29 +438,29 @@ namespace Pathfinding {
 					#endif
 				}
 			} else {
-				
+
 				#if ASTARDEBUG
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				#endif
-				
+
 				//Search children
 				if (RectIntersectsCircle (arr[box.left].rect,p,closestDist)) {
 					SearchBoxClosest (box.left,p, ref closestDist, constraint, ref nnInfo);
 				}
-				
+
 				if (RectIntersectsCircle (arr[box.right].rect,p,closestDist)) {
 					SearchBoxClosest (box.right,p, ref closestDist, constraint, ref nnInfo);
 				}
 			}
 		}
-		
+
 		public MeshNode QueryInside (Vector3 p, NNConstraint constraint) {
 			return count != 0 ? SearchBoxInside (0,p, constraint) : null;
 		}
-		
+
 		MeshNode SearchBoxInside (int boxi, Vector3 p, NNConstraint constraint) {
 
 			BBTreeBox box = arr[boxi];
@@ -330,14 +468,14 @@ namespace Pathfinding {
 			if (box.node != null) {
 				if (box.node.ContainsPoint ((Int3)p)) {
 					//Update the NNInfo
-					
+
 					#if ASTARDEBUG
 					Debug.DrawLine ((Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,Color.red);
 					Debug.DrawLine ((Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,Color.red);
 					Debug.DrawLine ((Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,Color.red);
 					#endif
-					
-					
+
+
 					if (constraint == null || constraint.Suitable (box.node)) {
 						return box.node;
 					}
@@ -349,30 +487,30 @@ namespace Pathfinding {
 					#endif
 				}
 			} else {
-				
+
 				#if ASTARDEBUG
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
 				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 				#endif
-				
+
 				//Search children
 				MeshNode g;
-				if (arr[box.left].rect.Contains (new Vector2(p.x,p.z))) {
+				if (arr[box.left].Contains (p)) {
 					g = SearchBoxInside (box.left,p, constraint);
 					if (g != null) return g;
 				}
-				
-				if (arr[box.right].rect.Contains (new Vector2(p.x,p.z))) {
+
+				if (arr[box.right].Contains (p)) {
 					g = SearchBoxInside (box.right, p, constraint);
 					if (g != null) return g;
 				}
 			}
-			
+
 			return null;
 		}
-		
+
 		void SearchBoxCircle (int boxi, Vector3 p, float radius, NNConstraint constraint, ref NNInfo nnInfo) {//, int intendentLevel = 0) {
 
 			BBTreeBox box = arr[boxi];
@@ -381,16 +519,16 @@ namespace Pathfinding {
 				//Leaf node
 				if (NodeIntersectsCircle (box.node,p,radius)) {
 					//Update the NNInfo
-					
+
 					#if ASTARDEBUG
 					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.red);
 					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.red);
 					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.red);
 					#endif
-					
+
 					Vector3 closest = box.node.ClosestPointOnNode (p);//NavMeshGraph.ClosestPointOnNode (box.node,graph.vertices,p);
 					float dist = (closest-p).sqrMagnitude;
-					
+
 					if (nnInfo.node == null) {
 						nnInfo.node = box.node;
 						nnInfo.clampedPosition = closest;
@@ -416,24 +554,24 @@ namespace Pathfinding {
 				}
 				return;
 			}
-			
+
 			#if ASTARDEBUG
 			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
 			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
 			Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
 			#endif
-			
+
 			//Search children
 			if (RectIntersectsCircle (arr[box.left].rect,p,radius)) {
 				SearchBoxCircle (box.left,p, radius, constraint, ref nnInfo);
 			}
-			
+
 			if (RectIntersectsCircle (arr[box.right].rect,p,radius)) {
 				SearchBoxCircle (box.right,p, radius, constraint, ref nnInfo);
 			}
 		}
-		
+
 		void SearchBox (int boxi, Vector3 p, NNConstraint constraint, ref NNInfo nnInfo) {//, int intendentLevel = 0) {
 
 			BBTreeBox box = arr[boxi];
@@ -442,7 +580,7 @@ namespace Pathfinding {
 				//Leaf node
 				if (box.node.ContainsPoint ((Int3)p)) {
 					//Update the NNInfo
-					
+
 					if (nnInfo.node == null) {
 						nnInfo.node = box.node;
 					} else if (Mathf.Abs(((Vector3)box.node.position).y - p.y) < Mathf.Abs (((Vector3)nnInfo.node.position).y - p.y)) {
@@ -458,19 +596,19 @@ namespace Pathfinding {
 				}
 				return;
 			}
-			
+
 			//Search children
-			if (RectContains (arr[box.left].rect,p)) {
+			if (arr[box.left].Contains(p)) {
 				SearchBox (box.left,p, constraint, ref nnInfo);
 			}
-			
-			if (RectContains (arr[box.right].rect,p)) {
+
+			if (arr[box.right].Contains(p)) {
 				SearchBox (box.right,p, constraint, ref nnInfo);
 			}
 		}
 
 		struct BBTreeBox {
-			public Rect rect;
+			public IntRect rect;
 
 			public MeshNode node;
 			public int left, right;
@@ -481,47 +619,55 @@ namespace Pathfinding {
 				}
 			}
 
-			public BBTreeBox (BBTree tree, MeshNode node) {
+			public BBTreeBox (IntRect rect) {
+				node = null;
+				this.rect = rect;
+				left = right = -1;
+			}
+
+			public BBTreeBox (MeshNode node) {
 				this.node = node;
-				var first = (Vector3)node.GetVertex(0);
-				var min = new Vector2(first.x,first.z);
-				Vector2 max = min;
-				
+				var first = node.GetVertex(0);
+				var min = new Int2(first.x,first.z);
+				Int2 max = min;
+
 				for (int i=1;i<node.GetVertexCount();i++) {
-					var p = (Vector3)node.GetVertex(i);
+					var p = node.GetVertex(i);
 					min.x = Math.Min (min.x,p.x);
 					min.y = Math.Min (min.y,p.z);
-					
+
 					max.x = Math.Max (max.x,p.x);
 					max.y = Math.Max (max.y,p.z);
 				}
-				
-				rect = Rect.MinMaxRect (min.x,min.y,max.x,max.y);
+
+				rect = new IntRect (min.x,min.y,max.x,max.y);
 				left = right = -1;
 			}
-			
+
 			public bool Contains (Vector3 p) {
-				return rect.Contains (new Vector2(p.x,p.z));
+				var pi = (Int3)p;
+				return rect.Contains (pi.x, pi.z);
 			}
 		}
 
 		public void OnDrawGizmos () {
 			Gizmos.color = new Color (1,1,1,0.5F);
 			if ( count == 0 ) return;
-			//OnDrawGizmos (0, 0);
+			OnDrawGizmos (0, 0);
 		}
 
 		void OnDrawGizmos ( int boxi, int depth ) {
 			BBTreeBox box = arr[boxi];
 
-			var min = new Vector3 (box.rect.xMin,0,box.rect.yMin);
-			var max = new Vector3 (box.rect.xMax,0,box.rect.yMax);
-			
+			var min = (Vector3)new Int3 (box.rect.xmin,0,box.rect.ymin);
+			var max = (Vector3)new Int3 (box.rect.xmax,0,box.rect.ymax);
+
 			Vector3 center = (min+max)*0.5F;
 			Vector3 size = (max-center)*2;
-			center.y += depth * 0.2f;
+			size = new Vector3(size.x,1,size.z);
+			center.y += depth * 2;
 
-			Gizmos.color = AstarMath.IntToColor (depth, 0.05f);//new Color (0,0,0,0.2F);
+			Gizmos.color = AstarMath.IntToColor (depth, 1f);//new Color (0,0,0,0.2F);
 			Gizmos.DrawCube (center,size);
 
 			if ( box.node != null ) {
@@ -530,467 +676,9 @@ namespace Pathfinding {
 				OnDrawGizmos ( box.right, depth + 1 );
 			}
 		}
-#else
-
-		/** Holds an Axis Aligned Bounding Box Tree used for faster node lookups.
-		 * \astarpro */
-		BBTreeBox root;
-		public INavmeshHolder graph;
-		
-		public BBTree (INavmeshHolder graph) {
-			this.graph = graph;
-		}
-
-		public Rect Size {
-			get {
-				return root != null ? root.rect : new Rect (0,0,0,0);
-			}
-		}
-
-		public void Clear () {
-			root = null;
-		}
-
-		public NNInfo Query (Vector3 p, NNConstraint constraint) {
-			
-			BBTreeBox c = root;
-			
-			if (c == null) {
-				return new NNInfo();
-			}
-			
-			NNInfo nnInfo = new NNInfo ();
-			
-			SearchBox (c,p, constraint, ref nnInfo);
-			
-			nnInfo.UpdateInfo ();
-			
-			return nnInfo;
-		}
-		
-		/** Queries the tree for the best node, searching within a circle around \a p with the specified radius.
-		  * Will fill in both the constrained node and the not constrained node in the NNInfo.
-		  * 
-		  * \see QueryClosest
-		  */
-		public NNInfo QueryCircle (Vector3 p, float radius, NNConstraint constraint) {
-			BBTreeBox c = root;
-			
-			if (c == null) {
-				return new NNInfo();
-			}
-			
-#if ASTARDEBUG
-			Vector3 prev = new Vector3 (1,0,0)*radius+p;
-			for (double i=0;i< Math.PI*2; i += Math.PI/50.0) {
-				Vector3 cpos = new Vector3 ((float)Math.Cos (i),0,(float)Math.Sin (i))*radius+p;
-				Debug.DrawLine (prev,cpos,Color.yellow);
-				prev = cpos;
-			}
-#endif
-			
-			NNInfo nnInfo = new NNInfo (null);
-			
-			SearchBoxCircle (c,p, radius, constraint, ref nnInfo);
-			
-			nnInfo.UpdateInfo ();
-			
-			return nnInfo;
-		}
-		
-		/** Queries the tree for the closest node to \a p constrained by the NNConstraint.
-		  * Note that this function will, unlike QueryCircle, only fill in the constrained node.
-		  * If you want a node not constrained by any NNConstraint, do an additional search with constraint = NNConstraint.None
-		  * 
-		  * \see QueryCircle
-		  */
-		public NNInfo QueryClosest (Vector3 p, NNConstraint constraint, out float distance) {
-			distance = float.PositiveInfinity;
-			return QueryClosest (p, constraint, ref distance, new NNInfo (null));
-		}
-		
-		/** Queries the tree for the closest node to \a p constrained by the NNConstraint trying to improve an existing solution.
-		  * Note that this function will, unlike QueryCircle, only fill in the constrained node.
-		  * If you want a node not constrained by any NNConstraint, do an additional search with constraint = NNConstraint.None
-		  * 
-		  * This search will start from the \a previous NNInfo and improve it if possible.
-		  * Even if the search fails on this call, the solution will never be worse than \a previous.
-		  * 
-		  * This method will completely ignore any Y-axis differences in positions.
-		  * 
-		  * \param distance The best distance for the \a previous solution. Will be updated with the best distance
-		  * after this search. Will be positive infinity if no node could be found.
-		  * Set to positive infinity if there was no previous solution.
-		  * 
-		  * 
-		  * \see QueryCircle
-		  */
-		public NNInfo QueryClosestXZ (Vector3 p, NNConstraint constraint, ref float distance, NNInfo previous) {
-			BBTreeBox c = root;
-			
-			if (c == null) {
-				return previous;
-			}
-			
-			SearchBoxClosestXZ (c,p, ref distance, constraint, ref previous);
-			
-			return previous;
-		}
-		
-		/** Queries the tree for the closest node to \a p constrained by the NNConstraint trying to improve an existing solution.
-		  * Note that this function will, unlike QueryCircle, only fill in the constrained node.
-		  * If you want a node not constrained by any NNConstraint, do an additional search with constraint = NNConstraint.None
-		  *
-		  * \param p Point to search around
-		  * \param constraint Optionally set to constrain which nodes to return
-		  * \param distance The best distance for the \a previous solution. Will be updated with the best distance
-		  * after this search. Will be positive infinity if no node could be found.
-		  * Set to positive infinity if there was no previous solution.
-		  * \param previous This search will start from the \a previous NNInfo and improve it if possible.
-		  * Even if the search fails on this call, the solution will never be worse than \a previous.
-		  * 
-		  * \see QueryCircle
-		  */
-		public NNInfo QueryClosest (Vector3 p, NNConstraint constraint, ref float distance, NNInfo previous) {
-			BBTreeBox c = root;
-			
-			if (c == null) {
-				return previous;
-			}
-			
-			SearchBoxClosest (c,p, ref distance, constraint, ref previous);
-			
-			return previous;
-		}
-		
-		void SearchBoxClosest (BBTreeBox box, Vector3 p, ref float closestDist, NNConstraint constraint, ref NNInfo nnInfo) {
-			
-			if (box.node != null) {
-				//Leaf node
-				if (NodeIntersectsCircle (box.node,p,closestDist)) {
-					//Update the NNInfo
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,Color.red);
-#endif
-					
-					Vector3 closest = box.node.ClosestPointOnNode (p);//NavMeshGraph.ClosestPointOnNode (box.node,graph.vertices,p);
-					
-					float dist = (closest-p).sqrMagnitude;
-					
-					if (constraint == null || constraint.Suitable (box.node)) {
-						if (nnInfo.constrainedNode == null) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-							closestDist = (float)Math.Sqrt (dist);
-						} else if (dist < closestDist*closestDist) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-							closestDist = (float)Math.Sqrt (dist);
-						}
-					}
-				} else {
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.blue);
-#endif
-				}
-			} else {
-				
-	#if ASTARDEBUG
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-	#endif
-				
-				//Search children
-				if (RectIntersectsCircle (box.c1.rect,p,closestDist)) {
-					SearchBoxClosest (box.c1,p, ref closestDist, constraint, ref nnInfo);
-				}
-				
-				if (RectIntersectsCircle (box.c2.rect,p,closestDist)) {
-					SearchBoxClosest (box.c2,p, ref closestDist, constraint, ref nnInfo);
-				}
-			}
-		}
-		
-		public MeshNode QueryInside (Vector3 p, NNConstraint constraint) {
-			BBTreeBox c = root;
-			
-			if (c == null) {
-				return null;
-			}
-			
-			return SearchBoxInside (c,p, constraint);
-		}
-		
-		MeshNode SearchBoxInside (BBTreeBox box, Vector3 p, NNConstraint constraint) {
-			
-			if (box.node != null) {
-				if (box.node.ContainsPoint ((Int3)p)) {
-					//Update the NNInfo
-					
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,Color.red);
-#endif
-					
-					
-					if (constraint == null || constraint.Suitable (box.node)) {
-						return box.node;
-					}
-				} else {
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.blue);
-#endif
-				}
-			} else {
-				
-	#if ASTARDEBUG
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-	#endif
-				
-				//Search children
-				MeshNode g;
-				if (box.c1.rect.Contains (new Vector2(p.x,p.z))) {
-					g = SearchBoxInside (box.c1,p, constraint);
-					if (g != null) return g;
-				}
-				
-				if (box.c2.rect.Contains (new Vector2(p.x,p.z))) {
-					g = SearchBoxInside (box.c2, p, constraint);
-					if (g != null) return g;
-				}
-			}
-			
-			return null;
-		}
-
-		void SearchBoxClosestXZ (BBTreeBox box, Vector3 p, ref float closestDist, NNConstraint constraint, ref NNInfo nnInfo) {
-			
-			if (box.node != null) {
-				//Leaf node
-				//if (NodeIntersectsCircle (box.node,p,closestDist)) {
-					//Update the NNInfo
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(1) + Vector3.up*0.2f,Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2) + Vector3.up*0.2f,(Vector3)box.node.GetVertex(0) + Vector3.up*0.2f,Color.red);
-#endif
-					
-					Vector3 closest = box.node.ClosestPointOnNodeXZ (p);//NavMeshGraph.ClosestPointOnNode (box.node,graph.vertices,p);
-					
-					// XZ distance
-					float dist = (closest.x-p.x)*(closest.x-p.x)+(closest.z-p.z)*(closest.z-p.z);
-					
-					if (constraint == null || constraint.Suitable (box.node)) {
-						if (nnInfo.constrainedNode == null) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-							closestDist = (float)Math.Sqrt (dist);
-						} else if (dist < closestDist*closestDist) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-							closestDist = (float)Math.Sqrt (dist);
-						}
-					}
-				//} else {
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.blue);
-#endif
-				//}
-			} else {
-				
-	#if ASTARDEBUG
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
-				Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-	#endif
-				
-				//Search children
-				if (RectIntersectsCircle (box.c1.rect,p,closestDist)) {
-					SearchBoxClosestXZ (box.c1,p, ref closestDist, constraint, ref nnInfo);
-				}
-				
-				if (RectIntersectsCircle (box.c2.rect,p,closestDist)) {
-					SearchBoxClosestXZ (box.c2,p, ref closestDist, constraint, ref nnInfo);
-				}
-			}
-		}
-		
-		void SearchBoxCircle (BBTreeBox box, Vector3 p, float radius, NNConstraint constraint, ref NNInfo nnInfo) {//, int intendentLevel = 0) {
-			
-			if (box.node != null) {
-				//Leaf node
-				if (NodeIntersectsCircle (box.node,p,radius)) {
-					//Update the NNInfo
-					
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.red);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.red);
-#endif
-					
-					Vector3 closest = box.node.ClosestPointOnNode (p);//NavMeshGraph.ClosestPointOnNode (box.node,graph.vertices,p);
-					float dist = (closest-p).sqrMagnitude;
-					
-					if (nnInfo.node == null) {
-						nnInfo.node = box.node;
-						nnInfo.clampedPosition = closest;
-					} else if (dist < (nnInfo.clampedPosition - p).sqrMagnitude) {
-						nnInfo.node = box.node;
-						nnInfo.clampedPosition = closest;
-					}
-					if (constraint == null || constraint.Suitable (box.node)) {
-						if (nnInfo.constrainedNode == null) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-						} else if (dist < (nnInfo.constClampedPosition - p).sqrMagnitude) {
-							nnInfo.constrainedNode = box.node;
-							nnInfo.constClampedPosition = closest;
-						}
-					}
-				} else {
-#if ASTARDEBUG
-					Debug.DrawLine ((Vector3)box.node.GetVertex(0),(Vector3)box.node.GetVertex(1),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(1),(Vector3)box.node.GetVertex(2),Color.blue);
-					Debug.DrawLine ((Vector3)box.node.GetVertex(2),(Vector3)box.node.GetVertex(0),Color.blue);
-#endif
-				}
-				return;
-			}
-			
-#if ASTARDEBUG
-			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMin),Color.white);
-			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMax),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-			Debug.DrawLine (new Vector3 (box.rect.xMin,0,box.rect.yMin),new Vector3 (box.rect.xMin,0,box.rect.yMax),Color.white);
-			Debug.DrawLine (new Vector3 (box.rect.xMax,0,box.rect.yMin),new Vector3 (box.rect.xMax,0,box.rect.yMax),Color.white);
-#endif
-			
-			//Search children
-			if (RectIntersectsCircle (box.c1.rect,p,radius)) {
-				SearchBoxCircle (box.c1,p, radius, constraint, ref nnInfo);
-			}
-			
-			if (RectIntersectsCircle (box.c2.rect,p,radius)) {
-				SearchBoxCircle (box.c2,p, radius, constraint, ref nnInfo);
-			}
-		}
-		
-		void SearchBox (BBTreeBox box, Vector3 p, NNConstraint constraint, ref NNInfo nnInfo) {//, int intendentLevel = 0) {
-			
-			if (box.node != null) {
-				//Leaf node
-				if (box.node.ContainsPoint ((Int3)p)) {
-					//Update the NNInfo
-					
-					if (nnInfo.node == null) {
-						nnInfo.node = box.node;
-					} else if (Mathf.Abs(((Vector3)box.node.position).y - p.y) < Mathf.Abs (((Vector3)nnInfo.node.position).y - p.y)) {
-						nnInfo.node = box.node;
-					}
-					if (constraint.Suitable (box.node)) {
-						if (nnInfo.constrainedNode == null) {
-							nnInfo.constrainedNode = box.node;
-						} else if (Mathf.Abs(box.node.position.y - p.y) < Mathf.Abs (nnInfo.constrainedNode.position.y - p.y)) {
-							nnInfo.constrainedNode = box.node;
-						}
-					}
-				}
-				return;
-			}
-			
-			//Search children
-			if (RectContains (box.c1.rect,p)) {
-				SearchBox (box.c1,p, constraint, ref nnInfo);
-			}
-			
-			if (RectContains (box.c2.rect,p)) {
-				SearchBox (box.c2,p, constraint, ref nnInfo);
-			}
-		}
-		
-		/** Inserts a mesh node in the tree */
-		public void Insert (MeshNode node) {
-			BBTreeBox box = new BBTreeBox (this,node);
-			
-			if (root == null) {
-				root = box;
-				return;
-			}
-			
-			BBTreeBox c = root;
-			while (true) {
-				
-				c.rect = ExpandToContain (c.rect,box.rect);
-				if (c.node != null) {
-					//Is Leaf
-					c.c1 = box;
-					BBTreeBox box2 = new BBTreeBox (this,c.node);
-					//Console.WriteLine ("Inserted "+box.node+", rect "+box.rect.ToString ());
-					c.c2 = box2;
-					
-					
-					c.node = null;
-					//c.rect = c.rect.
-					return;
-				} else {
-					float e1 = ExpansionRequired (c.c1.rect,box.rect);
-					float e2 = ExpansionRequired (c.c2.rect,box.rect);
-					
-					//Choose the rect requiring the least expansion to contain box.rect
-					if (e1 < e2) {
-						c = c.c1;
-					} else if (e2 < e1) {
-						c = c.c2;
-					} else {
-						//Equal, Choose the one with the smallest area
-						c = RectArea (c.c1.rect) < RectArea (c.c2.rect) ? c.c1 : c.c2;
-					}
-				}
-			}
-		}
-		
-
-		
-		void OnDrawGizmos (BBTreeBox box) {
-			if (box == null) {
-				return;
-			}
-			
-			Vector3 min = new Vector3 (box.rect.xMin,0,box.rect.yMin);
-			Vector3 max = new Vector3 (box.rect.xMax,0,box.rect.yMax);
-			
-			Vector3 center = (min+max)*0.5F;
-			Vector3 size = (max-center)*2;
-			
-			Gizmos.DrawCube (center,size);
-			
-			OnDrawGizmos (box.c1);
-			OnDrawGizmos (box.c2);
-		}
-
-		public void OnDrawGizmos () {
-			//Gizmos.color = new Color (1,1,1,0.01F);
-			//OnDrawGizmos (root);
-		}
-
-#endif
 
 		static bool NodeIntersectsCircle (MeshNode node, Vector3 p, float radius) {
-			
+
 			if (float.IsPositiveInfinity(radius)) return true;
 
 			/** \bug Is not correct on the Y axis */
@@ -1000,111 +688,40 @@ namespace Pathfinding {
 		/** Returns true if \a p is within \a radius from \a r.
 		 * Correctly handles cases where \a radius is positive infinity.
 		  */
-		static bool RectIntersectsCircle (Rect r, Vector3 p, float radius) {
-			
+		static bool RectIntersectsCircle (IntRect r, Vector3 p, float radius) {
+
 			if (float.IsPositiveInfinity(radius)) return true;
-			
+
 			Vector3 po = p;
-			p.x = Math.Max (p.x, r.xMin);
-			p.x = Math.Min (p.x, r.xMax);
-			p.z = Math.Max (p.z, r.yMin);
-			p.z = Math.Min (p.z, r.yMax);
+			p.x = Math.Max (p.x, r.xmin*Int3.PrecisionFactor);
+			p.x = Math.Min (p.x, r.xmax*Int3.PrecisionFactor);
+			p.z = Math.Max (p.z, r.ymin*Int3.PrecisionFactor);
+			p.z = Math.Min (p.z, r.ymax*Int3.PrecisionFactor);
 
 			// XZ squared magnitude comparison
 			return (p.x-po.x)*(p.x-po.x) + (p.z-po.z)*(p.z-po.z) < radius*radius;
 		}
-		
-		/** Returns if a rect contains the 3D point in XZ space */
-		static bool RectContains (Rect r, Vector3 p) {
-			return p.x >= r.xMin && p.x <= r.xMax && p.z >= r.yMin && p.z <= r.yMax;
-		}
-		
+
 		/** Returns the difference in area between \a r and \a r expanded to contain \a r2 */
-		static float ExpansionRequired (Rect r, Rect r2) {
-			float xMin = Math.Min (r.xMin,r2.xMin);
-			float xMax = Math.Max (r.xMax,r2.xMax);
-			float yMin = Math.Min (r.yMin,r2.yMin);
-			float yMax = Math.Max (r.yMax,r2.yMax);
-			
+		static int ExpansionRequired (IntRect r, IntRect r2) {
+			int xMin = Math.Min (r.xmin,r2.xmin);
+			int xMax = Math.Max (r.xmax,r2.xmax);
+			int yMin = Math.Min (r.ymin,r2.ymin);
+			int yMax = Math.Max (r.ymax,r2.ymax);
+
 			return (xMax-xMin)*(yMax-yMin)-RectArea (r);
 		}
-		
+
 		/** Returns a new rect which contains both \a r and \a r2 */
-		static Rect ExpandToContain (Rect r, Rect r2) {
-			float xMin = Math.Min (r.xMin,r2.xMin);
-			float xMax = Math.Max (r.xMax,r2.xMax);
-			float yMin = Math.Min (r.yMin,r2.yMin);
-			float yMax = Math.Max (r.yMax,r2.yMax);
-			
-			return Rect.MinMaxRect (xMin,yMin,xMax,yMax);
-		}
-		
-		/** Returns the area of a rect */
-		static float RectArea (Rect r) {
-			return r.width*r.height;
+		static IntRect ExpandToContain (IntRect r, IntRect r2) {
+			return IntRect.Union(r,r2);
 		}
 
-#if ASTAR_OLD_BBTREE
-		/** Writes the tree structure to stdout */
-		public void WriteTreeToConsole () {
-#if !NETFX_CORE || UNITY_EDITOR
-			Console.WriteLine ("Root "+(root.node != null ? root.node.ToString () : ""));
-#endif
-			root.WriteChildren (0);
-		}
-#else
-#endif
-	}
-	
-#if ASTAR_OLD_BBTREE
-	class BBTreeBox {
-		public Rect rect;
-		public MeshNode node;
-		
-		public BBTreeBox c1;
-		public BBTreeBox c2;
-		
-		public BBTreeBox (BBTree tree, MeshNode node) {
-			this.node = node;
-			Vector3 first = (Vector3)node.GetVertex(0);
-			Vector2 min = new Vector2(first.x,first.z);
-			Vector2 max = min;
-			
-			for (int i=1;i<node.GetVertexCount();i++) {
-				Vector3 p = (Vector3)node.GetVertex(i);
-				min.x = Mathf.Min (min.x,p.x);
-				min.y = Mathf.Min (min.y,p.z);
-				
-				max.x = Mathf.Max (max.x,p.x);
-				max.y = Mathf.Max (max.y,p.z);
-			}
-			
-			rect = Rect.MinMaxRect (min.x,min.y,max.x,max.y);
-		}
-		
-		public bool Contains (Vector3 p) {
-			return rect.Contains (p);
-		}
-		
-		public void WriteChildren (int level) {
-			for (int i=0;i<level;i++) {
-#if !NETFX_CORE || UNITY_EDITOR
-				Console.Write ("  ");
-#endif
-			}
-			if (node != null) {
-#if !NETFX_CORE || UNITY_EDITOR
-				Console.WriteLine ("Leaf ");//+triangle.ToString ());
-#endif
-			} else {
-#if !NETFX_CORE || UNITY_EDITOR
-				Console.WriteLine ("Box ");//+rect.ToString ());
-#endif
-				c1.WriteChildren (level+1);
-				c2.WriteChildren (level+1);
-			}
+		/** Returns the area of a rect */
+		static int RectArea (IntRect r) {
+			return r.Width*r.Height;
 		}
 	}
-#endif
-	
+
+
 }

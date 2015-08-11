@@ -1414,17 +1414,26 @@ namespace Pathfinding {
 						//If not we can test if the path from the current node to this one is a better one then the one already used
 						uint tmpCost = neighbourCosts[i];
 
-						if (pathNode.G+tmpCost+path.GetTraversalCost(other) < otherPN.G) {
-							//Debug.Log ("Path better from " + NodeIndex + " to " + otherPN.node.NodeIndex + " " + (pathNode.G+tmpCost+path.GetTraversalCost(other)) + " < " + otherPN.G);
+#if ASTAR_NO_TRAVERSAL_COST
+						if (pathNode.G + tmpCost < otherPN.G)
+#else
+						if (pathNode.G + tmpCost + path.GetTraversalCost(other) < otherPN.G)
+#endif
+						{
 							otherPN.cost = tmpCost;
 
 							otherPN.parent = pathNode;
 
 							other.UpdateRecursiveG (path,otherPN, handler);
 
+						}
 						//Or if the path from this node ("other") to the current ("current") is better
-						} else if (otherPN.G+tmpCost+path.GetTraversalCost (this) < pathNode.G) {
-							//Debug.Log ("Path better from " + otherPN.node.NodeIndex + " to " + NodeIndex + " " + (otherPN.G+tmpCost+path.GetTraversalCost (this)) + " < " + pathNode.G);
+#if ASTAR_NO_TRAVERSAL_COST
+						else if (otherPN.G+tmpCost < pathNode.G)
+#else
+						else if (otherPN.G+tmpCost+path.GetTraversalCost(this) < pathNode.G)
+#endif
+						{
 							pathNode.parent = otherPN;
 							pathNode.cost = tmpCost;
 

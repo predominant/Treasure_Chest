@@ -281,7 +281,11 @@ yield return StartCoroutine (p.WaitForPath ());
 		}
 
 		public uint GetTraversalCost (GraphNode node) {
+#if ASTAR_NO_TRAVERSAL_COST
+			return 0;
+#else
 			unchecked { return GetTagPenalty ((int)node.Tag ) + node.Penalty ; }
+#endif
 		}
 
 		/** May be called by graph nodes to get a special cost for some connections.
@@ -601,13 +605,13 @@ public override void Recycle () {
 			while (c != null) {
 				c = c.parent;
 				count++;
-				if (count > 1024) {
-					Debug.LogWarning ("Inifinity loop? >1024 node path. Remove this message if you really have that long paths (Path.cs, Trace function)");
+				if (count > 2048) {
+					Debug.LogWarning ("Infinite loop? >2048 node path. Remove this message if you really have that long paths (Path.cs, Trace method)");
 					break;
 				}
 			}
 
-			//Ensure capacities for lists
+			// Ensure capacities for lists
 			AstarProfiler.StartProfile ("Check List Capacities");
 
 			if (path.Capacity < count) path.Capacity = count;

@@ -1846,7 +1846,7 @@ MonoBehaviour:
     pivotPointRoot: {fileID: 0}
     spreadOutCount: 1
   showGraphs: 1
-  lastUniqueAreaIndex: 0
+  lastUniqueAreaIndex: 44
 --- !u!196 &115
 NavMeshSettings:
   serializedVersion: 2

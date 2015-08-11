@@ -1,4 +1,3 @@
-#define ASTAR_CONSTANT_PENALTY
 using UnityEngine;
 using System.Collections.Generic;
 using Pathfinding;
@@ -162,10 +161,10 @@ namespace Pathfinding {
 #endregion
 
 		public void UpdateG (Path path, PathNode pathNode) {
-#if ASTAR_CONSTANT_PENALTY
-			pathNode.G = pathNode.parent.G + pathNode.cost + path.GetTraversalCost(this);
-#else
+#if ASTAR_NO_TRAVERSAL_COST
 			pathNode.G = pathNode.parent.G + pathNode.cost;
+#else
+			pathNode.G = pathNode.parent.G + pathNode.cost + path.GetTraversalCost(this);
 #endif
 		}
 
