@@ -15,6 +15,10 @@ public static class ProfileManager
         set { m_State = value; if (null != OnStateChanged) { OnStateChanged(value); } }
         get { return m_State; }
     }
+
+    public static bool IsLoggedIn { get { return State == ProviderState.LoggedIn; } }
+
+    public static Provider CurrentProvider { get { return m_CurrentProvider; } }
     #endregion
 
     #region Enums
