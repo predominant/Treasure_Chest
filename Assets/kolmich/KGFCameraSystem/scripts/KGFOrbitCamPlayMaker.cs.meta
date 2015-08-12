@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: d77a50d18da05423aa5c848730f951c5
+labels:
+- kgf
+- camera
+- KGFCameraSystem
+- orbiter
+- orbitcamera
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
