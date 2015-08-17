@@ -1,12 +1,14 @@
 fileFormatVersion: 2
 guid: e11e906f054fee948ba780250da86e75
+timeCreated: 1439793871
+licenseType: Pro
 SubstanceImporter:
   serializedVersion: 5
   materialInstances:
   - serializedVersion: 16
     name: New_Graph
     prototypeName: New_Graph
-    shader: {fileID: 4, guid: 0000000000000000f000000000000000, type: 0}
+    shader: {fileID: 10703, guid: 0000000000000000f000000000000000, type: 0}
     shaderKeywords: 
     renderQueue: -1
     lightmapFlags: 5
@@ -227,14 +229,6 @@ SubstanceImporter:
         data:
           first:
             name: _MainTex
-          second:
-            texture: {fileID: 1215447233, guid: 00000000000000000000000000000000,
-              type: 0}
-            scale: {x: 1, y: 1}
-            offset: {x: 0, y: 0}
-        data:
-          first:
-            name: _BumpMap
           second:
             texture: {instanceID: 0}
             scale: {x: 1, y: 1}
