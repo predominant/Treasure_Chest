@@ -2,12 +2,17 @@
 using System.Collections;
 using Soomla.Profile;
 using Soomla;
+using GameSparks.Core;
+
 
 public class LoginMenuController : MonoBehaviour
 {
     public GameObject m_OfflinePanel = null;
     public GameObject m_WaitingPanel = null;
     public GameObject m_OnlinePanel = null;
+
+    [HideInInspector]
+    public static bool GSReconnecting = false;
 
     private bool m_ProfileReady = false;
     private bool m_UIHidden = false;
@@ -18,7 +23,9 @@ public class LoginMenuController : MonoBehaviour
         m_OnlinePanel.SetActive(false);
         m_WaitingPanel.SetActive(false);
         m_OfflinePanel.SetActive(true);
+
         ProfileManager.OnStateChanged += ProfileManager_OnStateChanged;
+        GS.GameSparksAvailable += GS_OnStateChanged;
 
         if( ProfileManager.IsLoggedIn )
         {
@@ -34,6 +41,24 @@ public class LoginMenuController : MonoBehaviour
     }
     #endregion
 
+    #region GS Event Handlers
+    protected void GS_OnStateChanged(bool isAvailable)
+    {
+        GSReconnecting = false;
+
+        if( !isAvailable )
+           GS_Reconnect_Cor();
+    }
+
+    protected IEnumerable GS_Reconnect_Cor()
+    {
+        yield return new WaitForSeconds(1);
+        GSReconnecting = true;
+        GS.Reconnect();
+    }
+    
+    #endregion
+
     #region Profile Event Handlers
     void ProfileManager_OnStateChanged(ProfileManager.ProviderState _state)
     {
@@ -43,6 +68,7 @@ public class LoginMenuController : MonoBehaviour
                 m_OnlinePanel.SetActive(true);
                 m_WaitingPanel.SetActive(false);
                 m_OfflinePanel.SetActive(false);
+
                 break;
 
             case ProfileManager.ProviderState.LoggingIn:

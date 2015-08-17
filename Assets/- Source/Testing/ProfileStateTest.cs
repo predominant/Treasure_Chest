@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using Soomla.Profile;
+using GameSparks.Core;
 
 public class ProfileStateTest : MonoBehaviour
 {
@@ -9,34 +10,40 @@ public class ProfileStateTest : MonoBehaviour
 
     void Start()
     {
-        //try
-        //{
-        //    PackageInfo info = PackageManger.getPackageManager().getPackageInfo(
-        //            "com.example.packagename", 
-        //            PackageManager.GET_SIGNATURES);
-            
-        //    for (Signature signature : info.signatures)
-        //    {
-        //        MessageDigest md = MessageDigest.getInstance("SHA");
-        //        md.update(signature.toByteArray());
-        //        Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-        //    }
-        //}
-        //catch (NameNotFoundException e)
-        //{
-        //}
-        //catch (NoSuchAlgorithmException e)
-        //{
-        //}
     }
 
     void Update()
     {
-        if (!FB.IsInitialized)
-            m_Text.text = "[Facebook] Not Initialized";
-        else if (SoomlaProfile.IsLoggedIn(Provider.FACEBOOK))
-            m_Text.text = "[Facebook] Logged In";
+        string profileState = string.Empty;
+        if( !GS.Available )
+        {
+            if( LoginMenuController.GSReconnecting )
+                profileState = "Server Reconnecting";
+            else
+                profileState = "Server Unavailable";
+        }
         else
-            m_Text.text = "[Facebook] Logged Out";
+        {
+            switch (ProfileManager.State)
+            {
+                case ProfileManager.ProviderState.LoggedIn:
+                    profileState = "Provider logged in";
+                    break;
+                case ProfileManager.ProviderState.LoggingIn:
+                    profileState = "Provider logging in";
+                    break;
+                case ProfileManager.ProviderState.LoggedOut:
+                    profileState = "Provider logged out";
+                    break;
+                case ProfileManager.ProviderState.LoggingOut:
+                    profileState = "Provider logging out";
+                    break;
+                default:
+                    profileState = "Unknown";
+                    break;
+            }
+        }
+
+        m_Text.text = profileState;
     }
 }
