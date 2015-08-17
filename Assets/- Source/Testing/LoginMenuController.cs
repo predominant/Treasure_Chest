@@ -3,6 +3,8 @@ using System.Collections;
 using Soomla.Profile;
 using Soomla;
 using GameSparks.Core;
+using GameSparks.Api.Requests;
+using System.Collections.Generic;
 
 
 public class LoginMenuController : MonoBehaviour
@@ -68,6 +70,23 @@ public class LoginMenuController : MonoBehaviour
                 m_OnlinePanel.SetActive(true);
                 m_WaitingPanel.SetActive(false);
                 m_OfflinePanel.SetActive(false);
+
+                if( ProfileManager.CurrentProvider == Provider.FACEBOOK )
+                {
+                    new FacebookConnectRequest().SetAccessToken(FB.AccessToken).Send((response) =>
+                    {
+                        if (response.HasErrors)
+                            Debug.LogError("[GS] Facebook auth error: " + response.Errors.ToString());
+                    });
+                }
+
+                else if( ProfileManager.CurrentProvider == Provider.GOOGLE )
+                {
+                }
+
+                else if( ProfileManager.CurrentProvider == Provider.TWITTER )
+                {
+                }
 
                 break;
 

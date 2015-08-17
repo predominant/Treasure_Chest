@@ -1,0 +1,11 @@
+PUT ALL FONT CREATOR SETTINGS HERE SO WE CAN RECREATE THE FONT ATLAS!!
+
+NewSansCond-Bold
+font size: 61
+font padding: 10
+optimum
+512x512
+use "chars" char file
+normal - 8
+DF 32
+get kerning pairs
