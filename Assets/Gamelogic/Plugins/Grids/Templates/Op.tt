@@ -1,0 +1,140 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(string name in AllGrids)  
+	{
+		string Operator = name + "Op";
+		string Point = name + "Point";
+		string ShapeInfo = name + "ShapeInfo";
+		string VectorPoint = BaseGrids[name] + "Point";
+		string GridName = name + "Grid";
+		
+#>
+	/**
+		Class for making <#=GridName#>s in different shapes.
+		
+		@link_constructing_grids
+			
+		@copyright Gamelogic.
+		@author Herman Tulleken
+		@since 1.0
+		@see @ref AbstractOp
+		@ingroup BuilderInterface
+	*/
+	public partial class <#=Operator#><TCell> : AbstractOp<ShapeStorageInfo<<#=Point#>>>
+	{
+		public <#=Operator#>(){}
+
+		public <#=Operator#>(
+			ShapeStorageInfo<<#= Point#>> leftShapeInfo,
+			Func<ShapeStorageInfo<<#= Point#>>, ShapeStorageInfo<<#= Point#>>, ShapeStorageInfo<<#= Point#>>> combineShapeInfo) :
+			base(leftShapeInfo, combineShapeInfo)
+		{}
+
+		/**
+			Use this function to create shapes to ensure they fit into memory.
+		
+			The test function can test shapes anywhere in space. If you specify the bottom corner 
+			(in terms of the storage rectangle), the shape is automatically translated in memory 
+			to fit, assuming memory width and height is big enough.
+
+			Strategy for implementing new shapes:
+				- First, determine the test function.
+				- Next, draw a storage rectangle that contains the shape.
+				- Determine the storgae rectangle width and height.
+				- Finally, determine the grid-space coordinate of the left bottom corner of the storage rectangle.
+		
+			Then define your function as follows:
+
+			\code{cs}
+			public <#=ShapeInfo#><TCell> MyShape()
+			{
+				Shape(stargeRectangleWidth, storageRectangleHeight, isInsideMyShape, storageRectangleBottomleft);
+			}
+			\endcode
+
+			\param width The widh of the storage rectangle
+			\param height The height of the storage rectangle
+			\param isInside A function that returns true if a passed point lies inside the shape being defined
+			\param bottomLeftCorner The grid-space coordinate of the bottom left corner of the storage rect.
+
+		*/
+		public <#=ShapeInfo#><TCell> Shape(int width, int height, Func<<#=Point#>, bool> isInside, <#=VectorPoint#> bottomLeftCorner)
+		{
+			var shapeInfo = MakeShapeStorageInfo<<#=Point#>>(width, height, x=>isInside(x + bottomLeftCorner));
+			return new <#=ShapeInfo#><TCell>(shapeInfo).Translate(bottomLeftCorner);
+		}
+
+		/**
+			The same as Shape with all parameters, but with bottomLeft Point set to  <#=Point#>.Zero.
+		*/
+		public <#=ShapeInfo#><TCell> Shape(int width, int height, Func<<#=Point#>, bool> isInside)
+		{
+			return Shape(width, height, isInside, <#=VectorPoint#>.Zero);
+		}
+
+		/**
+			Creates the grid in a shape that spans 
+			the entire storage rectangle of the given width and height.
+		*/
+		[ShapeMethod]
+		public <#=ShapeInfo#><TCell> Default(int width, int height)
+		{
+			var rawInfow = MakeShapeStorageInfo<<#=Point#>>(
+				width, 
+				height,
+				x => <#=GridName#><TCell>.DefaultContains(x, width, height));
+
+			return new <#=ShapeInfo#><TCell>(rawInfow);
+		}
+
+		/**
+			Makes a grid with a single cell that corresponds to the origin.
+		*/
+		[ShapeMethod]
+		public <#=ShapeInfo#><TCell> Single()
+		{
+			var rawInfow = MakeShapeStorageInfo<<#=Point#>>(
+				1, 
+				1,
+				x => x == <#=Point#>.Zero);
+
+			return new <#=ShapeInfo#><TCell>(rawInfow);
+		}
+
+		/**
+			Starts a compound shape operation.
+
+			Any shape that is defined in terms of other shape operations must use this method, and use Endgroup() to end the definition.
+
+				public static <#=ShapeInfo#><TCell> MyCustomShape(this <#=Operator#><TCell> op)
+				{
+					return 
+						BeginGroup()
+							.Shape1()
+							.Union()
+							.Shape2()
+						.EndGroup(op);
+				}
+
+			@since 1.1
+		*/
+		public <#=Operator#><TCell> BeginGroup()
+		{
+			return <#=GridName#><TCell>.BeginShape();
+		}
+	}
+<#
+	}
+#>
+}

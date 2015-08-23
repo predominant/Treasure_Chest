@@ -1,0 +1,249 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(string name in SplicedGrids)  
+	{
+		string baseName = BaseGrids[name];		
+		string Point = name + "Point";
+		string BasePoint = baseName + "Point";
+		
+#>
+
+	/**
+		@immutable
+	*/
+	[Serializable]
+	[Immutable]
+	public partial struct <#=Point#>  : 
+		ISplicedPoint<<#=Point#>, <#=BasePoint#>>,
+		ISplicedVectorPoint<<#=Point#>, <#=BasePoint#>>
+	{
+		#region Constants
+		public static readonly <#=Point#> Zero = new <#=Point#>(0, 0, 0);
+		#endregion
+
+		#region Fields
+		private readonly <#=BasePoint#> basePoint;
+		private readonly int index;
+		#endregion
+
+		#region Properties
+		public int X
+		{
+			get
+			{
+				return basePoint.X;
+			}
+		}
+
+		public int Y
+		{
+			get
+			{
+				return basePoint.Y;
+			}
+		}
+
+		public int I
+		{
+			get
+			{
+				return index;
+			}
+		}
+
+		public <#=BasePoint#> BasePoint
+		{
+			get
+			{
+				return basePoint;
+			}
+		}
+
+		public int SpliceIndex
+		{
+			get 
+			{
+				return index;
+			}
+		}
+
+		int IGridPoint<<#=Point#>>.SpliceCount
+		{	
+			get 
+			{
+				return SpliceCount; 
+			}
+		}
+		#endregion 
+
+		#region Construction
+		public <#=Point#>(int x, int y, int index) :
+			this(new <#=BasePoint#>(x, y), index)
+		{
+			basePoint = new <#=BasePoint#>(x, y);
+			this.index = index;
+		}
+
+		private <#=Point#>(<#=BasePoint#> basePoint, int index)
+		{
+			this.basePoint = basePoint;
+			this.index = index;
+		}
+		#endregion 
+
+		#region Arithmetic
+		public <#=Point#> Translate(<#=BasePoint#> other)
+		{
+			return new <#=Point#>(basePoint.Translate(other), index);
+		}
+
+		public <#=Point#> Negate()
+		{
+			return new <#=Point#>(basePoint.Negate(), index);
+		}
+
+		public <#=Point#> ScaleUp(int r)
+		{
+			return new <#=Point#>(basePoint.ScaleUp(r), index);
+		}
+
+		public <#=Point#> ScaleDown(int r)
+		{
+			return new <#=Point#>(basePoint.ScaleDown(r), index);
+		}
+
+		public <#=Point#> Subtract(<#=BasePoint#> other)
+		{
+			return new <#=Point#>(basePoint.Subtract(other), index);
+		}
+
+		public <#=Point#> MoveBy(<#=Point#> other)
+		{
+			return Translate(other.BasePoint).IncIndex(other.index);
+		}
+
+		public <#=Point#> MoveBackBy(<#=Point#> other)
+		{
+			return Translate(other.BasePoint.Negate()).DecIndex(other.index);
+		}
+		#endregion
+	
+		#region Index Operations
+		public <#=Point#> IncIndex(int n)
+		{
+			return new <#=Point#>(basePoint, Mathi.Mod(index + n, SpliceCount));
+		}
+	
+		public <#=Point#> DecIndex(int n)
+		{
+			return IncIndex(-n);
+		}
+	
+		public <#=Point#> InvertIndex()
+		{
+			return new <#=Point#>(basePoint, SpliceCount - index - 1);
+		}
+		#endregion
+
+		#region Equality
+		public bool Equals(<#=Point#> other)
+		{
+			return basePoint.Equals(other.BasePoint) && (index == other.I);
+		}
+	
+		public override bool Equals(object other)
+		{
+			if(other is <#=Point#>)
+			{
+				return Equals((<#=Point#>) other);
+			}
+			
+			return false;
+		}
+
+		override public int GetHashCode()
+		{
+			return basePoint.GetHashCode() ^ index;
+		}
+		#endregion
+
+		#region ToString
+		override public string ToString()
+		{
+			return string.Format("[({0}, {1}), {2}]", X, Y, I);
+		}
+		#endregion 
+
+		#region Operators
+		public static bool operator ==(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Equals(point2);
+		}
+
+		public static bool operator !=(<#=Point#> point1, <#=Point#> point2)
+		{
+			return !point1.Equals(point2);
+		}
+
+		public static <#=Point#> operator +(<#=Point#> point)
+		{
+			return point;
+		}
+
+		public static <#=Point#> operator -(<#=Point#> point)
+		{
+			return point.Negate();
+		}
+
+		public static <#=Point#> operator +(<#=Point#> point1, <#=BasePoint#> point2)
+		{
+			return point1.Translate(point2);
+		}
+
+		public static <#=Point#> operator -(<#=Point#> point1, <#=BasePoint#> point2)
+		{
+			return point1.Subtract(point2);
+		}
+
+		public static <#=Point#> operator *(<#=Point#> point, int n)
+		{
+			return point.ScaleUp(n);
+		}
+
+		public static <#=Point#> operator /(<#=Point#> point, int n)
+		{
+			return point.ScaleDown(n);
+		}
+		#endregion
+
+		#region Colorings
+		/**
+			Gives a coloring of the grid such that 
+			if a point p has color k, then all points
+			p + m[ux, 0 | 0] + n[vx, vy | 0] have the same color
+			for any integers a and b.
+
+			@since 1.7
+		*/
+		public int GetColor(int ux, int vx, int vy)
+		{
+			return BasePoint.GetColor(ux, vx, vy) * SpliceCount + I;
+		}
+		#endregion
+	}
+
+<#
+	}
+#>
+}

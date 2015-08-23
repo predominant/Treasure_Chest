@@ -1,0 +1,65 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+<#
+	foreach(string name in TriGrids)  
+	{
+		string Point = name + "Point";
+		string Grid = name + "Grid";
+		string HexagonWrapper = name + "HexagonWrapper";
+#>
+	/**
+		A wrapper that wraps tri points over a hexagon, similar to the 
+		way hex points are wrapped in this example:
+
+		http://www.redblobgames.com/grids/hexagons/
+		
+		@since 1.7
+	*/
+	public class <#=HexagonWrapper#> : IPointWrapper<<#=Point#>>
+	{
+		private readonly <#=Point#>[] wrappedPoints;
+		private readonly Func<<#=Point#>, int> colorFunc;
+
+		/**
+			@param n Must be positive
+		*/
+		public <#=HexagonWrapper#>(int side)
+		{
+			if (side <= 0)
+			{
+				throw new Exception("n Must be a positive integer.");
+			}
+
+			int colorCount = 3 * side * side;
+			colorFunc = x => x.GetColor(colorCount/side, side, side);
+
+			wrappedPoints = new <#=Point#>[colorCount * 2];
+			var grid = <#=Grid#><int>.Hexagon(side);
+
+			foreach (var point in grid)
+			{
+				int color = colorFunc(point);
+				wrappedPoints[color] = point;
+			}
+		}
+
+		public <#=Point#> Wrap(<#=Point#> point)
+		{
+			return wrappedPoints[colorFunc(point)];
+		}
+	}
+
+<#
+	}
+#>
+}

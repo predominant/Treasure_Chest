@@ -1,0 +1,100 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(var name in AllGrids)  
+	{
+		string VectorPoint = BaseGrids[name] + "Point";
+		string Operator = name + "Op";
+		string Point = name + "Point";
+		string Grid = name + "Grid";
+		string ShapeInfo = name + "ShapeInfo";
+		
+
+		string BaseClass;
+
+		if (IsSplicedGrid(name))
+		{
+			BaseClass = "AbstractSplicedShapeInfo";
+		}
+		else
+		{
+			BaseClass = "AbstractShapeInfo";
+		}
+#>
+
+	/**
+		Provides the implementation for <#=BaseClass#> to be used with <#=Grid#>.
+
+		@link_constructing_grids
+		@ingroup Scaffolding
+	*/
+	public class <#=ShapeInfo#><TCell> : <#=BaseClass#> <<#=ShapeInfo#><TCell>, <#=Grid#><TCell>, <#=Point#>, <#=VectorPoint#>, <#=Operator#><TCell>> 
+	{
+		public <#=ShapeInfo#>(ShapeStorageInfo<<#=Point#>> info):
+			base(info)
+		{
+		}
+
+		/**
+			Only call this method from within a <#=Operator#> method (usually, in client code, 
+			this will be in an extension).
+
+			@param op the operator on which this shape is defined.
+			@since 1.1
+		*/
+		public <#=ShapeInfo#><TCell> EndGroup(<#=Operator#><TCell> op)
+		{
+			var info = op.combineShapeInfo(op.leftShapeInfo, ShapeStorageStorageInfo);
+			return new <#=ShapeInfo#><TCell>(info);
+		}
+
+		protected override <#=VectorPoint#> MakePoint(int x, int y)
+		{
+			return new <#=VectorPoint#>(x, y);
+		}
+
+		protected override <#=Operator#><TCell> MakeOp(
+			ShapeStorageInfo<<#=Point#>> shapeInfo, 
+			Func<
+				ShapeStorageInfo<<#=Point#>>,
+				ShapeStorageInfo<<#=Point#>>,
+				ShapeStorageInfo<<#=Point#>>> combineInfo)
+		{
+			return new <#=Operator#><TCell>(shapeInfo,	combineInfo);
+		}
+
+		protected override <#=ShapeInfo#><TCell> MakeShapeInfo(
+			ShapeStorageInfo<<#=Point#>> shapeStorageInfo)
+		{
+			return new <#=ShapeInfo#><TCell>(shapeStorageInfo);
+		}
+
+		protected override <#=VectorPoint#> GridPointFromArrayPoint(ArrayPoint point)
+		{
+			return <#=Grid#><TCell>.GridPointFromArrayPoint(point);
+		}
+
+		protected override ArrayPoint ArrayPointFromGridPoint(<#=VectorPoint#> point)
+		{
+			return <#=Grid#><TCell>.ArrayPointFromGridPoint(point);
+		}
+
+		protected override <#=Grid#><TCell> MakeShape(int x, int y, Func<<#=Point#>, bool> isInside, <#=VectorPoint#> offset)
+		{
+			return new <#=Grid#><TCell>(x, y, isInside, offset);
+		}
+	}
+<#
+	}
+#>
+}

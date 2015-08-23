@@ -1,0 +1,108 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+using System;
+using System.Collections.Generic;
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(string name in UniformGrids)  
+	{
+		string Point = name + "Point";
+		string GridName = name + "Grid";
+		string ParallelogramWrapper = name + "ParallelogramWrapper"; 
+		string HorizontalWrapper = name + "HorizontalWrapper"; 
+		string VerticalWrapper = name + "VerticalWrapper"; 
+		
+#>
+	public partial class <#=GridName#><TCell>
+	{
+		#region Construction
+		public <#=GridName#>(
+			int width, 
+			int height, 
+			Func<<#=Point#>, bool> isInside, 
+			Func<<#=Point#>, <#=Point#>> gridPointTransform, 
+			Func<<#=Point#>, <#=Point#>> inverseGridPointTransform
+		):			
+			this(width, height, isInside, gridPointTransform, inverseGridPointTransform, <#=Point#>.MainDirections)
+		{}
+
+		public <#=GridName#>(
+			int width, 
+			int height, 
+			Func<<#=Point#>, bool> isInside, 
+			Func<<#=Point#>, <#=Point#>> gridPointTransform, 
+			Func<<#=Point#>, <#=Point#>> inverseGridPointTransform,
+			IEnumerable<<#=Point#>> neighborDirections
+		):			
+			base(width, height, isInside, gridPointTransform, inverseGridPointTransform, neighborDirections)
+		{}
+		#endregion
+
+		#region Shape Functions		
+		public static bool DefaultContains(<#=Point#> point, int width, int height)
+		{
+			ArrayPoint storagePoint = ArrayPointFromGridPoint(point);
+
+			return
+				storagePoint.X >= 0 &&
+				storagePoint.X < width &&
+				storagePoint.Y >= 0 &&
+				storagePoint.Y < height;
+		}
+		#endregion
+
+		#region Wrapped Grids
+		/**
+			Returns a grid wrapped along a parallelogram.
+
+			@since 1.7
+		*/
+		public static WrappedGrid<TCell, <#=Point#>> WrappedParallelogram(int width, int height)
+		{
+			var grid = Parallelogram(width, height);
+			var wrapper = new <#=ParallelogramWrapper#>(width, height);
+			var wrappedGrid = new WrappedGrid<TCell, <#=Point#>>(grid, wrapper);
+
+			return wrappedGrid;
+		}
+
+		/**
+			Returns a grid wrapped horizontally along a parallelogram.
+
+			@since 1.7
+		*/
+		public static WrappedGrid<TCell, <#=Point#>> HorizontallyWrappedParallelogram(int width, int height)
+		{
+			var grid = Parallelogram(width, height);
+			var wrapper = new <#=HorizontalWrapper#>(width);
+			var wrappedGrid = new WrappedGrid<TCell, <#=Point#>>(grid, wrapper);
+
+			return wrappedGrid;
+		}
+
+		/**
+			Returns a grid wrapped vertically along a parallelogram.
+
+			@since 1.7
+		*/
+		public static WrappedGrid<TCell, <#=Point#>> VerticallyWrappedParallelogram(int width, int height)
+		{
+			var grid = Parallelogram(width, height);
+			var wrapper = new <#=VerticalWrapper#>(height);
+			var wrappedGrid = new WrappedGrid<TCell, <#=Point#>>(grid, wrapper);
+
+			return wrappedGrid;
+		}
+		#endregion
+	}
+<#
+	}
+#>
+}

@@ -1,0 +1,89 @@
+﻿<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="System.Reflection" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Reflection" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="C:/Program Files (x86)/Unity/Editor/Data/Managed/UnityEngine.dll" #>
+
+<#@ assembly name="C:/Users/Herman Tulleken/Documents/Code/Grids/Library/ScriptAssemblies/Assembly-CSharp.dll" #> 
+
+<#@ import namespace="Gamelogic.Grids" #>
+
+<#@ include file="../TemplateFileManagerV2.1.ttinclude" #>
+<#@ include file="Helper.tt" #>
+
+<#	
+	var manager = TemplateFileManager.Create(this);
+#>
+<#
+	manager.StartNewFile("Grid.cs");
+#>
+<#@ include file="../Grid.tt" #>
+<#
+	manager.StartNewFile("HexAlgorithm.cs");
+#>
+<#@ include file="../HexAlgorithm.tt" #>
+<#
+	manager.StartNewFile("HexPoint.cs");
+#>
+<#@ include file="../HexPoint.tt" #>
+<#
+	manager.StartNewFile("Tri.cs");
+#>
+<#@ include file="../Tri.tt" #>
+<#
+	manager.StartNewFile("Op.cs");
+#>
+<#@ include file="../Op.tt" #>
+<#
+	manager.StartNewFile("Point.cs");
+#>
+<#@ include file="../Point.tt" #>
+<#
+	manager.StartNewFile("ShapeInfo.cs");
+#>
+<#@ include file="../ShapeInfo.tt" #>
+<#
+	manager.StartNewFile("SplicedGrid.cs");
+#>
+<#@ include file="../SplicedGrid.tt" #>
+<#
+	manager.StartNewFile("SplicedOp.cs");
+#>
+<#@ include file="../SplicedOp.tt" #>
+<#
+	manager.StartNewFile("SplicedPoint.cs");
+#>
+<#@ include file="../SplicedPoint.tt" #>
+<#
+	manager.StartNewFile("UniformGrid.cs");
+#>
+<#@ include file="../UniformGrid.tt" #>
+<#
+	manager.StartNewFile("VertexEdgeGrid.cs");
+#>
+<#@ include file="../VertexEdgeGrid.tt" #>
+<#
+	manager.StartNewFile("CompilerHints.cs");
+#>
+<#@ include file="../CompilerHints.tt" #>
+<#
+	manager.StartNewFile("CompilerHints_GL.cs");
+#>
+<#@ include file="../CompilerHints_GL.tt" #>
+<#
+	manager.StartNewFile("ShapeAbbreviations.cs");
+#>
+<#@ include file="../ShapeAbbreviations.tt"#>
+<#
+	manager.Process();
+#>
+<#+
+	bool IsSplicedGrid(string name)
+	{
+		return SplicedGrids.Contains(name);
+	}
+#>

@@ -1,0 +1,83 @@
+﻿<# 
+	/*
+		This template automatically generates static methods for the built-in shapes.
+
+		It introduces a circular dependency. To get this file to build:
+			- exclude the this file and the Examples folder from the project.
+			- unload the test project (GridTest)
+			- rebuild (or clean and build)
+			- re-include the above files
+			- load GridTest
+			- build
+	*/
+#>
+//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+<# 
+	for(int i = 0; i < GridTypes.Length; i++)  
+	{
+		Type type = GridTypes[i];
+		Type operatorType = OperatorTypes[i];
+
+		string GridName = type.Name.Remove(type.Name.IndexOf('`'));
+		string operatorName = operatorType.Name.Remove(operatorType.Name.IndexOf('`'));
+#>
+	public partial class <#=GridName#><TCell>
+	{
+<#
+		var members = operatorType.GetMembers();
+
+		foreach(var member in members)
+		{
+			if(Attribute.IsDefined(member, typeof(ShapeMethodAttribute)))
+			{
+				string methodName = member.Name;
+				string paramsDeclerationString = "";
+				string paramsCallString = "";
+
+				var parameters = ((MethodInfo) member).GetParameters();
+
+				foreach(var parameter in parameters)
+				{
+					paramsDeclerationString += parameter.ParameterType.Name;
+					paramsDeclerationString += " ";
+					paramsDeclerationString +=  parameter.Name;
+					paramsDeclerationString += ", ";
+
+					paramsCallString +=  parameter.Name;
+					paramsCallString += ", ";
+				}
+
+				if(parameters.Count() > 0)
+				{
+					paramsDeclerationString = paramsDeclerationString.Substring(0, paramsDeclerationString.Length-2);
+					paramsCallString = paramsCallString.Substring(0, paramsCallString.Length-2);
+				}
+#>
+		/**
+			\copydoc <#=operatorName#><TCell>::<#=methodName#>
+		*/
+		public static <#=GridName#><TCell> <#=methodName#>(<#=paramsDeclerationString#>)
+		{
+			return BeginShape().<#=methodName#>(<#=paramsCallString#>).EndShape();
+		}
+
+<#
+			}
+		}
+#>
+	}
+<#
+	}
+#>
+}

@@ -1,0 +1,62 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+
+namespace Gamelogic.Grids
+{
+
+<# 
+	foreach(string name in SplicedGrids)  
+	{
+		string Operator = name + "Op";
+		string Point = name + "Point";
+		string ShapeInfo = name + "ShapeInfo";
+		string VectorPoint = BaseGrids[name] + "Point";
+		string BaseShapeInfo = BaseGrids[name] + "ShapeInfo";
+		string BaseGrid = BaseGrids[name] + "Grid";
+		
+#>
+
+	public partial class <#=Operator#><TCell> : AbstractOp<ShapeStorageInfo<<#=Point#>>>
+	{
+		/**
+			This creates a shape described by a shape of the base point shape op.
+			Typicaly usage:
+			\code
+			[ShapeMethod]
+			public <#=ShapeInfo#><TCell> SomeShape(...)
+			{
+				return ShapeFromBase(<#=BaseGrid#><TCell>.BeginShape().SomeShape(...));
+			}
+			\endcode
+		*/
+		public <#=ShapeInfo#><TCell>ShapeFromBase(<#=BaseShapeInfo#><TCell> baseShapeInfo)
+		{
+			ShapeStorageInfo<<#=VectorPoint#>> storageInfo = baseShapeInfo.ShapeStorageStorageInfo;
+			var storageRect = storageInfo.storageRect;
+			Func<<#=Point#>, bool> isInside = x => storageInfo.contains(x.BasePoint);
+			var shapeInfo = MakeShapeStorageInfo<<#=Point#>>(storageRect, isInside);
+			return new <#=ShapeInfo#><TCell>(shapeInfo); 
+		}
+
+		[ShapeMethod]
+		public <#=ShapeInfo#><TCell> SingleGroup()
+		{
+			var rawInfow = MakeShapeStorageInfo<<#=Point#>>(
+				1, 
+				1,
+				x => x.BasePoint == <#=VectorPoint#>.Zero);
+
+			return new <#=ShapeInfo#><TCell>(rawInfow);
+		}
+	}
+<#
+	}
+#>
+}

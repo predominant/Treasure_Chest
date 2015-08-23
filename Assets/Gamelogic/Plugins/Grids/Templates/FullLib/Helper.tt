@@ -1,0 +1,146 @@
+<#+
+	string[] AllGrids = 
+	{
+		"Rect", 
+		"Diamond", 
+		"PointyHex", 
+		"FlatHex", 
+		"PointyTri", 
+		"FlatTri", 
+		"PointyRhomb", 
+		"FlatRhomb",
+		"Cairo",
+		//"Line",
+		//"MPointyTri"
+	};
+
+	string[] HexGrids = 
+	{
+		"PointyHex",
+		"FlatHex"
+	};
+
+	string[] TriGrids = 
+	{
+		"PointyTri",
+		"FlatTri"
+	};
+
+	string[] UniformGrids = 
+	{
+		"Rect", 
+		"Diamond", 
+		"PointyHex", 
+		"FlatHex",
+		//"Line"
+		//"MPointyTri"
+	};
+
+	string[] SplicedGrids = 
+	{
+		"FlatTri", 
+		"PointyTri", 
+		"FlatRhomb", 
+		"PointyRhomb", 
+		"Cairo",
+		//"SnubSquare"
+	};	
+
+	Dictionary<string, string> BaseGrids = new Dictionary<string, string>()
+	{
+		{ "Rect", "Rect"},
+		{ "Diamond", "Diamond"},
+		{ "PointyHex", "PointyHex"},
+		{ "FlatHex", "FlatHex"},
+		{ "FlatTri", "PointyHex"},
+		{ "PointyTri", "FlatHex"},
+		{ "FlatRhomb", "FlatHex"},
+		{ "PointyRhomb", "PointyHex"},
+		{ "Cairo", "PointyHex"},
+		//{ "Line", "Line"},
+
+		//{ "MPointyTri", "MPointyTri"}
+		//{ "SnubSquare", "Rect"}
+	};
+
+	string[] GridsWithVertexGrids = 
+	{
+		"Rect",
+		"Diamond",
+		"PointyHex",
+		"FlatHex",
+		"FlatTri",
+		"PointyTri",
+	};
+
+	string[] GridsWithEdgeGrids = 
+	{
+		"Rect",
+		"Diamond",
+		"PointyHex",
+		"FlatHex",
+		"FlatTri",
+		"PointyTri",
+	};
+
+	Dictionary<string, string> VertexGrids = new Dictionary<string, string>()
+	{
+		{ "Rect", "Rect"},
+		{ "Diamond", "Diamond"},
+		{ "PointyHex", "FlatTri"},
+		{ "FlatHex", "PointyTri"},
+		{ "FlatTri", "PointyHex"},
+		{ "PointyTri", "FlatHex"},
+	};
+
+	Dictionary<string, string> EdgeGrids = new Dictionary<string, string>()
+	{
+		{ "Rect", "Diamond"},
+		{ "Diamond", "Rect"},
+		{ "PointyHex", "PointyRhomb"},
+		{ "FlatHex", "FlatRhomb"},
+		{ "FlatTri", "PointyRhomb"},
+		{ "PointyTri", "FlatRhomb"},
+	};
+
+	Dictionary<string, string[]>
+		Directions = new Dictionary<string, string[]>()
+	{
+		{"PointyHex", new[] {"East", "NorthEast", "NorthWest", "West", "SouthWest", "SouthEast"}},
+		{"FlatHex", new[] {"North", "NorthWest", "SouthWest", "South", "SouthEast", "NorthEast"}}
+	};
+	
+	Type[] GridTypes = 
+	{
+		typeof(RectGrid<int>).GetGenericTypeDefinition(),
+		typeof(DiamondGrid<int>).GetGenericTypeDefinition(),		
+		typeof(PointyHexGrid<int>).GetGenericTypeDefinition(),
+		typeof(FlatHexGrid<int>).GetGenericTypeDefinition(),	
+
+		typeof(PointyTriGrid<int>).GetGenericTypeDefinition(),
+		typeof(FlatTriGrid<int>).GetGenericTypeDefinition(),
+		typeof(PointyRhombGrid<int>).GetGenericTypeDefinition(),
+		typeof(FlatRhombGrid<int>).GetGenericTypeDefinition(), 
+		typeof(CairoGrid<int>).GetGenericTypeDefinition(),
+		typeof(LineGrid<int>).GetGenericTypeDefinition(),
+	//	typeof(MPointyTriGrid<int>).GetGenericTypeDefinition(),
+	//	typeof(SnubSquareGrid<int>).GetGenericTypeDefinition() 
+	};
+
+	Type[] OperatorTypes = 
+	{
+		typeof(RectOp<int>).GetGenericTypeDefinition(),
+		typeof(DiamondOp<int>).GetGenericTypeDefinition(),		
+		typeof(PointyHexOp<int>).GetGenericTypeDefinition(),
+		typeof(FlatHexOp<int>).GetGenericTypeDefinition(),	
+
+		typeof(PointyTriOp<int>).GetGenericTypeDefinition(),
+		typeof(FlatTriOp<int>).GetGenericTypeDefinition(),
+		typeof(PointyRhombOp<int>).GetGenericTypeDefinition(),
+		typeof(FlatRhombOp<int>).GetGenericTypeDefinition(),
+		typeof(CairoOp<int>).GetGenericTypeDefinition(),
+		typeof(LineOp<int>).GetGenericTypeDefinition(),
+	//	typeof(MPointyTriOp<int>).GetGenericTypeDefinition(),
+	//	typeof(SnubSquareOp<int>).GetGenericTypeDefinition()
+	};
+#>

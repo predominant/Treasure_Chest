@@ -1,0 +1,125 @@
+﻿<#
+string[] Cells =
+{
+	"TileCell",
+	"SpriteCell",
+	"UVCell",
+	"MeshTileCell"
+};
+#>
+//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Gamelogic.Grids
+{
+	/**
+		Compiler hints for our examples.
+
+		@since 1.8
+	*/
+	public static class __CompilerHintsGL
+	{
+<# 
+	foreach(var cell in Cells) 
+	{
+#>
+<#
+	foreach(var gridType in UniformGrids)
+	{
+		var baseGrid = BaseGrids[gridType];
+#>
+		public static bool __CompilerHint__<#=gridType#>__<#=cell#>()
+		{
+			return __CompilerHint1__<#=gridType#>__<#=cell#>() && __CompilerHint2__<#=gridType#>__<#=cell#>();
+		}
+
+		public static bool __CompilerHint1__<#=gridType#>__<#=cell#>()
+		{
+			var grid = new <#=baseGrid#>Grid<<#=cell#>[]>(1, 1);
+
+			foreach(var point in grid) { grid[point] = new <#=cell#>[1]; } 
+
+			var shapeStorageInfo = new ShapeStorageInfo<<#=gridType#>Point>(new IntRect(), p => true);
+			var shapeInfo = new <#=gridType#>ShapeInfo<<#=cell#>>(shapeStorageInfo);
+
+			return grid[grid.First()][0] == null || shapeInfo.Translate(<#=baseGrid#>Point.Zero) != null;
+		}
+
+		public static bool __CompilerHint2__<#=gridType#>__<#=cell#>()
+		{
+			//Ensures abstract super classes for base grids gets created
+			var grid = new <#=gridType#>Grid<<#=cell#>>(1, 1, p => p == <#=gridType#>Point.Zero, x => x, x => x, new List<<#=gridType#>Point>());
+
+			//Ensures shape infpo classes get created
+			var shapeStorageInfo = new ShapeStorageInfo<<#=gridType#>Point>(new IntRect(), p => true);
+			var shapeInfo = new <#=gridType#>ShapeInfo<<#=cell#>>(shapeStorageInfo);
+
+			return grid[grid.First()] == null || shapeInfo.Translate(<#=gridType#>Point.Zero) != null;
+		}
+<#
+	}
+	foreach(var gridType in SplicedGrids)
+	{
+		var baseGrid = BaseGrids[gridType];
+#>
+		public static bool __CompilerHint__<#=gridType#>__<#=cell#>()
+		{
+			var grid1 = new <#=baseGrid#>Grid<<#=cell#>[]>(1, 1);
+
+			foreach(var point in grid1)	{ grid1[point] = new <#=cell#>[1]; } 
+
+			var grid2 = new <#=gridType#>Grid<<#=cell#>>(1, 1);
+
+			foreach(var point in grid2)	{ grid2[point] = null; } 
+
+			var shapeStorageInfo = new ShapeStorageInfo<<#=gridType#>Point>(new IntRect(), p => true);
+			var shapeInfo = new <#=gridType#>ShapeInfo<<#=cell#>>(shapeStorageInfo);
+
+			return grid1[grid1.First()][0] == null || grid2[grid2.First()] == null || shapeInfo.IncIndex(0) != null;
+		}
+<#
+	}
+#>
+<#
+	}
+#>
+		public static bool CallAll__()
+		{
+<# 
+	foreach(var cell in Cells) 
+	{
+#>
+<#
+	foreach(var gridType in UniformGrids)
+	{
+
+		var baseGrid = BaseGrids[gridType];
+#>
+			if(!__CompilerHint__<#=gridType#>__<#=cell#>()) return false;
+<#
+	}
+
+	foreach(var gridType in SplicedGrids)
+	{
+		var baseGrid = BaseGrids[gridType];
+#>
+			if(!__CompilerHint__<#=gridType#>__<#=cell#>()) return false;
+<#
+	}
+#>
+<#
+	}
+#>
+			return true;
+
+		}
+	}
+}

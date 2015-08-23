@@ -1,0 +1,59 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System.Linq;
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(string name in GridsWithVertexGrids)  
+	{
+		string vertexName = VertexGrids[name];
+		string edgeName = EdgeGrids[name];
+
+		string Point = name + "Point";
+		string GridName = name + "Grid";
+
+		string VertexGrid = vertexName + "Grid";
+		string VertexPoint = vertexName + "Point";
+
+		string EdgeGrid = edgeName + "Grid";
+		string EdgePoint = edgeName + "Point";
+
+		string BasePoint = BaseGrids[name] + "Point";
+		string VertexBasePoint = BaseGrids[vertexName] + "Point";
+#>
+	public partial class <#=GridName#><TCell> :
+		ISupportsVertexGrid<<#=VertexPoint#>>, 
+		ISupportsEdgeGrid<<#=EdgePoint#>>
+	{
+		/**
+			A test function that returns true if the point for which the given 
+			vertexPoint is a vertex, is inside this grid.
+		*/
+		private bool IsInsideVertexGrid(<#=VertexPoint#> vertexPoint)
+		{
+			var faces = (vertexPoint as IVertex<<#=Point#>>).GetVertexFaces();
+			return faces.Any(Contains);
+		}
+
+		/**
+			A test function that returns true if the point for which the given 
+			vertexPoint is a vertex, is inside this grid.
+		*/
+		private bool IsInsideEdgeGrid(<#=EdgePoint#> edgePoint)
+		{		
+			var faces = (edgePoint as IEdge<<#=Point#>>).GetEdgeFaces();
+			return faces.Any(Contains);
+		}
+	}
+	
+<#
+	}
+#>
+}

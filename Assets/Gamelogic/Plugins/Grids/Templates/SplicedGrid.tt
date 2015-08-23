@@ -1,0 +1,71 @@
+﻿//SplicedGrid.tt
+//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+using System;
+using System.Collections.Generic;
+
+namespace Gamelogic.Grids
+{
+
+<# 
+	foreach(string name in SplicedGrids)  
+	{
+		string vector = BaseGrids[name];
+
+		string Point = name + "Point";
+		string VectorPoint = vector + "Point";
+		string GridName = name + "Grid";
+		
+		
+#>
+
+	public partial class <#=GridName#><TCell>
+	{
+		public <#=GridName#>(int width, int height, Func<<#=Point#>, bool> isInside, <#=VectorPoint#> offset) :
+			this(width, height, isInside, x => x.Translate(offset), x => x.Translate(offset.Negate()))
+		{}
+
+		public <#=GridName#>(
+			int width, 
+			int height, 
+			Func<<#=Point#>, bool> isInside, 
+			Func<<#=Point#>, <#=Point#>> gridPointTransform, 
+			Func<<#=Point#>, <#=Point#>> inverseGridPointTransform) :
+
+			this(width, height, isInside, gridPointTransform, inverseGridPointTransform, <#=Point#>.MainDirections)
+		{}
+
+		public <#=GridName#>(
+			int width, 
+			int height, 
+			Func<<#=Point#>, bool> isInside, 
+			Func<<#=Point#>, <#=Point#>> gridPointTransform, 
+			Func<<#=Point#>, <#=Point#>> inverseGridPointTransform,
+			IEnumerable<<#=Point#>>[] neighborDirections) :
+
+			base(width, height, <#=Point#>.SpliceCount, isInside, gridPointTransform, inverseGridPointTransform, neighborDirections)
+		{}
+
+
+
+		public static bool DefaultContains(<#=Point#> point, int width, int height)
+		{
+			ArrayPoint storagePoint = ArrayPointFromGridPoint(point.BasePoint);
+
+			return
+				storagePoint.X >= 0 &&
+				storagePoint.X < width &&
+				storagePoint.Y >= 0 &&
+				storagePoint.Y < height;
+		}
+	}
+<#
+	}
+#>
+}

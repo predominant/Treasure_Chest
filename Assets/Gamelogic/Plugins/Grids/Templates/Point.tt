@@ -1,0 +1,468 @@
+﻿//----------------------------------------------//
+// Gamelogic Grids                              //
+// http://www.gamelogic.co.za                   //
+// Copyright (c) 2013 Gamelogic (Pty) Ltd       //
+//----------------------------------------------//
+
+// Auto-generated File
+
+namespace Gamelogic.Grids
+{
+<# 
+	foreach(var name in UniformGrids)  
+	{
+		string Operator = name + "Op";
+		string Point = name + "Point";
+		string ParallelogramWrapper = name + "ParallelogramWrapper"; 
+		string HorizontalWrapper = name + "HorizontalWrapper"; 
+		string VerticalWrapper = name + "VerticalWrapper"; 
+		
+#>
+	public partial struct <#=Point#>
+	{
+		#region Constants
+		/**
+			The zero point (0, 0).
+		*/
+		public static readonly <#=Point#> Zero = new <#=Point#>(0, 0);
+		#endregion
+
+		#region Fields
+		//private readonly VectorPoint vector;
+		private readonly int x;
+		private readonly int y;
+		#endregion
+
+		#region Properties
+		/** 
+			The x-coordinate of this point.
+		*/
+		public int X
+		{
+			get
+			{
+				return x;
+			}
+		}
+
+		/**
+			The y-coordinate of this point.
+		*/
+		public int Y
+		{
+			get
+			{
+				return y;
+			}
+		}
+
+		public int SpliceIndex
+		{
+			get 
+			{
+				return 0;
+			}
+		}
+
+		public int SpliceCount
+		{	
+			get 
+			{
+				return 1; 
+			}
+		}
+
+		/**	
+			A Uniform point's base point is simply the point itself.
+			Makes it easier to implement generic algorithms.
+			
+			@since 1.1
+		*/
+		public <#=Point#> BasePoint
+		{
+			get
+			{
+				return this;
+			}
+		}
+		#endregion
+
+		#region Construction
+		/**
+			Constructs a new <#=Point#> with the given coordinates.
+		*/
+		public <#=Point#>(int x, int y):
+			this(new VectorPoint(x, y))
+		{
+		}
+	
+		/**
+			Constructs a new <#=Point#> with the same coordinates as the given VectorPoint.
+		*/
+		private <#=Point#>(VectorPoint vector)
+		{
+			x = vector.X;
+			y = vector.Y;
+		}
+		#endregion
+
+		#region Distance
+		/**
+			The lattice distance from this point to the other.
+		*/
+		public int DistanceFrom(<#=Point#> other)
+		{
+			return Subtract(other).Magnitude();
+		}
+		#endregion
+
+		#region Equality
+		public bool Equals(<#=Point#> other)
+		{
+			bool areEqual = (x == other.X) && (y == other.Y);
+			return areEqual;
+		}
+
+		public override bool Equals (object other)
+		{
+			if(other.GetType() != typeof(<#=Point#>))
+			{
+				return false;
+			}
+
+			var point = (<#=Point#>) other;
+			return Equals(point);
+		}
+	
+		public override int GetHashCode ()
+		{
+			return x ^ y;
+		}	
+		#endregion
+
+		#region Arithmetic
+		/**
+			This is a norm defined on the point, such that `p1.Difference(p2).Abs()` is equal to 
+			`p1.DistanceFrom(p2)`.
+		*/
+		public <#=Point#> Translate(<#=Point#> translation)
+		{
+			return new <#=Point#>(x + translation.X, y + translation.Y);
+		}
+
+		public <#=Point#> Negate()
+		{
+			return new <#=Point#>(-x, -y);
+		}
+
+		public <#=Point#> ScaleDown(int r)
+		{
+			return new <#=Point#>(Mathi.Div(x, r), Mathi.Div(y, r));
+		}
+
+		public <#=Point#> ScaleUp(int r)
+		{
+			return new <#=Point#>(x * r, y * r);
+		}
+
+		/**
+			Subtracts the other point from this point, and returns the result.
+		*/
+		public <#=Point#> Subtract(<#=Point#> other)
+		{
+			return new <#=Point#>(x - other.X, y - other.Y);
+		}
+
+		public <#=Point#> MoveBy(<#=Point#> translation)
+		{
+			return Translate(translation);
+		}
+
+		public <#=Point#> MoveBackBy(<#=Point#> translation)
+		{
+			return Translate(translation.Negate());
+		}
+
+		/**
+			@version1_7
+		*/
+		public int Dot(<#=Point#> other)
+		{
+			return x * other.X + y * other.Y;
+		}
+
+		/**
+			@version1_7
+		*/
+		public int PerpDot(<#=Point#> other)
+		{
+			return x * other.Y - y * other.x;
+		}
+
+		/**
+			@version1_10
+		*/
+		public <#=Point#> Perp()
+		{
+			return new <#=Point#>(-y, x);
+		}
+
+		/**
+			Gives a new point that represents the 
+			reminder when the first point is divided
+			by the second point	component-wise. The
+			division is integer division.
+
+			@since 1.6 (Rect)
+			@since 1.7 (other)
+		*/
+		public <#=Point#> Mod(<#=Point#> otherPoint)
+		{
+			var x = Mathi.Mod(X, otherPoint.X);
+			var y = Mathi.Mod(Y, otherPoint.Y);
+
+			return new <#=Point#>(x, y);
+		}
+
+		/**
+			Gives a new point that represents the 
+			first point divided by the second point
+			component-wise. The division is integer
+			division.
+
+			@since 1.6 (Rect)
+			@since 1.7 (other)
+		*/
+		public <#=Point#> Div(<#=Point#> otherPoint)
+		{
+			var x = Mathi.Div(X, otherPoint.X);
+			var y = Mathi.Div(Y, otherPoint.Y);
+
+			return new <#=Point#>(x, y);
+		}
+
+		/**
+			Gives a new point that represents the 
+			first point multiplied by the second point
+			component-wise. 
+
+			@since 1.6 (Rect)
+			@since 1.7 (other)
+		*/
+		public <#=Point#> Mul(<#=Point#> otherPoint)
+		{
+			var x = X * otherPoint.X;
+			var y = Y * otherPoint.Y;
+
+			return new <#=Point#>(x, y);
+		}
+		#endregion 
+
+		#region Utility
+		override public string ToString()
+		{
+			return "(" + x + ", " + y + ")";
+		}
+		#endregion
+
+		#region Operators
+		public static bool operator ==(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Equals(point2);
+		}
+
+		public static bool operator !=(<#=Point#> point1, <#=Point#> point2)
+		{
+			return !point1.Equals(point2);
+		}
+
+		public static <#=Point#> operator +(<#=Point#> point)
+		{
+			return point;
+		}
+
+		public static <#=Point#> operator -(<#=Point#> point)
+		{
+			return point.Negate();
+		}
+
+		public static <#=Point#> operator +(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Translate(point2);
+		}
+
+		public static <#=Point#> operator -(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Subtract(point2);
+		}
+
+		public static <#=Point#> operator *(<#=Point#> point, int n)
+		{
+			return point.ScaleUp(n);
+		}
+
+		public static <#=Point#> operator /(<#=Point#> point, int n)
+		{
+			return point.ScaleDown(n);
+		}
+
+		public static <#=Point#> operator *(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Mul(point2);
+		}
+
+		public static <#=Point#> operator /(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Div(point2);
+		}
+
+		public static <#=Point#> operator %(<#=Point#> point1, <#=Point#> point2)
+		{
+			return point1.Mod(point2);
+		}
+
+		#endregion
+
+		#region Colorings
+		/**
+			Gives a coloring of the grid such that 
+			if a point p has color k, then all points
+			p + m[ux, 0] + n[vx, vy] have the same color
+			for any integers a and b.
+
+			More information anout grid colorings:
+			http://gamelogic.co.za/2013/12/18/what-are-grid-colorings/
+
+			@since 1.7
+		*/
+		public int __GetColor__ReferenceImplementation(int ux, int vx, int vy)
+		{
+			var u = new <#=Point#>(ux, 0);
+			var v = new <#=Point#>(vx, vy);
+
+			int colorCount = u.PerpDot(v);
+			
+			float a = PerpDot(v) / (float) colorCount;
+			float b = -PerpDot(u) / (float) colorCount;
+
+			int m = Mathi.FloorToInt(a);
+			int n = Mathi.FloorToInt(b);
+
+			int baseVectorX = m*u.X + n*v.X;
+			int baseVectorY = n*u.Y + n*v.Y;
+				
+			int offsetX = Mathi.Mod(X - baseVectorX, ux);
+			int offsetY = Y - baseVectorY;
+
+			int colorIndex = Mathi.FloorToInt(offsetX + offsetY * ux);
+
+			return colorIndex;
+		}
+
+		/**
+			Gives a coloring of the grid such that 
+			if a point p has color k, then all points
+			p + m[ux, 0] + n[vx, vy] have the same color
+			for any integers a and b.
+
+			More information anout grid colorings:
+			http://gamelogic.co.za/2013/12/18/what-are-grid-colorings/
+
+			@since 1.7
+		*/
+		public int GetColor(int ux, int vx, int vy)
+		{
+			int colorCount = ux * vy;
+
+			float a = (x * vy - y * vx) / (float)colorCount;
+			float b = (y * ux) / (float)colorCount;
+
+			int m = Mathi.FloorToInt(a);
+			int n = Mathi.FloorToInt(b);
+
+			int baseVectorX = m * ux + n * vx;
+			int baseVectorY = n * vy;
+
+			int offsetX = Mathi.Mod(X - baseVectorX, ux);
+			int offsetY = Y - baseVectorY;
+
+			int colorIndex = Mathi.FloorToInt(offsetX + offsetY * ux);
+
+			return colorIndex;
+		}
+		#endregion
+	}
+
+	#region Wrappers
+	/**
+		Wraps points both horizontally and vertically.
+		@since 1.7
+		@ingroup Scaffolding
+	*/
+	[Experimental]
+	public class <#=ParallelogramWrapper#> : IPointWrapper<<#=Point#>>
+	{
+		readonly int width;
+		readonly int height;
+
+		public <#=ParallelogramWrapper#>(int width, int height)
+		{
+			this.width = width;
+			this.height = height;
+		}
+
+		public <#=Point#> Wrap(<#=Point#> point)
+		{
+			return new <#=Point#>(Mathi.Mod(point.X, width), Mathi.Mod(point.Y, height));
+		}
+	}
+
+	/**
+		Wraps points horizontally.
+		
+		@since 1.7
+		@ingroup Scaffolding
+	*/
+	[Experimental]
+	public class <#=HorizontalWrapper#> : IPointWrapper<<#=Point#>>
+	{
+		readonly int width;
+
+		public <#=HorizontalWrapper#>(int width)
+		{
+			this.width = width;
+		}
+
+		public <#=Point#> Wrap(<#=Point#> point)
+		{
+			return new <#=Point#>(Mathi.Mod(point.X, width), point.Y);
+		}
+	}
+
+	/**
+		Wraps points vertically.
+
+		@since 1.7
+		@ingroup Scaffolding
+	*/
+	[Experimental]
+	public class <#=VerticalWrapper#> : IPointWrapper<<#=Point#>>
+	{
+		readonly int height;
+
+		public <#=VerticalWrapper#>(int height)
+		{
+			this.height = height;
+		}
+
+		public <#=Point#> Wrap(<#=Point#> point)
+		{
+			return new <#=Point#>(point.X, Mathi.Mod(point.Y, height));
+		}
+	}
+
+	#endregion 
+<#
+	}
+#>
+}
