@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class InputController : MonoBehaviour
 {
@@ -19,9 +20,15 @@ public class InputController : MonoBehaviour
         Vector3 targetMoveLocation = Vector3.zero;
 
 #if UNITY_EDITOR
-        bool setMoveLocation = TryGetGroundMoveMouse(out targetMoveLocation);
+        bool interacted = TryInteractMouse();
+        bool setMoveLocation = false;
+        if( !interacted )
+            setMoveLocation = TryGetGroundMoveMouse(out targetMoveLocation);
 #else
-        bool setMoveLocation = TryGetGroundMoveTouch(out targetMoveLocation);
+        bool interacted = TryInteractMouse();
+        bool setMoveLocation = false;
+        if( !interacted )
+            setMoveLocation = TryGetGroundMoveTouch(out targetMoveLocation);
 #endif
 
         if ( setMoveLocation )
@@ -30,6 +37,28 @@ public class InputController : MonoBehaviour
             m_Path.target = m_PathLocator;
             m_Path.SearchPath();
         }
+    }
+
+    private bool TryInteractMouse()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Debug.DrawRay(ray.origin, ray.direction * 10, Color.yellow);
+            RaycastHit hitInfo;
+
+            if (Physics.Raycast(ray, out hitInfo, LayerMask.NameToLayer("Touchable")))
+            {
+                Interactable i = hitInfo.collider.gameObject.GetComponent<Interactable>();
+
+                if (null != i)
+                    i.HandleInteraction();
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private bool TryGetGroundMoveMouse(out Vector3 targetMoveLocation)
@@ -51,6 +80,27 @@ public class InputController : MonoBehaviour
         return false;
     }
 
+    private bool TryInteractTouch()
+    {
+        if( Input.touchCount == 1 && Input.GetTouch(0).phase == TouchPhase.Ended && Input.GetTouch(0).deltaTime <= 0.1f )
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
+            RaycastHit hitInfo;
+
+            if (Physics.Raycast(ray, out hitInfo, LayerMask.NameToLayer("Touchable")))
+            {
+                Interactable i = hitInfo.collider.gameObject.GetComponent<Interactable>();
+
+                if (null != i)
+                    i.HandleInteraction();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private bool TryGetGroundMoveTouch(out Vector3 targetMoveLocation)
     {
         targetMoveLocation = Vector3.zero;
@@ -62,7 +112,6 @@ public class InputController : MonoBehaviour
 
         if (isSingleTouch && isActiveTouch)
         {
-            Debug.Log("Touch is valid");
             Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
             RaycastHit hitInfo;
 

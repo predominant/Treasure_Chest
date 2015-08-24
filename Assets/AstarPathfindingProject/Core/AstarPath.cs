@@ -2539,7 +2539,7 @@ AstarPath.RegisterSafeUpdate (delegate () {
 				AstarProfiler.StartFastProfile (9);
 
 				//Log path results
-				astar.LogPathResults (p);
+                //astar.LogPathResults (p);
 
 				if ( p.immediateCallback != null ) p.immediateCallback (p);
 
