@@ -5,8 +5,11 @@ using System.Collections.Generic;
 public class InputController : MonoBehaviour
 {
     public Transform m_PathLocator = null;
+	public LayerMask m_MoveMask;
+	public LayerMask m_TouchMask;
     protected Seeker m_Seeker = null;
     protected AIPath m_Path = null;
+
 
     void Start()
     {
@@ -47,7 +50,7 @@ public class InputController : MonoBehaviour
             Debug.DrawRay(ray.origin, ray.direction * 10, Color.yellow);
             RaycastHit hitInfo;
 
-            if (Physics.Raycast(ray, out hitInfo, LayerMask.NameToLayer("Touchable")))
+            if ( Physics.Raycast(ray, out hitInfo, Mathf.Infinity, m_TouchMask))
             {
                 Interactable i = hitInfo.collider.gameObject.GetComponent<Interactable>();
 
@@ -70,7 +73,7 @@ public class InputController : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hitInfo;
 
-            if (Physics.Raycast(ray, out hitInfo))
+            if( Physics.Raycast( ray, out hitInfo, Mathf.Infinity, m_MoveMask ) )
             {
                 targetMoveLocation = hitInfo.point;
                 return true;
