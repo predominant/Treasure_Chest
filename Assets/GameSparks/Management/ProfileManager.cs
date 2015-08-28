@@ -112,8 +112,13 @@ public static class ProfileManager
         SoomlaProfile.Login(_provider);
     }
 
-    public static void Logout( Provider _provider )
-    {
-        SoomlaProfile.Logout(_provider);
-    }
+	public static void Logout(Provider _provider) 
+	{
+		SoomlaProfile.Logout(_provider);
+	}
+
+	public static void Logout()
+	{
+		SoomlaProfile.Logout(m_CurrentProvider);
+	}
 }

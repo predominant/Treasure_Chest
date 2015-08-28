@@ -67,16 +67,21 @@ public class LoginMenuController : MonoBehaviour
         switch (_state)
         {
             case ProfileManager.ProviderState.LoggedIn:
-                m_OnlinePanel.SetActive(true);
-                m_WaitingPanel.SetActive(false);
-                m_OfflinePanel.SetActive(false);
-
                 if( ProfileManager.CurrentProvider == Provider.FACEBOOK )
                 {
                     new FacebookConnectRequest().SetAccessToken(FB.AccessToken).Send((response) =>
                     {
-                        if (response.HasErrors)
-                            Debug.LogError("[GS] Facebook auth error: " + response.Errors.ToString());
+						if (response.HasErrors) 
+						{
+							ProfileManager.Logout();
+                            Debug.LogError("[GS] Facebook auth error: " + response.Errors.JSON);
+						}
+						else 
+						{
+							m_OnlinePanel.SetActive(true);
+							m_WaitingPanel.SetActive(false);
+							m_OfflinePanel.SetActive(false);
+						}
                     });
                 }
 
