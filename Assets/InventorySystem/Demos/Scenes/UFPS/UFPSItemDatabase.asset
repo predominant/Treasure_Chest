@@ -1,0 +1,207 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aee9c35122abd23458ddb18edd496d6a, type: 3}
+  m_Name: UFPSItemDatabase
+  m_EditorClassIdentifier: 
+  plyAttributes: []
+  items:
+  - {fileID: 11411346, guid: c6ace3cf61dfb5a42aa8853970525f0a, type: 2}
+  - {fileID: 11415468, guid: 3bc4c92968b162c418e4d7a6a62ac1f1, type: 2}
+  - {fileID: 11477390, guid: 2b48525ac51bb8e46965d34699d35bd9, type: 2}
+  - {fileID: 11474028, guid: 6a9a016b4a402f84ea13819d0bb56cc1, type: 2}
+  - {fileID: 11410626, guid: 60f7d915b4a6bac419151905f701c3ea, type: 2}
+  - {fileID: 11455348, guid: 45ff3863f8f7ac64687ecbf3762fcdbe, type: 2}
+  itemRarities: []
+  itemCategories:
+  - ID: 0
+    name: None
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 1
+    name: Melee weapons
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 2
+    name: Rifles
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 3
+    name: Pistols
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 4
+    name: Ammo
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  properties: []
+  equipStats:
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _category
+    fieldInfoNameVisual: EquippableUFPSInventoryItem._category
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.Integration.UFPS.EquippableUFPSInventoryItem,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _rarity
+    fieldInfoNameVisual: EquippableUFPSInventoryItem._rarity
+    show: 0
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _category
+    fieldInfoNameVisual: EquippableInventoryItem._category
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.Integration.UFPS.EquippableUFPSInventoryItem,
+      Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _rarity
+    fieldInfoNameVisual: EquippableInventoryItem._rarity
+    show: 0
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _category
+    fieldInfoNameVisual: InventoryItemBase._category
+    show: 0
+  - name: Weight
+    category: Misc
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _weight
+    fieldInfoNameVisual: InventoryItemBase._weight
+    show: 1
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _requiredLevel
+    fieldInfoNameVisual: InventoryItemBase._requiredLevel
+    show: 1
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _rarity
+    fieldInfoNameVisual: InventoryItemBase._rarity
+    show: 1
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _buyPrice
+    fieldInfoNameVisual: InventoryItemBase._buyPrice
+    show: 0
+  - name: 
+    category: Default
+    typeName: EquippableUFPSInventoryItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+      PublicKeyToken=null
+    fieldInfoName: _sellPrice
+    fieldInfoNameVisual: InventoryItemBase._sellPrice
+    show: 0
+  equipStatTypes:
+  - Devdog.InventorySystem.Integration.UFPS.EquippableUFPSInventoryItem, Assembly-CSharp,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  equipTypes:
+  - ID: 0
+    name: Rifle
+    blockTypes: 0600000007000000
+  - ID: 1
+    name: Pistol
+    blockTypes: 0600000008000000
+  - ID: 2
+    name: Melee weapons
+    blockTypes: 0600000007000000
+  - ID: 3
+    name: Helmet
+    blockTypes: 
+  - ID: 4
+    name: Body
+    blockTypes: 
+  - ID: 5
+    name: Boots
+    blockTypes: 
+  - ID: 6
+    name: Sniper
+    blockTypes: 010000000200000007000000
+  - ID: 7
+    name: Small rounds
+    blockTypes: 
+  - ID: 8
+    name: Machinegun rounds
+    blockTypes: 0200000001000000
+  craftingCategories:
+  - ID: 0
+    name: Test crafting
+    description: 
+    alsoScanBankForRequiredItems: 1
+    forceSaveInCollection: {fileID: 0}
+    rows: 3
+    cols: 3
+    blueprints:
+    - ID: 1
+      indexInCategory: 0
+      useItemResultNameAndDescription: 1
+      customName: 
+      customDescription: 
+      requiredItems:
+      - item: {fileID: 11411346, guid: c6ace3cf61dfb5a42aa8853970525f0a, type: 2}
+        amount: 1
+      playerLearnedBlueprint: 1
+      craftingCost:
+        _currencyID: 0
+        _amount: 0
+      successChanceFactor: 1
+      itemResult: {fileID: 11474028, guid: 6a9a016b4a402f84ea13819d0bb56cc1, type: 2}
+      itemResultCount: 2
+      craftingTimeDuration: 2
+      craftingTimeSpeedupFactor: 1.39999998
+      craftingTimeSpeedupMax: 10
+      blueprintLayouts: []
+    - ID: 2
+      indexInCategory: 0
+      useItemResultNameAndDescription: 1
+      customName: 
+      customDescription: 
+      requiredItems:
+      - item: {fileID: 11411346, guid: c6ace3cf61dfb5a42aa8853970525f0a, type: 2}
+        amount: 1
+      playerLearnedBlueprint: 1
+      craftingCost:
+        _currencyID: 0
+        _amount: 0
+      successChanceFactor: 1
+      itemResult: {fileID: 11455348, guid: 45ff3863f8f7ac64687ecbf3762fcdbe, type: 2}
+      itemResultCount: 1
+      craftingTimeDuration: 2
+      craftingTimeSpeedupFactor: 1.39999998
+      craftingTimeSpeedupMax: 10
+      blueprintLayouts: []
+  currencies:
+  - ID: 0
+    singleName: Gold
+    pluralName: Gold
+    description: Gold
+    icon: {fileID: 21300036, guid: 9c2c642c47b2fc344ab143e21aedaca9, type: 3}
+    stringFormat: '{0} {3}'
+    currencyConversions: []
+    allowFractions: 0
+    autoConvertOnMax: 0
+    autoConvertOnMaxAmount: 1000
+    autoConvertOnMaxCurrencyID: 0
+    autoConvertFractions: 0
+    autoConvertFractionsToCurrencyID: 0

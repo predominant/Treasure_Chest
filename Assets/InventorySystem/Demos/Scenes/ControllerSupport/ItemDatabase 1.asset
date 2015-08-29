@@ -1,0 +1,424 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aee9c35122abd23458ddb18edd496d6a, type: 3}
+  m_Name: ItemDatabase 1
+  m_EditorClassIdentifier: 
+  plyAttributes: []
+  items:
+  - {fileID: 11446060, guid: ad3423c25a2504841a427e281e747ccd, type: 2}
+  - {fileID: 11441522, guid: 11083ba63e2be1d4c9d69bee9c0f4155, type: 2}
+  - {fileID: 11429412, guid: 2e928670095a2de42b0e49e24538c9f2, type: 2}
+  - {fileID: 11440686, guid: 0f36497a5cfbae142a1694325691042c, type: 2}
+  itemRarities: []
+  itemCategories:
+  - ID: 0
+    name: None
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 1
+    name: Cloth
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  - ID: 2
+    name: Potions
+    cooldownTime: 10
+    _onlyAllowTypes: []
+  - ID: 3
+    name: Food
+    cooldownTime: 20
+    _onlyAllowTypes: []
+  - ID: 4
+    name: Swords
+    cooldownTime: 0
+    _onlyAllowTypes: []
+  properties:
+  - ID: 3
+    name: Health
+    category: Default
+    value: 
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 100
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  - ID: 4
+    name: Shield
+    category: Default
+    value: 
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 100
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  - ID: 5
+    name: Stamina
+    category: Default
+    value: 
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 50
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  - ID: 6
+    name: Mana
+    category: Default
+    value: 
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 50
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  equipStats:
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _category
+    fieldInfoNameVisual: EquippableInventoryItem._category
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _rarity
+    fieldInfoNameVisual: EquippableInventoryItem._rarity
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _category
+    fieldInfoNameVisual: InventoryItemBase._category
+    show: 0
+  - name: Weight
+    category: Gear
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _weight
+    fieldInfoNameVisual: InventoryItemBase._weight
+    show: 1
+  - name: Item level
+    category: Gear
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _requiredLevel
+    fieldInfoNameVisual: InventoryItemBase._requiredLevel
+    show: 1
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _rarity
+    fieldInfoNameVisual: InventoryItemBase._rarity
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _buyPrice
+    fieldInfoNameVisual: InventoryItemBase._buyPrice
+    show: 0
+  - name: 
+    category: Default
+    typeName: Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
+    fieldInfoName: _sellPrice
+    fieldInfoNameVisual: InventoryItemBase._sellPrice
+    show: 0
+  equipStatTypes:
+  - Devdog.InventorySystem.EquippableInventoryItem, Assembly-CSharp, Version=0.0.0.0,
+    Culture=neutral, PublicKeyToken=null
+  equipTypes:
+  - ID: 0
+    name: Head
+    blockTypes: 
+  - ID: 1
+    name: Necklace
+    blockTypes: 
+  - ID: 2
+    name: Ring
+    blockTypes: 
+  - ID: 3
+    name: Boots
+    blockTypes: 
+  - ID: 4
+    name: Body
+    blockTypes: 
+  - ID: 5
+    name: Shield
+    blockTypes: 060000000800000009000000
+  - ID: 6
+    name: Dagger
+    blockTypes: 07000000080000000900000005000000
+  - ID: 7
+    name: 1H Sword
+    blockTypes: 080000000900000006000000
+  - ID: 8
+    name: 2H Sword
+    blockTypes: 06000000070000000900000005000000
+  - ID: 9
+    name: 2H Axe
+    blockTypes: 08000000070000000600000005000000
+  - ID: 10
+    name: Gloves
+    blockTypes: 
+  - ID: 11
+    name: Earring
+    blockTypes: 
+  - ID: 12
+    name: Shoulders
+    blockTypes: 
+  craftingCategories:
+  - ID: 0
+    name: Blacksmithing
+    description: 
+    alsoScanBankForRequiredItems: 0
+    forceSaveInCollection: {fileID: 0}
+    rows: 3
+    cols: 3
+    blueprints:
+    - ID: 1
+      indexInCategory: 0
+      useItemResultNameAndDescription: 1
+      customName: 
+      customDescription: 
+      requiredItems:
+      - item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+        amount: 1
+      playerLearnedBlueprint: 1
+      craftingCost:
+        _currencyID: 0
+        _amount: 0
+      successChanceFactor: 1
+      itemResult: {fileID: 11429768, guid: d7fab5330f7396d469a6b502e537a6f7, type: 2}
+      itemResultCount: 1
+      craftingTimeDuration: 3
+      craftingTimeSpeedupFactor: 1.10000002
+      craftingTimeSpeedupMax: 5
+      blueprintLayouts:
+      - ID: 0
+        enabled: 1
+        rows:
+        - index: 0
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+        - index: 1
+          columns:
+          - index: 0
+            item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+            amount: 1
+          - index: 1
+            item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+            amount: 1
+          - index: 2
+            item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+            amount: 1
+        - index: 2
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+    - ID: 2
+      indexInCategory: 0
+      useItemResultNameAndDescription: 1
+      customName: 
+      customDescription: 
+      requiredItems:
+      - item: {fileID: 0}
+        amount: 1
+      playerLearnedBlueprint: 1
+      craftingCost:
+        _currencyID: 0
+        _amount: 0
+      successChanceFactor: 1
+      itemResult: {fileID: 11439538, guid: b855851bf49ee9142aa3aa1f57a70a2d, type: 2}
+      itemResultCount: 1
+      craftingTimeDuration: 1
+      craftingTimeSpeedupFactor: 1.10000002
+      craftingTimeSpeedupMax: 5
+      blueprintLayouts:
+      - ID: 0
+        enabled: 1
+        rows:
+        - index: 0
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+        - index: 1
+          columns:
+          - index: 0
+            item: {fileID: 11429768, guid: d7fab5330f7396d469a6b502e537a6f7, type: 2}
+            amount: 1
+          - index: 1
+            item: {fileID: 0}
+            amount: 1
+          - index: 2
+            item: {fileID: 0}
+            amount: 1
+        - index: 2
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+  - ID: 1
+    name: Cooking
+    description: 
+    alsoScanBankForRequiredItems: 1
+    forceSaveInCollection: {fileID: 0}
+    rows: 3
+    cols: 3
+    blueprints:
+    - ID: 2
+      indexInCategory: 0
+      useItemResultNameAndDescription: 1
+      customName: 
+      customDescription: 
+      requiredItems:
+      - item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+        amount: 1
+      playerLearnedBlueprint: 1
+      craftingCost:
+        _currencyID: 0
+        _amount: 0
+      successChanceFactor: .600000024
+      itemResult: {fileID: 0}
+      itemResultCount: 1
+      craftingTimeDuration: 5
+      craftingTimeSpeedupFactor: 1.10000002
+      craftingTimeSpeedupMax: 5
+      blueprintLayouts:
+      - ID: 0
+        enabled: 1
+        rows:
+        - index: 0
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+        - index: 1
+          columns:
+          - index: 0
+            item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+            amount: 1
+          - index: 1
+            item: {fileID: 11476484, guid: 4f6c5d3910c9f024c8df75227f0ed4f3, type: 2}
+            amount: 1
+          - index: 2
+            item: {fileID: 0}
+            amount: 1
+        - index: 2
+          columns:
+          - index: 0
+            item: {fileID: 0}
+            amount: 0
+          - index: 1
+            item: {fileID: 0}
+            amount: 0
+          - index: 2
+            item: {fileID: 0}
+            amount: 0
+  currencies:
+  - ID: 0
+    singleName: Gold
+    pluralName: Gold
+    description: Gold!!
+    icon: {fileID: 21300036, guid: 9c2c642c47b2fc344ab143e21aedaca9, type: 3}
+    stringFormat: '{0} {3}'
+    currencyConversions:
+    - factor: 100
+      currencyID: 1
+      useInAutoConversion: 1
+    allowFractions: 0
+    autoConvertOnMax: 0
+    autoConvertOnMaxAmount: 1000
+    autoConvertOnMaxCurrencyID: 0
+    autoConvertFractions: 1
+    autoConvertFractionsToCurrencyID: 1
+  - ID: 1
+    singleName: Silver
+    pluralName: Silver
+    description: 
+    icon: {fileID: 21300052, guid: 9c2c642c47b2fc344ab143e21aedaca9, type: 3}
+    stringFormat: '{0} {3}'
+    currencyConversions:
+    - factor: 100
+      currencyID: 2
+      useInAutoConversion: 1
+    - factor: .00999999978
+      currencyID: 0
+      useInAutoConversion: 1
+    allowFractions: 0
+    autoConvertOnMax: 1
+    autoConvertOnMaxAmount: 100
+    autoConvertOnMaxCurrencyID: 0
+    autoConvertFractions: 1
+    autoConvertFractionsToCurrencyID: 2
+  - ID: 2
+    singleName: Copper
+    pluralName: Copper
+    description: 
+    icon: {fileID: 21300054, guid: 9c2c642c47b2fc344ab143e21aedaca9, type: 3}
+    stringFormat: '{0} {3}'
+    currencyConversions:
+    - factor: .00999999978
+      currencyID: 1
+      useInAutoConversion: 1
+    allowFractions: 1
+    autoConvertOnMax: 1
+    autoConvertOnMaxAmount: 100
+    autoConvertOnMaxCurrencyID: 1
+    autoConvertFractions: 1
+    autoConvertFractionsToCurrencyID: 0

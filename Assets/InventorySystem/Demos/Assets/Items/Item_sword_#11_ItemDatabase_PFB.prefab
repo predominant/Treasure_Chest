@@ -1,0 +1,209 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &191188
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 455010}
+  - 33: {fileID: 3315630}
+  - 23: {fileID: 2311300}
+  - 54: {fileID: 5498362}
+  - 114: {fileID: 11460912}
+  - 114: {fileID: 11423682}
+  - 65: {fileID: 6596090}
+  - 65: {fileID: 6517696}
+  m_Layer: 0
+  m_Name: Item_sword_#11_ItemDatabase_PFB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &455010
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_LocalRotation: {x: -.707106829, y: 0, z: -0, w: .707106829}
+  m_LocalPosition: {x: -3.32198906, y: .347000003, z: -6.78957129}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!23 &2311300
+MeshRenderer:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_Materials:
+  - {fileID: 2100000, guid: ea5780ba96e281c44bc7c4b39fd40b3c, type: 2}
+  m_SubsetIndices: 
+  m_StaticBatchRoot: {fileID: 0}
+  m_UseLightProbes: 1
+  m_ReflectionProbeUsage: 1
+  m_ProbeAnchor: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_ImportantGI: 0
+  m_AutoUVMaxDistance: .5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+--- !u!33 &3315630
+MeshFilter:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Mesh: {fileID: 4300000, guid: 361151ba1c8291f4aa30f70a0715c660, type: 3}
+--- !u!54 &5498362
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: .0500000007
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &6517696
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: .200000003, y: 1.54999995, z: .100000001}
+  m_Center: {x: .000279154629, y: .510747373, z: -.000325517816}
+--- !u!65 &6596090
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: .187000006, y: 1.55497622, z: .0671494901}
+  m_Center: {x: .000279154629, y: .510747373, z: -.000325517816}
+--- !u!114 &11423682
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3f827c7ef6b6146bd814e400dae5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 8
+  _name: Sword
+  _description: Awesome sword
+  _category: 4
+  _useCategoryCooldown: 1
+  _icon: {fileID: 21300312, guid: bddecc020f6bf0445b97e3d1be62d39c, type: 3}
+  _weight: 58
+  _requiredLevel: 4
+  _rarity: 3
+  _properties:
+  - ID: 0
+    name: Strength
+    category: Default
+    value: 5
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 0
+    maxValue: 999
+    isFactor: 0
+    actionEffect: 1
+  _buyPrice:
+    _currencyID: 3
+    _amount: 54
+  _sellPrice:
+    _currencyID: 3
+    _amount: 36
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 1.5
+  _equipType: 7
+  playOnEquip: {fileID: 8300000, guid: 10b5f41afe23d724e868d85fb7eae3d5, type: 3}
+  equipVisually: 1
+  equipPosition: {x: 0, y: 0, z: 0}
+  equipRotation: {x: -.553211153, y: .413733542, z: .596536458, w: -.408566177}
+--- !u!114 &11460912
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 191188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba77e3e4ff91e1c408d6d8c5dd12ad13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _properties.Array.data[0].name
+      value: Strength
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _rarity
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._amount
+      value: 54
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._amount
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._currencyID
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._currencyID
+      value: 3
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 191188}
+  m_IsPrefabParent: 1

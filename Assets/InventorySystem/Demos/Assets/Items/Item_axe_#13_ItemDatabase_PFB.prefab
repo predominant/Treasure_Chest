@@ -1,0 +1,221 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &195088
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 465166}
+  - 33: {fileID: 3309178}
+  - 23: {fileID: 2350942}
+  - 54: {fileID: 5432508}
+  - 114: {fileID: 11432826}
+  - 114: {fileID: 11417744}
+  - 65: {fileID: 6558336}
+  - 65: {fileID: 6579446}
+  m_Layer: 0
+  m_Name: Item_axe_#13_ItemDatabase_PFB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &465166
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_LocalRotation: {x: 0, y: -.351062447, z: 0, w: .936352074}
+  m_LocalPosition: {x: -5.91237116, y: -1.77789831, z: -4.70480728}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!23 &2350942
+MeshRenderer:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_Materials:
+  - {fileID: 2100000, guid: db2597567a5b11e4fbadc05acc2e98f6, type: 2}
+  m_SubsetIndices: 
+  m_StaticBatchRoot: {fileID: 0}
+  m_UseLightProbes: 1
+  m_ReflectionProbeUsage: 1
+  m_ProbeAnchor: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_ImportantGI: 0
+  m_AutoUVMaxDistance: .5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+--- !u!33 &3309178
+MeshFilter:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Mesh: {fileID: 4300002, guid: edc5eef8e42944e2992acbec17cfa2ff, type: 3}
+--- !u!54 &5432508
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: .0500000007
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &6558336
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: .56230253, y: .0300000012, z: 1.17589021}
+  m_Center: {x: -.00116503239, y: 0, z: -.830171108}
+--- !u!65 &6579446
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: .600000024, y: .0799999982, z: 2}
+  m_Center: {x: 0, y: 0, z: -.454304516}
+--- !u!114 &11417744
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3f827c7ef6b6146bd814e400dae5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 10
+  _name: Axe
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 21300318, guid: bddecc020f6bf0445b97e3d1be62d39c, type: 3}
+  _weight: 31
+  _requiredLevel: 0
+  _rarity: 4
+  _properties:
+  - ID: 0
+    name: Health
+    category: Default
+    value: 8
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 0
+    maxValue: 999
+    isFactor: 0
+    actionEffect: 1
+  - ID: 4
+    name: Agility
+    category: Default
+    value: -2
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 0
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  _buyPrice:
+    _currencyID: 2
+    _amount: 62
+  _sellPrice:
+    _currencyID: 2
+    _amount: 42
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+  _equipType: 9
+  playOnEquip: {fileID: 8300000, guid: 10b5f41afe23d724e868d85fb7eae3d5, type: 3}
+  equipVisually: 1
+  equipPosition: {x: 0, y: 0, z: 0}
+  equipRotation: {x: .555042803, y: -.770365357, z: -.309484541, w: .0518083051}
+--- !u!114 &11432826
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 195088}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba77e3e4ff91e1c408d6d8c5dd12ad13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _properties.Array.data[0].name
+      value: Health
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _properties.Array.data[1].name
+      value: Agility
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._amount
+      value: 62
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._amount
+      value: 42
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._currencyID
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._currencyID
+      value: 2
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 195088}
+  m_IsPrefabParent: 1

@@ -1,0 +1,490 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &141376
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 4
+  m_Component:
+  - 4: {fileID: 416262}
+  - 137: {fileID: 13788558}
+  - 114: {fileID: 11427254}
+  - 114: {fileID: 11446060}
+  - 65: {fileID: 6589902}
+  - 54: {fileID: 5466818}
+  - 114: {fileID: 11425842}
+  - 114: {fileID: 11463692}
+  - 114: {fileID: 11483550}
+  - 114: {fileID: 11457202}
+  - 114: {fileID: 11442458}
+  - 114: {fileID: 11442032}
+  - 114: {fileID: 11498456}
+  - 114: {fileID: 11423326}
+  m_Layer: 10
+  m_Name: Item_shoulders_#0_ItemDatabase 1_PFB
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &416262
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_LocalRotation: {x: -.707106829, y: 0, z: -0, w: .707106829}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: .99999994, y: .99999994, z: .99999994}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+--- !u!54 &5466818
+Rigidbody:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: .0500000007
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
+--- !u!65 &6589902
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: .504202187, y: .494623065, z: .254324079}
+  m_Center: {x: -.0738866329, y: .205547497, z: -.00081917661}
+--- !u!114 &11423326
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11425842
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11427254
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba77e3e4ff91e1c408d6d8c5dd12ad13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &11442032
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11442458
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11446060
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c3f827c7ef6b6146bd814e400dae5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: Shoulders
+  _description: Shoulder armor
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 21300032, guid: 9c2c642c47b2fc344ab143e21aedaca9, type: 3}
+  _weight: .100000001
+  _requiredLevel: 0
+  _rarity: 3
+  _properties:
+  - ID: 5
+    name: Stamina
+    category: Default
+    value: 20
+    showInUI: 1
+    valueStringFormat: '{0}'
+    useInStats: 1
+    color: {r: 1, g: 1, b: 1, a: 1}
+    baseValue: 0
+    maxValue: 100
+    isFactor: 0
+    actionEffect: 1
+  _buyPrice:
+    _currencyID: 1
+    _amount: 6
+  _sellPrice:
+    _currencyID: 1
+    _amount: 4
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+  _equipType: 12
+  playOnEquip: {fileID: 8300000, guid: 10b5f41afe23d724e868d85fb7eae3d5, type: 3}
+  equipVisually: 1
+  equipPosition: {x: 0, y: 0, z: 0}
+  equipRotation: {x: .70710659, y: 0, z: 0, w: -.707106948}
+--- !u!114 &11457202
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11463692
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11483550
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!114 &11498456
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5d9a1d246ff5aa4da4da53f7b56d3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _id: 0
+  _name: 
+  _description: 
+  _category: 0
+  _useCategoryCooldown: 1
+  _icon: {fileID: 0}
+  _weight: 0
+  _requiredLevel: 0
+  _rarity: 0
+  _properties: []
+  _buyPrice:
+    _currencyID: 0
+    _amount: 0
+  _sellPrice:
+    _currencyID: 0
+    _amount: 0
+  _isDroppable: 1
+  _isSellable: 1
+  _isStorable: 1
+  _maxStackSize: 1
+  _cooldownTime: 0
+--- !u!137 &13788558
+SkinnedMeshRenderer:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 141376}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_Materials:
+  - {fileID: 2100000, guid: 670fd5b5fc536574db1f7390c4058569, type: 2}
+  m_SubsetIndices: 
+  m_StaticBatchRoot: {fileID: 0}
+  m_UseLightProbes: 1
+  m_ReflectionProbeUsage: 1
+  m_ProbeAnchor: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_ImportantGI: 0
+  m_AutoUVMaxDistance: .5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  serializedVersion: 2
+  m_Quality: 0
+  m_UpdateWhenOffscreen: 0
+  m_Mesh: {fileID: 4300014, guid: 6a0af412b3bd5e4429eb52b218255660, type: 3}
+  m_Bones:
+  - {fileID: 0}
+  - {fileID: 0}
+  m_BlendShapeWeights: []
+  m_RootBone: {fileID: 0}
+  m_AABB:
+    m_Center: {x: -.0738866329, y: .205547452, z: -.000819176435}
+    m_Extent: {x: .252101094, y: .247311473, z: .127162009}
+  m_DirtyAABB: 0
+--- !u!1001 &100100000
+Prefab:
+  m_ObjectHideFlags: 1
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 0}
+      propertyPath: _name
+      value: Shoulders
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _description
+      value: Shoulder armor
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _icon
+      value: 
+      objectReference: {fileID: 21300032, guid: 9c2c642c47b2fc344ab143e21aedaca9,
+        type: 3}
+    - target: {fileID: 0}
+      propertyPath: _equipType
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _rarity
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice
+      value: 39
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _weight
+      value: .100000001
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: playOnEquip
+      value: 
+      objectReference: {fileID: 8300000, guid: 10b5f41afe23d724e868d85fb7eae3d5, type: 3}
+    - target: {fileID: 0}
+      propertyPath: _properties.Array.data[0].name
+      value: Stamina
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._amount
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._amount
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _buyPrice._currencyID
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 0}
+      propertyPath: _sellPrice._currencyID
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 0}
+  m_RootGameObject: {fileID: 141376}
+  m_IsPrefabParent: 1

@@ -1,0 +1,84 @@
+fileFormatVersion: 2
+guid: 84d64459086ba3d46b2c354a544afe5f
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: Vase
+    100008: //RootNode
+    400000: Vase
+    400008: //RootNode
+    2300000: Vase
+    3300000: Vase
+    4300000: Mesh1_Component_2_1 Vase1 Model
+    4300002: Mesh2_Component_2_2 Vase1 Model
+    4300004: Mesh3_Component_2_3 Vase1 Model
+    4300006: Mesh4_Component_2_4 Vase1 Model
+    4300008: Mesh1_Group2 Group1 Model
+    4300010: Mesh2_Group1 Model
+    4300012: Mesh2_Component_2_1 Group1 Model
+    4300014: Mesh3_Component_2_2 Group1 Model
+    4300016: Mesh4_Component_2_3 Group1 Model
+    4300018: Mesh5_Component_2_4 Group1 Model
+    4300020: Mesh6_Group3 Model
+    4300022: Mesh6_Group3_Model_1
+    4300024: Vase
+    6400000: Vase
+    11100000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 3
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: .5
+    meshCompression: 0
+    addColliders: 1
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 1
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 20
+    secondaryUVAreaDistortion: 37
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 2
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 120
+    splitTangentsAcrossUV: 0
+    normalImportMode: 1
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
