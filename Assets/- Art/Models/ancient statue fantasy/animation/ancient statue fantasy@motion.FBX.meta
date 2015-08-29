@@ -1,0 +1,186 @@
+fileFormatVersion: 2
+guid: 5a8f82835f1136941a9766fb4543a207
+ModelImporter:
+  serializedVersion: 18
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: B_nignee_kolco
+    100004: B_skala
+    100006: B_srednee_kolco
+    100008: B_verh_kolco
+    100010: Bone002
+    100012: Bone003
+    100014: Circle001
+    100016: Circle002
+    100018: Circle003
+    100020: Circle004
+    100022: Low_mesh
+    100024: Object001
+    100026: Object002
+    100028: Object003
+    100030: Object004
+    100032: Point001
+    100034: Point002
+    100036: Point003
+    100038: Point004
+    400000: //RootNode
+    400002: B_nignee_kolco
+    400004: B_skala
+    400006: B_srednee_kolco
+    400008: B_verh_kolco
+    400010: Bone002
+    400012: Bone003
+    400014: Circle001
+    400016: Circle002
+    400018: Circle003
+    400020: Circle004
+    400022: Low_mesh
+    400024: Object001
+    400026: Object002
+    400028: Object003
+    400030: Object004
+    400032: Point001
+    400034: Point002
+    400036: Point003
+    400038: Point004
+    2300000: Low_mesh
+    3300000: Low_mesh
+    4300000: Low_mesh
+    4300002: Object001
+    4300004: Object002
+    4300006: Object003
+    4300008: Object004
+    7400000: motion
+    9500000: //RootNode
+    13700000: Object001
+    13700002: Object002
+    13700004: Object003
+    13700006: Object004
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: .5
+    animationPositionError: .5
+    animationScaleError: .5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations:
+    - serializedVersion: 16
+      name: motion
+      takeName: Take 001
+      firstFrame: 0
+      lastFrame: 400
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      loopTime: 1
+      loopBlend: 0
+      loopBlendOrientation: 0
+      loopBlendPositionY: 0
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 0
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events: []
+      transformMask:
+      - path: 
+        weight: 1
+      - path: B_skala
+        weight: 1
+      - path: B_skala/Bone002
+        weight: 1
+      - path: B_srednee_kolco
+        weight: 1
+      - path: B_verh_kolco
+        weight: 1
+      - path: Bone003
+        weight: 1
+      - path: Bone003/B_nignee_kolco
+        weight: 1
+      - path: Circle001
+        weight: 1
+      - path: Circle001/Point001
+        weight: 1
+      - path: Circle002
+        weight: 1
+      - path: Circle002/Point002
+        weight: 1
+      - path: Circle003
+        weight: 1
+      - path: Circle003/Point004
+        weight: 1
+      - path: Circle004
+        weight: 1
+      - path: Circle004/Point003
+        weight: 1
+      - path: Low_mesh
+        weight: 1
+      - path: Object001
+        weight: 1
+      - path: Object002
+        weight: 1
+      - path: Object003
+        weight: 1
+      - path: Object004
+        weight: 1
+      maskType: 0
+      maskSource: {instanceID: 0}
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    splitTangentsAcrossUV: 1
+    normalImportMode: 0
+    tangentImportMode: 1
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: .5
+    foreArmTwist: .5
+    upperLegTwist: .5
+    legTwist: .5
+    armStretch: .0500000007
+    legStretch: .0500000007
+    feetSpacing: 0
+    rootMotionBoneName: 
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
