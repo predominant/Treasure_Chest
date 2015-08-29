@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Pathfinding;
 using Pathfinding.RVO;
+using System;
 
 /** AI for following paths.
  * This AI is the default movement script which comes with the A* Pathfinding Project.
@@ -35,7 +36,9 @@ using Pathfinding.RVO;
 [RequireComponent(typeof(Seeker))]
 [AddComponentMenu("Pathfinding/AI/AIPath (generic)")]
 public class AIPath : MonoBehaviour {
-	
+
+    public event Action MoveComplete;
+
 	/** Determines how often it will search for new paths. 
 	 * If you have fast moving targets or AIs, you might want to set it to a lower value.
 	 * The value is in seconds between path requests.
@@ -238,6 +241,8 @@ public class AIPath : MonoBehaviour {
 		
 		if (target == null) throw new System.InvalidOperationException ("Target is null");
 		
+        //Debug.Log(transform.position + " -> " + target.position );
+
 		lastRepath = Time.time;
 		//This is where we should search to
 		Vector3 targetPosition = target.position;
@@ -258,6 +263,9 @@ public class AIPath : MonoBehaviour {
 		//add it here
 		//You can also create a new script which inherits from this one
 		//and override the function in that script
+
+        if( null != MoveComplete )
+            MoveComplete();
 	}
 	
 	/** Called when a requested path has finished calculation.
