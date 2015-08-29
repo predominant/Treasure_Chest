@@ -14,16 +14,16 @@ namespace UnityEngine.UI
 				bool EligibleForShow = true;
 				
 				// Get the windows list
-				List<UIWindow> windows = UIWindow.GetWindows();
+				List<DUIWindow> windows = DUIWindow.GetWindows();
 				
 				// Loop through the windows and hide if required
-				foreach (UIWindow window in windows)
+				foreach (DUIWindow window in windows)
 				{
 					// Check if the window has escape key action
-					if (window.escapeKeyAction != UIWindow.EscapeKeyAction.None)
+					if (window.escapeKeyAction != DUIWindow.EscapeKeyAction.None)
 					{
 						// Check if the window should be hidden on escape
-						if (window.IsOpen && (window.escapeKeyAction == UIWindow.EscapeKeyAction.Hide || window.escapeKeyAction == UIWindow.EscapeKeyAction.Toggle || (window.escapeKeyAction == UIWindow.EscapeKeyAction.HideIfFocused && window.IsFocused)))
+						if (window.IsOpen && (window.escapeKeyAction == DUIWindow.EscapeKeyAction.Hide || window.escapeKeyAction == DUIWindow.EscapeKeyAction.Toggle || (window.escapeKeyAction == DUIWindow.EscapeKeyAction.HideIfFocused && window.IsFocused)))
 						{
 							// Hide the window
 							window.Hide();
@@ -38,10 +38,10 @@ namespace UnityEngine.UI
 				if (EligibleForShow)
 				{
 					// Loop through the windows again and show if required
-					foreach (UIWindow window in windows)
+					foreach (DUIWindow window in windows)
 					{
 						// Check if the window has escape key action toggle and is not shown
-						if (!window.IsOpen && window.escapeKeyAction == UIWindow.EscapeKeyAction.Toggle)
+						if (!window.IsOpen && window.escapeKeyAction == DUIWindow.EscapeKeyAction.Toggle)
 						{
 							// Show the window
 							window.Show();

@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace UnityEngine.UI
 {
 	[DisallowMultipleComponent, ExecuteInEditMode, AddComponentMenu("UI/Window", 58), RequireComponent(typeof(CanvasGroup))]
-	public class UIWindow : MonoBehaviour, IEventSystemHandler, ISelectHandler, IPointerDownHandler {
+	public class DUIWindow : MonoBehaviour, IEventSystemHandler, ISelectHandler, IPointerDownHandler {
 		
 		public enum Transition
 		{
@@ -32,11 +32,11 @@ namespace UnityEngine.UI
 			Toggle
 		}
 		
-		[Serializable] public class TransitionBeginEvent : UnityEvent<UIWindow, VisualState, bool> {}
-		[Serializable] public class TransitionCompleteEvent : UnityEvent<UIWindow, VisualState> {}
+		[Serializable] public class TransitionBeginEvent : UnityEvent<DUIWindow, VisualState, bool> {}
+		[Serializable] public class TransitionCompleteEvent : UnityEvent<DUIWindow, VisualState> {}
 		
-		protected static UIWindow m_FucusedWindow;
-		public static UIWindow FocusedWindow { get { return m_FucusedWindow; } private set { m_FucusedWindow = value; } }
+		protected static DUIWindow m_FucusedWindow;
+		public static DUIWindow FocusedWindow { get { return m_FucusedWindow; } private set { m_FucusedWindow = value; } }
 		
 		[SerializeField] private UIWindowID m_WindowId = UIWindowID.None;
 		[SerializeField] private int m_CustomWindowId = 0;
@@ -149,7 +149,7 @@ namespace UnityEngine.UI
 		
 		// Called by Unity prior to deserialization, 
 		// should not be called by users
-		protected UIWindow()
+		protected DUIWindow()
 		{
 			if (this.m_FloatTweenRunner == null)
 				this.m_FloatTweenRunner = new TweenRunner<FloatTween>();
@@ -167,7 +167,7 @@ namespace UnityEngine.UI
 		{
 			// Assign new custom ID
 			if (this.CustomID == 0)
-				this.CustomID = UIWindow.NextUnusedCustomID;
+				this.CustomID = DUIWindow.NextUnusedCustomID;
 			
 			// Transition to the starting state
 			if (Application.isPlaying)
@@ -242,7 +242,7 @@ namespace UnityEngine.UI
 			this.m_IsFocused = true;
 			
 			// Call the static on focused window
-			UIWindow.OnBeforeFocusWindow(this);
+			DUIWindow.OnBeforeFocusWindow(this);
 			
 			// Bring the window forward
 			UIUtility.BringToFront(this.gameObject);
@@ -409,13 +409,13 @@ namespace UnityEngine.UI
 		/// Get all the windows in the scene (Including inactive).
 		/// </summary>
 		/// <returns>The windows.</returns>
-		public static List<UIWindow> GetWindows()
+		public static List<DUIWindow> GetWindows()
 		{
-			List<UIWindow> windows = new List<UIWindow>();
+			List<DUIWindow> windows = new List<DUIWindow>();
 			
-			UIWindow[] ws = Resources.FindObjectsOfTypeAll<UIWindow>();
+			DUIWindow[] ws = Resources.FindObjectsOfTypeAll<DUIWindow>();
 			
-			foreach (UIWindow w in ws)
+			foreach (DUIWindow w in ws)
 			{
 				// Check if the window is active in the hierarchy
 				if (w.gameObject.activeInHierarchy)
@@ -425,7 +425,7 @@ namespace UnityEngine.UI
 			return windows;
 		}
 		
-		public static int SortByCustomWindowID(UIWindow w1, UIWindow w2)
+		public static int SortByCustomWindowID(DUIWindow w1, DUIWindow w2)
 		{
 			return w1.CustomID.CompareTo(w2.CustomID);
 		}
@@ -439,12 +439,12 @@ namespace UnityEngine.UI
 			get
 			{
 				// Get the windows
-				List<UIWindow> windows = UIWindow.GetWindows();
+				List<DUIWindow> windows = DUIWindow.GetWindows();
 				
 				if (GetWindows().Count > 0)
 				{
 					// Sort the windows by id
-					windows.Sort(UIWindow.SortByCustomWindowID);
+					windows.Sort(DUIWindow.SortByCustomWindowID);
 					
 					// Return the last window id plus one
 					return windows[windows.Count - 1].CustomID + 1;
@@ -460,10 +460,10 @@ namespace UnityEngine.UI
 		/// </summary>
 		/// <returns>The window.</returns>
 		/// <param name="id">Identifier.</param>
-		public static UIWindow GetWindow(UIWindowID id)
+		public static DUIWindow GetWindow(UIWindowID id)
 		{
 			// Get the windows and try finding the window with the given id
-			foreach (UIWindow window in UIWindow.GetWindows())
+			foreach (DUIWindow window in DUIWindow.GetWindows())
 				if (window.ID == id)
 					return window;
 			
@@ -475,10 +475,10 @@ namespace UnityEngine.UI
 		/// </summary>
 		/// <returns>The window.</returns>
 		/// <param name="id">The custom identifier.</param>
-		public static UIWindow GetWindowByCustomID(int customId)
+		public static DUIWindow GetWindowByCustomID(int customId)
 		{
 			// Get the windows and try finding the window with the given id
-			foreach (UIWindow window in UIWindow.GetWindows())
+			foreach (DUIWindow window in DUIWindow.GetWindows())
 				if (window.CustomID == customId)
 					return window;
 			
@@ -492,15 +492,15 @@ namespace UnityEngine.UI
 		public static void FocusWindow(UIWindowID id)
 		{
 			// Focus the window
-			if (UIWindow.GetWindow(id) != null)
-				UIWindow.GetWindow(id).Focus();
+			if (DUIWindow.GetWindow(id) != null)
+				DUIWindow.GetWindow(id).Focus();
 		}
 		
 		/// <summary>
 		/// Raises the before focus window event.
 		/// </summary>
 		/// <param name="window">The window.</param>
-		protected static void OnBeforeFocusWindow(UIWindow window)
+		protected static void OnBeforeFocusWindow(DUIWindow window)
 		{
 			if (m_FucusedWindow != null)
 				m_FucusedWindow.m_IsFocused = false;

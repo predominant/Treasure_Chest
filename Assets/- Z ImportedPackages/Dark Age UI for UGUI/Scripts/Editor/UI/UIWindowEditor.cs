@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace UnityEditor.UI
 {
-	[CanEditMultipleObjects, CustomEditor(typeof(UnityEngine.UI.UIWindow))]
+	[CanEditMultipleObjects, CustomEditor(typeof(UnityEngine.UI.DUIWindow))]
 	public class UIWindowEditor : Editor {
 		
 		private SerializedProperty m_WindowIdProperty;
@@ -76,9 +76,9 @@ namespace UnityEditor.UI
 			EditorGUILayout.PropertyField(this.m_TransitionProperty, new GUIContent("Transition"));
 			
 			// Get the transition
-			UIWindow.Transition transition = (UIWindow.Transition)this.m_TransitionProperty.enumValueIndex;
+			DUIWindow.Transition transition = (DUIWindow.Transition)this.m_TransitionProperty.enumValueIndex;
 			
-			if (transition == UIWindow.Transition.Fade)
+			if (transition == DUIWindow.Transition.Fade)
 			{
 				EditorGUI.indentLevel = (EditorGUI.indentLevel + 1);
 				EditorGUILayout.PropertyField(this.m_TransitionEasingProperty, new GUIContent("Easing"));

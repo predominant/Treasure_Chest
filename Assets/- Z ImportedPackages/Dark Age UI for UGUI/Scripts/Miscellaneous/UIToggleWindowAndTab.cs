@@ -5,7 +5,7 @@ namespace UnityEngine.UI
 {
 	public class UIToggleWindowAndTab : MonoBehaviour {
 		
-		public UIWindow window;
+		public DUIWindow window;
 		public UITab tab;
 		
 		public void Toggle()

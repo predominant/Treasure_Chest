@@ -61,20 +61,20 @@ namespace UnityEngine.UI
 			return (this.m_Image.canvasRenderer.GetAlpha() > 0f);
 		}
 		
-		public void OnTransitionBegin(UIWindow window, UIWindow.VisualState state, bool instant)
+		public void OnTransitionBegin(DUIWindow window, DUIWindow.VisualState state, bool instant)
 		{
 			if (!this.IsActive() || window == null)
 				return;
 			
 			// Check if we are receiving hide event and we are not showing the overlay to begin with, return
-			if (state == UIWindow.VisualState.Hidden && !this.IsVisible())
+			if (state == DUIWindow.VisualState.Hidden && !this.IsVisible())
 				return;
 			
 			// Prepare transition duration
 			float duration = (instant) ? 0f : window.transitionDuration;
 			
 			// Showing a window
-			if (state == UIWindow.VisualState.Shown)
+			if (state == DUIWindow.VisualState.Shown)
 			{
 				// Increase the window count so we know when to hide the overlay
 				this.m_WindowsCount += 1;
