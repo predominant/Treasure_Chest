@@ -12,34 +12,49 @@ public class LoginMenuController : MonoBehaviour
     public GameObject m_OfflinePanel = null;
     public GameObject m_WaitingPanel = null;
     public GameObject m_OnlinePanel = null;
+    public float m_GSConnectRetryTime = 2f;
 
     [HideInInspector]
-    public static bool GSReconnecting = false;
+    public static bool GSReconnecting = true;
 
     private bool m_ProfileReady = false;
     private bool m_UIHidden = false;
+    protected float m_GSConnectRetryTimer = 0f;
 
     #region Unity Events
     void Start()
     {
-        m_OnlinePanel.SetActive(false);
-        m_WaitingPanel.SetActive(false);
-        m_OfflinePanel.SetActive(true);
+		m_OnlinePanel.SetActive(false);
+		m_WaitingPanel.SetActive(true);
+		m_OfflinePanel.SetActive(false);
 
         ProfileManager.OnStateChanged += ProfileManager_OnStateChanged;
         GS.GameSparksAvailable += GS_OnStateChanged;
-
-        if( ProfileManager.IsLoggedIn )
-        {
-            m_OnlinePanel.SetActive(true);
-            m_WaitingPanel.SetActive(false);
-            m_OfflinePanel.SetActive(false);
-        }
     }
 
     void OnDestroy()
     {
         ProfileManager.OnStateChanged -= ProfileManager_OnStateChanged;        
+    }
+
+    void Update()
+    {
+        if( GS.Available )
+        {
+            m_GSConnectRetryTimer = 0f;
+            GSReconnecting = false;
+        }
+        else
+        {
+            m_GSConnectRetryTimer += Time.unscaledDeltaTime;
+
+            if( m_GSConnectRetryTimer >= m_GSConnectRetryTime )
+            {
+                m_GSConnectRetryTimer = 0f;
+                GS.Disconnect();
+                GS.Reconnect();
+            }
+        }
     }
     #endregion
 
@@ -50,13 +65,28 @@ public class LoginMenuController : MonoBehaviour
 
         if( !isAvailable )
            GS_Reconnect_Cor();
+		else
+		{
+			if (ProfileManager.IsLoggedIn) {
+				m_OnlinePanel.SetActive(true);
+				m_WaitingPanel.SetActive(false);
+				m_OfflinePanel.SetActive(false);
+			} 
+			else
+			{
+				m_OnlinePanel.SetActive(false);
+				m_WaitingPanel.SetActive(false);
+				m_OfflinePanel.SetActive(true);
+
+			}
+		}
     }
 
     protected IEnumerable GS_Reconnect_Cor()
     {
-        yield return new WaitForSeconds(1);
         GSReconnecting = true;
         GS.Reconnect();
+        yield return new WaitForSeconds(1);
     }
     
     #endregion
