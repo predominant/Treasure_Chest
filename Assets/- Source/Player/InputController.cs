@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -22,7 +23,7 @@ public class InputController : MonoBehaviour
         m_Path.MoveComplete += OnMoveComplete;
     }
 
-    void Update()
+    public void OnInteract()
     {
         Vector3 targetMoveLocation = Vector3.zero;
 
