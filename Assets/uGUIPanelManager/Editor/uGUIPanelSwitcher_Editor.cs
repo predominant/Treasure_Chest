@@ -8,80 +8,82 @@ using uGUIPanelManager;
 public class uGUIPanelSwitcher_Editor : Editor
 {
 
-    protected uGUIPanelSwitcher switcher; 
-    protected uGUIPanelSwitcher Switcher
-    {
-        get
-        {
-            if (switcher == null)
-            {
-                switcher = (uGUIPanelSwitcher)target;
-            }
-            return switcher;
-        }
-    }
+	protected uGUIPanelSwitcher switcher; 
+	protected uGUIPanelSwitcher Switcher
+	{
+		get
+		{
+			if (switcher == null)
+			{
+				switcher = (uGUIPanelSwitcher)target;
+			}
+			return switcher;
+		}
+	}
 
 	
-    public override void OnInspectorGUI()
-    {
-        EditorGUI.BeginChangeCheck();
-        int index = GetPanelIndex(Switcher.panelName);
+	public override void OnInspectorGUI()
+	{
+		EditorGUI.BeginChangeCheck();
+		int index = GetPanelIndex(Switcher.panelName);
+		if (index == -1)
+		{
+			index = 0;
+			if (GetPanelNameArray().Length > 0)
+			{
+				switcher.panelName = GetPanelNameArray() [index];
+			}
+		}
+		GUILayout.Label("Panel:");
+		if (index < uGUIManager.instance.managedPanels.Length)
+		{
+			int newindex = EditorGUILayout.Popup(index, GetPanelNameArray());
+			if (index != newindex)
+			{
+				Switcher.panelName = uGUIManager.instance.managedPanels [newindex].name;
+			}
+		}
 
-        GUILayout.Label("Panel:");
-        if (index < uGUIManager.instance.managedPanels.Length)
-        {
-            int newindex = EditorGUILayout.Popup(index, GetPanelNameArray());
-            if (index != newindex)
-            {
-                Switcher.panelName = uGUIManager.instance.managedPanels [newindex].name;
-            }
-        }
+		if (Switcher.toggle)
+		{
+			Switcher.targetState = (PanelState)EditorGUILayout.EnumPopup("Toggle between:", Switcher.targetState);
+			Switcher.toggleState = (PanelState)EditorGUILayout.EnumPopup("and:", Switcher.toggleState);
+		}
+		else
+		{
+			Switcher.targetState = (PanelState)EditorGUILayout.EnumPopup("Action:", Switcher.targetState);
+		}
 
-        if (Switcher.toggle)
-        {
-            Switcher.targetState = (PanelState)EditorGUILayout.EnumPopup("Toggle between:", Switcher.targetState);
-            Switcher.toggleState = (PanelState)EditorGUILayout.EnumPopup("and:", Switcher.toggleState);
-        }
-        else
-        {
-            Switcher.targetState = (PanelState)EditorGUILayout.EnumPopup("Action:", Switcher.targetState);
-        }
+		Switcher.toggle = GUILayout.Toggle(Switcher.toggle, "Toggle");
+		Switcher.additional = GUILayout.Toggle(Switcher.additional, "additional");
+		Switcher.queued = GUILayout.Toggle(Switcher.queued, "Queued");
 
-        Switcher.toggle = GUILayout.Toggle(Switcher.toggle, "Toggle");
-        Switcher.additional = GUILayout.Toggle(Switcher.additional, "additional");
-        Switcher.queued = GUILayout.Toggle(Switcher.queued, "Queued");
-        Switcher.instant = GUILayout.Toggle(Switcher.instant, "Instant");
+		if (EditorGUI.EndChangeCheck())
+		{
+			EditorUtility.SetDirty(Switcher.gameObject);
+		}
 
-        if (EditorGUI.EndChangeCheck())
-        {
-            EditorUtility.SetDirty(Switcher.gameObject);
-        }
+	}
 
-    }
+	private int GetPanelIndex(string panelName)
+	{
+		for (int i = 0; i< uGUIManager.instance.managedPanels.Length; i++)
+		{
+			if (uGUIManager.instance.managedPanels [i].name == panelName)
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
 
-    private int GetPanelIndex(string panelName)
-    {
-        for (int i = 0; i< uGUIManager.instance.managedPanels.Length; i++)
-        {
-            if (uGUIManager.instance.managedPanels [i].name == panelName)
-            {
-                return i;
-            }
-        }
-        if (uGUIManager.instance.managedPanels.Length > 0)
-        {
-            switcher.panelName = uGUIManager.instance.managedPanels [0].name;
-        }
-        return 0;
-    }
-
-    private string[] GetPanelNameArray()
-    {
-        string[] names = new string[uGUIManager.instance.managedPanels.Length];
-        for (int i = 0; i< uGUIManager.instance.managedPanels.Length; i++)
-        {
-            names [i] = uGUIManager.instance.managedPanels [i].name;	
-        }
-        return names;
-    }
+	private string[] GetPanelNameArray()
+	{
+		string[] names = new string[uGUIManager.instance.managedPanels.Length];
+		for (int i = 0; i< uGUIManager.instance.managedPanels.Length; i++)
+		{
+			names [i] = uGUIManager.instance.managedPanels [i].name;	
+		}
+		return names;
+	}
 }
