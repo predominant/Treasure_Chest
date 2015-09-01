@@ -23,18 +23,19 @@ public class MiningNode : MonoBehaviour, Interactable
 
             new LogEventRequest()
                 .SetEventKey("NODE_COLLECT")
-                .SetEventAttribute("Type", 0)
-                .SetEventAttribute("SubType", 0)
+                .SetEventAttribute("JobType", "Mining")
+                .SetEventAttribute("SubType", "Coal")
                 .Send( (response) =>
                 {
                     if (response.HasErrors)
                         Debug.Log("Node collection net request failed");
                     else
                     {
-                        int? yieldAmt = response.ScriptData.GetInt("Amount");
+                        int? itemAmt = response.ScriptData.GetInt("Amount");
                         int? itemType = response.ScriptData.GetInt("Type");
+                        int? expAmt = response.ScriptData.GetInt("Experience");
 
-                        Debug.Log("Item: " + ((Item.Type)(itemType)).ToString() + ", Yield " + yieldAmt);
+                        Debug.Log("Item: " + ((Item.Type)(itemType)).ToString() + ", Yield: " + itemAmt + ", Experience: " + expAmt );
                         GameObject.Destroy(this.gameObject);
                     }
                 });
