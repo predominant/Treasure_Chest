@@ -196,17 +196,23 @@ public class AIPath : MonoBehaviour {
 			StartCoroutine (RepeatTrySearchPath ());
 		}
 	}
-	
-	public void OnDisable () {
+
+	public void Stop()
+	{
 		// Abort calculation of path
 		if (seeker != null && !seeker.IsDone()) seeker.GetCurrentPath().Error();
-		
+
 		// Release current path
-		if (path != null) path.Release (this);
+		if (path != null) path.Release(this);
 		path = null;
-		
+
 		//Make sure we receive callbacks when paths complete
 		seeker.pathCallback -= OnPathComplete;
+	}
+
+	public void OnDisable()
+	{
+		Stop();
 	}
 	
 	/** Tries to search for a path every #repathRate seconds.

@@ -1441,8 +1441,12 @@ public class KGFOrbitCam : KGFObject, KGFIValidator
 		if(itsTarget.itsTarget == theObject)	//do nothing if same target
 			return;
 		
-		itsTargetOld = itsTarget.itsTarget;
-		itsTargetOldTransform = itsTargetOld.transform;
+		if( null != itsTarget.itsTarget )
+		{
+			itsTargetOld = itsTarget.itsTarget;
+			itsTargetOldTransform = itsTargetOld.transform;
+		}
+
 		itsTarget.itsTarget = theObject;
 		itsTargetTranform = itsTarget.itsTarget.transform;
 		if(EventTargetChanged != null)
