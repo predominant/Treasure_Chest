@@ -97,7 +97,8 @@ public class SceneManager : MonoBehaviour
 
 	protected void OnTransitionOutEffectComplete()
 	{
-		m_SceneLoadProgress = Application.LoadLevelAsync(m_SceneTransitions.Last().ToScene);
+		//m_SceneLoadProgress = Application.LoadLevelAsync(m_SceneTransitions.Last().ToScene);
+		Application.LoadLevel(m_SceneTransitions.Last().ToScene);
 	}
 
 	public void ChangeScene( SceneTransition transition )
