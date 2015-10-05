@@ -4,6 +4,8 @@ using System.Linq;
 
 public class Player : MonoBehaviour
 {
+	public string m_StartLocatorName = "Player Start";
+
 	protected AIPath m_Path = null;
 	protected Seeker m_Seeker = null;
 
@@ -24,6 +26,22 @@ public class Player : MonoBehaviour
 	{
 		m_Path = GetComponent<AIPath>();
 		m_Seeker = GetComponent<Seeker>();
+
+		// Find the start locator and set our position/orientation
+		if( !string.IsNullOrEmpty( m_StartLocatorName ) )
+		{
+			GameObject[] locators = GameObject.FindGameObjectsWithTag( "Locator" );
+			if( locators.Length > 0 )
+			{
+				GameObject startLocator = locators.FirstOrDefault( (i) => { return i.name == m_StartLocatorName; } );
+
+				if( null != startLocator )
+				{
+					transform.position = startLocator.transform.position;
+					transform.rotation = startLocator.transform.rotation;
+				}
+			}
+		}
 	}
 
 	void OnLevelWasLoaded(int level)
