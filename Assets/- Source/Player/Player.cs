@@ -15,7 +15,7 @@ public class Player : MonoBehaviour
 		if( playerObjs.Length > 1 )
 		{
 			Debug.LogWarning( "Duplicate 'Player' detected - destroying" );
-			DestroyImmediate(gameObject);
+			Destroy(gameObject);
 			return;
 		}
 		
@@ -60,7 +60,11 @@ public class Player : MonoBehaviour
 		}
 
 		// Find a locator of this name
-		GameObject locator = locators.First( (i) => { return i.name == transition.LocatorName; } );
+		GameObject locator = null;
+		foreach( GameObject locObj in locators )
+			if( locObj.name == transition.LocatorName )
+				locator = locObj;
+
 		if( null == locator )
 		{
 			Debug.LogWarning( "No Locator of name " + transition.LocatorName );

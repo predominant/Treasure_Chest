@@ -14,6 +14,6 @@ public class GUIManager : Singleton<GUIManager>
 			instance = this;
 		}
 		else
-			DestroyImmediate(gameObject);
+			Destroy(gameObject);
 	}
 }

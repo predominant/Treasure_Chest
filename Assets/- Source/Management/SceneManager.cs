@@ -43,16 +43,18 @@ public class SceneManager : MonoBehaviour
 #region Unity Events
 	void Awake()
 	{
-		if( null == instance )
+	}
+
+	void Start()
+	{
+		if (null == instance)
 		{
 			instance = this;
 			InitializeSceneReferences();
 			InitialTransitionIn();
 		}
 		else
-			DestroyImmediate( gameObject );
-
-		//DontDestroyOnLoad( GameObject.Find("- GUI") );
+			Destroy(gameObject);
 	}
 
 	void OnLevelWasLoaded(int level)
