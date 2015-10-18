@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -15,13 +15,16 @@ namespace TMPro
     [Serializable]
     public class TextMeshProFont : ScriptableObject
     {
+        public enum FontAssetTypes { None = 0, SDF = 1, Bitmap = 2 };
+        public FontAssetTypes fontAssetType;
+        
         public FaceInfo fontInfo
         { get { return m_fontInfo; } }
 
         [SerializeField]
         private FaceInfo m_fontInfo;
         public int fontHashCode;
-              
+
         [SerializeField]
         public Texture2D atlas; // Should add a property to make this read-only.
 
@@ -52,10 +55,11 @@ namespace TMPro
         private KerningTable m_kerningInfo;
 
         [SerializeField]
-        //private KerningPair m_kerningPair;  // Use for creating a new kerning pair in Editor Panel.
+        #pragma warning disable 0169 // Property is used to create an empty Kerning Pair in the editor.
+        private KerningPair m_kerningPair;  // Used for creating a new kerning pair in Editor Panel.
 
 
-        // Line Breaking Characters       
+        // Line Breaking Characters
         public LineBreakingTable lineBreakingInfo
         { get { return m_lineBreakingInfo; } }
 
@@ -75,6 +79,7 @@ namespace TMPro
 
         public float NormalStyle = 0;
         public float BoldStyle = 0.75f;
+        public float boldSpacing = 7f;
         public byte ItalicStyle = 35;
         public byte TabSize = 10;
 
@@ -122,12 +127,13 @@ namespace TMPro
         public void AddGlyphInfo(GlyphInfo[] glyphInfo)
         {
             m_glyphInfoList = new List<GlyphInfo>();
-            m_characterSet = new int[m_fontInfo.CharacterCount];
+            int characterCount = glyphInfo.Length;
 
-            for (int i = 0; i < m_fontInfo.CharacterCount; i++)
+            m_fontInfo.CharacterCount = characterCount;
+            m_characterSet = new int[characterCount];
+
+            for (int i = 0; i < characterCount; i++)
             {
-                //Debug.Log("Glyph Info   x:" + glyphInfo[i].x + "  y:" + glyphInfo[i].y + "  w:" + glyphInfo[i].width + "  h:" + glyphInfo[i].height);
-
                 GlyphInfo g = new GlyphInfo();
                 g.id = glyphInfo[i].id;
                 g.x = glyphInfo[i].x;
@@ -167,6 +173,9 @@ namespace TMPro
                 return;
             }
 
+            // Check Font Asset type
+            //Debug.Log(name + "   " + fontAssetType);
+
             // Create new instance of GlyphInfo Dictionary for fast access to glyph info.
             m_characterDictionary = new Dictionary<int, GlyphInfo>();
             foreach (GlyphInfo glyph in m_glyphInfoList)
@@ -180,14 +189,14 @@ namespace TMPro
 
             GlyphInfo temp_charInfo = new GlyphInfo();
 
-            // Add Character (10) LineFeed, (13) Carriage Return & Space (32) to Dictionary if they don't exists.                      
+            // Add Character (10) LineFeed, (13) Carriage Return & Space (32) to Dictionary if they don't exists.
             if (m_characterDictionary.ContainsKey(32))
             {
                 m_characterDictionary[32].width = m_characterDictionary[32].xAdvance; // m_fontInfo.Ascender / 5;
                 m_characterDictionary[32].height = m_fontInfo.Ascender - m_fontInfo.Descender;
                 m_characterDictionary[32].yOffset= m_fontInfo.Ascender;
             }
-            else          
+            else
             {
                 //Debug.Log("Adding Character 32 (Space) to Dictionary for Font (" + m_fontInfo.Name + ").");
                 temp_charInfo = new GlyphInfo();
@@ -202,6 +211,13 @@ namespace TMPro
                 m_characterDictionary.Add(32, temp_charInfo);
             }
 
+            // Add Non-Breaking Space (160)
+            if (!m_characterDictionary.ContainsKey(160))
+            {
+                temp_charInfo = GlyphInfo.Clone(m_characterDictionary[32]);
+                m_characterDictionary.Add(160, temp_charInfo);
+            }
+
 
             if (m_characterDictionary.ContainsKey(10) == false)
             {
@@ -211,14 +227,15 @@ namespace TMPro
                 temp_charInfo.id = 10;
                 temp_charInfo.x = 0; // m_characterDictionary[32].x;
                 temp_charInfo.y = 0; // m_characterDictionary[32].y;
-                temp_charInfo.width = 0; // m_characterDictionary[32].width;
-                temp_charInfo.height = 0; // m_characterDictionary[32].height;
+                temp_charInfo.width = 10; // m_characterDictionary[32].width;
+                temp_charInfo.height = m_characterDictionary[32].height;
                 temp_charInfo.xOffset = 0; // m_characterDictionary[32].xOffset;
-                temp_charInfo.yOffset = 0; // m_characterDictionary[32].yOffset;
+                temp_charInfo.yOffset = m_characterDictionary[32].yOffset;
                 temp_charInfo.xAdvance = 0;
                 m_characterDictionary.Add(10, temp_charInfo);
 
-                m_characterDictionary.Add(13, temp_charInfo);
+                if (!m_characterDictionary.ContainsKey(13))
+                    m_characterDictionary.Add(13, temp_charInfo);
             }
 
             // Add Tab Character to Dictionary. Tab is Tab Size * Space Character Width.
@@ -272,28 +289,20 @@ namespace TMPro
             TextAsset followingCharFile = Resources.Load("LineBreaking Following Characters", typeof(TextAsset)) as TextAsset;
             if (followingCharFile != null)
                 m_lineBreakingInfo.followingCharacters = GetCharacters(followingCharFile);
-            
+
 
             // Compute Hashcode for the font asset name
-            string fontName = this.name;
-            fontHashCode = 0;
-            for (int i = 0; i < fontName.Length; i++)
-                fontHashCode = (fontHashCode << 5) - fontHashCode + fontName[i];
-
+            fontHashCode = TMP_TextUtilities.GetSimpleHashCode(this.name);
 
             // Compute Hashcode for the material name
-            string materialName = material.name;
-            materialHashCode = 0;
-            for (int i = 0; i < materialName.Length; i++)
-                materialHashCode = (materialHashCode << 5) - materialHashCode + materialName[i];
-            
+            materialHashCode = TMP_TextUtilities.GetSimpleHashCode(material.name);
 
         }
 
         // Get the characters from the line breaking files
         private Dictionary<int, char> GetCharacters(TextAsset file)
         {                      
-            Dictionary<int, char> dict = new Dictionary<int, char>();                   
+            Dictionary<int, char> dict = new Dictionary<int, char>();
             string text = file.text;
 
             for (int i = 0; i < text.Length; i++)

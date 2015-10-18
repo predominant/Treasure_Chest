@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -19,6 +19,7 @@ namespace TMPro.EditorUtilities
             //SerializedProperty prop_fileID = property.FindPropertyRelative("fileID");
             SerializedProperty prop_id = property.FindPropertyRelative("id");
             SerializedProperty prop_name = property.FindPropertyRelative("name");
+            SerializedProperty prop_hashCode = property.FindPropertyRelative("hashCode");
             SerializedProperty prop_x = property.FindPropertyRelative("x");
             SerializedProperty prop_y = property.FindPropertyRelative("y");
             SerializedProperty prop_width = property.FindPropertyRelative("width");
@@ -45,7 +46,7 @@ namespace TMPro.EditorUtilities
             }
             
             // Compute the normalized texture coordinates
-            Rect texCoords = new Rect(prop_x.floatValue / tex.width, prop_y.floatValue / tex.height, prop_width.floatValue / tex.width, prop_height.floatValue / tex.height);       
+            Rect texCoords = new Rect(prop_x.floatValue / tex.width, prop_y.floatValue / tex.height, prop_width.floatValue / tex.width, prop_height.floatValue / tex.height);
             GUI.DrawTextureWithTexCoords(new Rect(position.x + 5, position.y, spriteSize.x,  spriteSize.y), tex, texCoords, true);
 
             // We get Rect since a valid position may not be provided by the caller.
@@ -58,14 +59,15 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.LabelField(new Rect(rect.x + 5f, rect.y, 50f, 18), new GUIContent("ID: " + prop_id.intValue));
-            EditorGUI.LabelField(new Rect(rect.x + 60f, rect.y, 200f, 18), new GUIContent("Name: " + prop_name.stringValue));
-            //EditorGUI.LabelField(new Rect(rect.x + 280f, rect.y, 150f, 18), new GUIContent("File ID: " + prop_fileID.intValue));
+            EditorGUI.PropertyField(new Rect(rect.x + 50f, rect.y, rect.width - 125, 18), prop_name, new GUIContent("Name: " + prop_name.stringValue));
             if (EditorGUI.EndChangeCheck())
             {
-                //string filepath = AssetDatabase.GetAssetPath(prop_sprite.objectReferenceValue);
-                //TextureImporter texImporter = AssetImporter.GetAtPath(filepath) as TextureImporter;
-                //texImporter
-                //AssetDatabase.RenameAsset()
+                // Recompute hashCode for new name
+                prop_hashCode.intValue = TMP_TextUtilities.GetSimpleHashCode(prop_name.stringValue);
+                // Check to make sure for duplicates
+                property.serializedObject.ApplyModifiedProperties();
+                // Dictionary needs to be updated since HashCode has changed.
+                //TMP_StyleSheet.Instance.LoadStyleDictionary();
             }
 
             EditorGUIUtility.labelWidth = 30f;
@@ -82,7 +84,7 @@ namespace TMPro.EditorUtilities
 
             EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(new Rect(rect.x + 5f + width * 0, rect.y + 44, width - 5f, 18), prop_xOffset, new GUIContent("OX:"));
-            EditorGUI.PropertyField(new Rect(rect.x + 5f + width * 1, rect.y + 44, width - 5f, 18), prop_yOffset, new GUIContent("OY:"));            
+            EditorGUI.PropertyField(new Rect(rect.x + 5f + width * 1, rect.y + 44, width - 5f, 18), prop_yOffset, new GUIContent("OY:"));
             EditorGUI.PropertyField(new Rect(rect.x + 5f + width * 2, rect.y + 44, width - 5f, 18), prop_xAdvance, new GUIContent("Adv."));
             EditorGUI.PropertyField(new Rect(rect.x + 5f + width * 3, rect.y + 44, width - 5f, 18), prop_scale, new GUIContent("SF."));
             if (EditorGUI.EndChangeCheck())

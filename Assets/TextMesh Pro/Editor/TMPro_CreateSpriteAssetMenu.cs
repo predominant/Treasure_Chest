@@ -25,13 +25,13 @@ namespace TMPro.EditorUtilities
 
             Texture2D sourceTex = target as Texture2D;
 
-            // Get the path to the selected texture.       
+            // Get the path to the selected texture.
             string filePathWithName = AssetDatabase.GetAssetPath(sourceTex);
             string fileNameWithExtension = Path.GetFileName(filePathWithName);
             string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePathWithName);
             string filePath = filePathWithName.Replace(fileNameWithExtension, "");
              
-            // Check if Sprite Asset already exists                    
+            // Check if Sprite Asset already exists
             SpriteAsset spriteAsset = AssetDatabase.LoadAssetAtPath(filePath + fileNameWithoutExtension + ".asset", typeof(SpriteAsset)) as SpriteAsset;
             bool isNewAsset = spriteAsset == null ? true : false;
 
@@ -41,13 +41,13 @@ namespace TMPro.EditorUtilities
                 spriteAsset = ScriptableObject.CreateInstance<SpriteAsset>();
                 AssetDatabase.CreateAsset(spriteAsset, filePath + fileNameWithoutExtension + ".asset");
 
-                // Assign new Sprite Sheet texture to the Sprite Asset.         
+                // Assign new Sprite Sheet texture to the Sprite Asset.
                 spriteAsset.spriteSheet = sourceTex;
 
 
                 spriteAsset.spriteInfoList = GetSpriteInfo(sourceTex);
 
-                //spriteAsset.UpdateSpriteArray(sourceTex);         
+                //spriteAsset.UpdateSpriteArray(sourceTex);
                 //spriteSheet.hideFlags = HideFlags.HideInHierarchy;
                 //AssetDatabase.AddObjectToAsset(spriteSheet, spriteAsset);
 
@@ -95,6 +95,7 @@ namespace TMPro.EditorUtilities
                 //spriteInfo.fileID = UnityEditor.Unsupported.GetLocalIdentifierInFile(sprite.GetInstanceID());
                 spriteInfo.id = i;
                 spriteInfo.name = sprite.name;
+                spriteInfo.hashCode = TMP_TextUtilities.GetSimpleHashCode(spriteInfo.name);
 
                 Rect spriteRect = sprite.rect;
                 spriteInfo.x = spriteRect.x;
@@ -122,7 +123,7 @@ namespace TMPro.EditorUtilities
         }
 
 
-        // Update exsisting SpriteInfo
+        // Update existing SpriteInfo
         private static List<SpriteInfo> UpdateSpriteInfo(SpriteAsset spriteAsset)
         {
             //Debug.Log("Updating Sprite Asset.");
@@ -145,6 +146,8 @@ namespace TMPro.EditorUtilities
 
                 Rect spriteRect = sprite.rect;
                 spriteInfo.name = sprite.name;
+                spriteInfo.hashCode = TMP_TextUtilities.GetSimpleHashCode(spriteInfo.name);
+
                 spriteInfo.x = spriteRect.x;
                 spriteInfo.y = spriteRect.y;
                 spriteInfo.width = spriteRect.width;

@@ -14,6 +14,9 @@ namespace TMPro.EditorUtilities
         public static GUISkin TMP_GUISkin;
 
         public static GUIStyle Label;
+        //public static GUIStyle ScrollView;
+        //public static GUIStyle VerticalScrollBar;
+        //public static GUIStyle HorizontalScrollBar;
         public static GUIStyle Group_Label;
         public static GUIStyle Group_Label_Left;
         public static GUIStyle TextAreaBoxEditor;
@@ -93,6 +96,9 @@ namespace TMPro.EditorUtilities
             if (TMP_GUISkin != null)
             {
                 Label = TMP_GUISkin.FindStyle("Label");
+                //ScrollView = TMP_GUISkin.FindStyle("ScrollView");
+                //VerticalScrollBar = TMP_GUISkin.FindStyle("VerticalScrollbar");
+                //HorizontalScrollBar = TMP_GUISkin.FindStyle("HorizontalScrollbar");
                 Section_Label = TMP_GUISkin.FindStyle("Section Label");
                 Group_Label = TMP_GUISkin.FindStyle("Group Label");
                 Group_Label_Left = TMP_GUISkin.FindStyle("Group Label - Left Half");
@@ -101,8 +107,6 @@ namespace TMPro.EditorUtilities
                 TextureAreaBox = TMP_GUISkin.FindStyle("Texture Area Box");
                 SquareAreaBox85G = TMP_GUISkin.FindStyle("Square Area Box (85 Grey)");
 
-                
-                
 
                 alignContent_A = new GUIContent[] { 
                     new GUIContent(alignLeft, "Left"), 

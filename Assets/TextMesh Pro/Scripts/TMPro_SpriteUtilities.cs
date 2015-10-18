@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -19,6 +19,7 @@ namespace TMPro
         //public int fileID;
         public int id;
         public string name;
+        public int hashCode;
         public float x;
         public float y;
         public float width;

@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+#pragma warning disable 0649 // Disabled warnings.
 
 namespace TMPro
 {
@@ -51,10 +52,10 @@ namespace TMPro
         private int m_HashCode;
 
         [SerializeField]
-        private string m_OpeningDefinition = null;
+        private string m_OpeningDefinition;
 
         [SerializeField]
-        private string m_ClosingDefinition = null;
+        private string m_ClosingDefinition;
 
         [SerializeField]
         private int[] m_OpeningTagArray;

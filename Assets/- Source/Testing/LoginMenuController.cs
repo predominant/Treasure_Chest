@@ -13,6 +13,8 @@ public class LoginMenuController : MonoBehaviour
     public GameObject m_WaitingPanel = null;
     public GameObject m_OnlinePanel = null;
     public float m_GSConnectRetryTime = 2f;
+	public string m_GameSceneName = "";
+	public string m_GameSceneLocator = "";
 
     [HideInInspector]
     public static bool GSReconnecting = true;
@@ -111,6 +113,7 @@ public class LoginMenuController : MonoBehaviour
 							m_OnlinePanel.SetActive(true);
 							m_WaitingPanel.SetActive(false);
 							m_OfflinePanel.SetActive(false);
+							EnterGame();
 						}
                     });
                 }
@@ -210,4 +213,11 @@ public class LoginMenuController : MonoBehaviour
         onlinePanel.FindChild("Hide UI").FindChild("Text").GetComponent<UnityEngine.UI.Text>().text = btnText;
     }
     #endregion
+
+	#region Mutators
+	public void EnterGame()
+	{
+		SceneManager.instance.ChangeScene(new SceneManager.SceneTransition(m_GameSceneName, ""));
+	}
+	#endregion
 }

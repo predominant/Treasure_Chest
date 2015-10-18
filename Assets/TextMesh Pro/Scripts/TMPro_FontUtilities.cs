@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -48,6 +48,28 @@ namespace TMPro
         public float xOffset;
         public float yOffset;
         public float xAdvance;
+
+
+        /// <summary>
+        /// Function to create a deep copy of a GlyphInfo.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
+        public static GlyphInfo Clone (GlyphInfo source)
+        {
+            GlyphInfo copy = new GlyphInfo();
+
+            copy.id = source.id;
+            copy.x = source.x;
+            copy.y = source.y;
+            copy.width = source.width;
+            copy.height = source.height;
+            copy.xOffset = source.xOffset;
+            copy.yOffset = source.yOffset;
+            copy.xAdvance = source.xAdvance;
+
+            return copy;
+        }
     }
 
 

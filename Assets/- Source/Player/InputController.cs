@@ -11,7 +11,8 @@ public class InputController : MonoBehaviour
 	public LayerMask m_TouchMask;
     public float m_MoveLocThreshold = 0.2f;
     public float m_MaxInteractRange = 1f;
-    protected Seeker m_Seeker = null;
+	public Animator m_PlayerAnimator = null;
+	protected Seeker m_Seeker = null;
     protected AIPath m_Path = null;
     protected GameObject m_InteractTarget;
 
@@ -57,6 +58,7 @@ public class InputController : MonoBehaviour
         m_Path.target = m_PathLocator;
         m_Path.SearchPath();
 	}
+
     private bool TryGetGroundMoveMouse(out Vector3 targetMoveLocation)
     {
         targetMoveLocation = Vector3.zero;
@@ -165,12 +167,15 @@ public class InputController : MonoBehaviour
 
     private void OnPathComplete(Pathfinding.Path p)
     {
+		m_PlayerAnimator.SetBool("IsMoving", true);
         m_Path.target = null;
     }
 
     private void OnMoveComplete()
     {
-        if (null == m_InteractTarget)
+		m_PlayerAnimator.SetBool("IsMoving", false);
+
+		if (null == m_InteractTarget)
             return;
 
         SetInteractTarget(m_InteractTarget);

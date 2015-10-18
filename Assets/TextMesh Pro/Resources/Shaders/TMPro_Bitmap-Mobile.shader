@@ -1,3 +1,7 @@
+// Copyright (C) 2014 - 2015 Stephan Schaem & Stephan Bouchard - All Rights Reserved
+// This code can only be used under the standard Unity Asset Store End User License Agreement
+// A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
+
 Shader "TMPro/Mobile/Bitmap" {
 
 Properties {
@@ -48,8 +52,6 @@ SubShader {
 			o.vertex = UnityPixelSnap(mul(UNITY_MATRIX_MVP, v.vertex));
 			//o.vertex = mul(UNITY_MATRIX_MVP, v.vertex);
 			o.color = v.color;
-			if(o.color.a > .5) o.color.a -= .5;
-			o.color.a *= 2.0;
 			o.color *= _Color;
 			o.color.rgb *= _DiffusePower;
 			o.texcoord0 = v.texcoord0;

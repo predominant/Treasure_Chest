@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -19,9 +19,7 @@ namespace TMPro
     public class InlineGraphic : MaskableGraphic
     {
 
-
         public Texture texture;
-
 
         public override Texture mainTexture
         {
@@ -36,19 +34,28 @@ namespace TMPro
 
 
         private InlineGraphicManager m_manager;
+        private RectTransform m_RectTransform;
+        private RectTransform m_ParentRectTransform;
         //private CanvasRenderer m_canvasRenderer;
-       
+
         //private List<UIVertex> m_uiVertices;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            m_manager = GetComponentInParent<InlineGraphicManager>();
+        }
+
 
         protected override void OnEnable()
         {
             base.OnEnable();
 
-            m_manager = GetComponentInParent<InlineGraphicManager>();
-            //m_canvasRenderer = GetComponent<CanvasRenderer>();
+            if (m_RectTransform == null) m_RectTransform = gameObject.GetComponent<RectTransform>();
 
             if (m_manager != null && m_manager.spriteAsset != null)
-                texture = m_manager.spriteAsset.spriteSheet;      
+                texture = m_manager.spriteAsset.spriteSheet;
         }
 
 #if UNITY_EDITOR
@@ -59,6 +66,17 @@ namespace TMPro
 #endif
 
 
+        protected override void OnRectTransformDimensionsChange()
+        {
+            if (m_RectTransform == null) m_RectTransform = gameObject.GetComponent<RectTransform>();
+            if (m_ParentRectTransform == null) m_ParentRectTransform = m_RectTransform.parent.GetComponent<RectTransform>();
+
+            // RectTransform properties of the parent and child have to remain in sync for proper alignment.
+            if (m_RectTransform.pivot != m_ParentRectTransform.pivot)
+                m_RectTransform.pivot = m_ParentRectTransform.pivot;
+        }
+
+
         public new void UpdateMaterial()
         {
             base.UpdateMaterial();
@@ -67,21 +85,20 @@ namespace TMPro
         
         protected override void UpdateGeometry()
         {
+            // This function needs to be override otherwise Unity alters the content of the geometry.
             //Debug.Log("UpdateGeometry called.");
-            //base.UpdateGeometry();
+            
         }
 
-        
-        protected override void OnFillVBO(List<UIVertex> vbo)
-        {
-            base.OnFillVBO(vbo);
-            //Debug.Log("OnFillVBO called.");
 
-            //vbo = m_manager.uiVertex.ToList();
+        //protected override void OnFillVBO(List<UIVertex> vbo)
+        //{
+        //    base.OnFillVBO(vbo);
+        //    //Debug.Log("OnFillVBO called.");
 
+        //    //vbo = m_manager.uiVertex.ToList();
 
-        }
-        
+        //}
     }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -19,7 +19,7 @@ namespace TMPro.EditorUtilities
         private struct UI_PanelState
         {
             public static bool spriteAssetInfoPanel = true;
-            public static bool spriteInfoPanel = false;          
+            public static bool spriteInfoPanel = false;
         }
 
         private int m_page = 0;
@@ -75,7 +75,7 @@ namespace TMPro.EditorUtilities
       
             EditorGUILayout.PropertyField(m_spriteAtlas_prop , new GUIContent("Sprite Atlas"));
 
-            // SPRITE LIST                                      
+            // SPRITE LIST
             GUI.enabled = true; // Unlock UI 
             GUILayout.Space(10);
             EditorGUI.indentLevel = 0;
@@ -87,11 +87,11 @@ namespace TMPro.EditorUtilities
             if (UI_PanelState.spriteInfoPanel)
             {
                 int arraySize = m_spriteInfoList_prop.arraySize;
-                int itemsPerPage = (Screen.height - 283) / 80;              
+                int itemsPerPage = (Screen.height - 292) / 80;
 
                 if (arraySize > 0)
-                {                  
-                    // Display each SpriteInfo entry using the SpriteInfo property drawer.                                                                                      
+                {
+                    // Display each SpriteInfo entry using the SpriteInfo property drawer.
                     for (int i = itemsPerPage * m_page; i < arraySize && i < itemsPerPage * (m_page + 1); i++)
                     {
                         EditorGUILayout.BeginVertical(TMP_UIStyleManager.Group_Label, GUILayout.Height(60));
@@ -99,7 +99,7 @@ namespace TMPro.EditorUtilities
                         SerializedProperty spriteInfo = m_spriteInfoList_prop.GetArrayElementAtIndex(i);
                         EditorGUI.BeginChangeCheck();
                         EditorGUILayout.PropertyField(spriteInfo);
-                        EditorGUILayout.EndVertical();                                    
+                        EditorGUILayout.EndVertical();
                     }              
                 }
 
@@ -130,8 +130,10 @@ namespace TMPro.EditorUtilities
                     m_page += 1 * shiftMultiplier;
 
                 // Clamp page range
-                m_page = Mathf.Clamp(m_page, 0, arraySize / itemsPerPage);
-
+                if (itemsPerPage > 0)
+                    m_page = Mathf.Clamp(m_page, 0, arraySize / itemsPerPage);
+                else
+                    m_page = 0;
 
                 // Global Settings
                 
@@ -169,8 +171,7 @@ namespace TMPro.EditorUtilities
             }
 
             //Rect rect = EditorGUILayout.GetControlRect(false, 20);
-            
-           
+
 
             
             if (serializedObject.ApplyModifiedProperties() || evt_cmd == k_UndoRedo || isAssetDirty)

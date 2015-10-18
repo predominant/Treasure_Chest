@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -148,12 +148,12 @@ namespace TMPro
                 // Handling of Legacy lineLength property
                 if (m_textMeshPro != null && m_textMeshPro.lineLength != 72)
                 {
-                    Debug.LogWarning("Converting from using anchor and lineLength properties to Text Container.");
+                    Debug.LogWarning("Converting from using anchor and lineLength properties to Text Container.", this);
                     m_isDefaultHeight = true;
                     int anchor = (int)m_textMeshPro.anchor;
                     m_anchorPosition = (TextContainerAnchors)anchor;
                     m_pivot = GetPivot(m_anchorPosition);
-                    m_rect.width = m_textMeshPro.lineLength;          
+                    m_rect.width = m_textMeshPro.lineLength;
                 }
                 else
                 {

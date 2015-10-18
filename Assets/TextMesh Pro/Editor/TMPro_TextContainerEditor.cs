@@ -21,11 +21,10 @@ namespace TMPro.EditorUtilities
         private Vector3[] m_Rect_handlePoints = new Vector3[4];
         private Vector3[] m_Margin_handlePoints = new Vector3[4];
 
-        protected Vector2 m_anchorPosition;
+        //private Vector2 m_anchorPosition;
 
-        protected Vector3 m_mousePreviousPOS;
-        protected Vector2 m_previousStartPOS;
-
+        //private Vector3 m_mousePreviousPOS;
+        //private Vector2 m_previousStartPOS;
         //private int m_mouseDragFlag = 0;
 
         //private static Transform m_visualHelper;
@@ -34,10 +33,10 @@ namespace TMPro.EditorUtilities
         void OnEnable()
         {
          
-            // Serialized Properties         
+            // Serialized Properties
             anchorPosition_prop = serializedObject.FindProperty("m_anchorPosition");
-            pivot_prop = serializedObject.FindProperty("m_pivot");              
-            rectangle_prop = serializedObject.FindProperty("m_rect");          
+            pivot_prop = serializedObject.FindProperty("m_pivot");
+            rectangle_prop = serializedObject.FindProperty("m_rect"); 
             margins_prop = serializedObject.FindProperty("m_margins");
 
             m_textContainer = (TextContainer)target;
@@ -70,7 +69,6 @@ namespace TMPro.EditorUtilities
 
         public override void OnInspectorGUI()
         {
-                                 
             serializedObject.Update();
 
             GUILayout.Label("<b>TEXT CONTAINER</b>", TMP_UIStyleManager.Section_Label, GUILayout.Height(23));
@@ -89,13 +87,13 @@ namespace TMPro.EditorUtilities
             DrawMaginProperty(margins_prop, "Margins");
             if (EditorGUI.EndChangeCheck())
             {
-                // Re-compute pivot position when changes are made.                            
-                if (anchorPosition_prop.enumValueIndex != 9)            
+                // Re-compute pivot position when changes are made.
+                if (anchorPosition_prop.enumValueIndex != 9)
                     pivot_prop.vector2Value = GetAnchorPosition(anchorPosition_prop.enumValueIndex);
                 
                 m_textContainer.hasChanged = true;
             }
-                    
+
             serializedObject.ApplyModifiedProperties();
         }
 
@@ -103,9 +101,13 @@ namespace TMPro.EditorUtilities
 
         void OnSceneGUI()
         {
-                       
+            //if (Tools.current == Tool.Rect)
+            //    Tools.hidden = true; // Hide Rect tool
+            //else
+            //    Tools.hidden = false;
+
             Event evt = Event.current;
-                                         
+
             Vector3 rectPos = m_transform.position;
             Vector3 lossyScale = new Vector3(1, 1, 1); // m_transform.lossyScale;
             Rect rectangle = m_textContainer.rect;
@@ -118,7 +120,7 @@ namespace TMPro.EditorUtilities
             m_Rect_handlePoints[2] = m_transform.TransformPoint(pivotOffset + new Vector3(+rectangle.width / 2 * lossyScale.x, +rectangle.height / 2 * lossyScale.y, 0)); // TR
             m_Rect_handlePoints[3] = m_transform.TransformPoint(pivotOffset + new Vector3(+rectangle.width / 2 * lossyScale.x, -rectangle.height / 2 * lossyScale.y, 0)); // BR
            
-            Handles.DrawSolidRectangleWithOutline(m_Rect_handlePoints, new Color32(255, 255, 255, 0), new Color32(200, 200, 200, 255));                       
+            Handles.DrawSolidRectangleWithOutline(m_Rect_handlePoints, new Color32(255, 255, 255, 0), new Color32(200, 200, 200, 255));
 
             if (evt.mousePosition.x > HandleUtility.WorldToGUIPoint(m_Rect_handlePoints[0]).x &&
                 evt.mousePosition.x < HandleUtility.WorldToGUIPoint(m_Rect_handlePoints[2]).x &&

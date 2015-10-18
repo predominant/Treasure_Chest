@@ -12,31 +12,25 @@ namespace TMPro
     public class SpriteAsset : ScriptableObject
     {
 
-        // The texture which contains the sprites.      
+        // The texture which contains the sprites.
         public Texture spriteSheet;
 
         // The material used to render these sprites.
         public Material material;
 
-        // Array which contains all the sprites contained in the sprite sheet.           
+        // List which contains the SpriteInfo for the sprites contained in the sprite sheet.
         public List<SpriteInfo> spriteInfoList;
 
 
+        // List which contains the individual sprites.
         private List<Sprite> m_sprites;
-        
-        // Temporary for testing
-        //public bool updateSprite;
+
+
 
 
         void OnEnable()
         {
 
-#if UNITY_EDITOR
-           
-            //if (m_sprites == null)
-            //    LoadSprites();
-#endif 
-        
         }
 
 

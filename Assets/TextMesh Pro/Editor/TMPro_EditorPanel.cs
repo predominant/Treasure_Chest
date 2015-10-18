@@ -1,11 +1,10 @@
-// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
 
 using UnityEngine;
 using UnityEditor;
-using System;
 using System.Collections;
 
 
@@ -15,7 +14,7 @@ namespace TMPro.EditorUtilities
     [CustomEditor(typeof(TextMeshPro)), CanEditMultipleObjects]
     public class TMPro_EditorPanel : Editor
     {
-      
+
 
         private struct m_foldout
         { // Track Inspector foldout panel states, globally.
@@ -31,23 +30,26 @@ namespace TMPro.EditorUtilities
         private static string[] uiStateLabel = new string[] { "\t- <i>Click to expand</i> -", "\t- <i>Click to collapse</i> -" };
 
         private const string k_UndoRedo = "UndoRedoPerformed";
-        //private static string[] k_sortingLayerNames = 
 
-
+        private GUIStyle toggleStyle;
         public int selAlignGrid_A = 0;
         public int selAlignGrid_B = 0;
 
 
         // Serialized Properties
-        private SerializedProperty text_prop;   
-        private SerializedProperty fontAsset_prop;
+        private SerializedProperty text_prop;
 
+        // Right to Left properties
+        private SerializedProperty isRightToLeft_prop;
+        private string m_RTLText;
+
+        private SerializedProperty fontAsset_prop;
         private SerializedProperty fontStyle_prop;
 
-		// Color Properties
-		private SerializedProperty fontColor_prop;
-		private SerializedProperty enableVertexGradient_prop;
-		private SerializedProperty fontColorGradient_prop;
+        // Color Properties
+        private SerializedProperty fontColor_prop;
+        private SerializedProperty enableVertexGradient_prop;
+        private SerializedProperty fontColorGradient_prop;
         private SerializedProperty overrideHtmlColor_prop;
 
         private SerializedProperty fontSize_prop;
@@ -66,7 +68,7 @@ namespace TMPro.EditorUtilities
 
         private SerializedProperty textAlignment_prop;
         //private SerializedProperty textAlignment_prop;
-     
+
         private SerializedProperty horizontalMapping_prop;
         private SerializedProperty verticalMapping_prop;
         private SerializedProperty uvOffset_prop;
@@ -76,9 +78,9 @@ namespace TMPro.EditorUtilities
         private SerializedProperty wordWrappingRatios_prop;
         private SerializedProperty textOverflowMode_prop;
         private SerializedProperty pageToDisplay_prop;
-        
+
         private SerializedProperty enableKerning_prop;
-                 
+
         private SerializedProperty inputSource_prop;
         private SerializedProperty havePropertiesChanged_prop;
         private SerializedProperty isInputPasingRequired_prop;
@@ -107,13 +109,13 @@ namespace TMPro.EditorUtilities
         //private int m_sortingLayerID;
         //private int m_sortingOrder;
 
-     
+
         private bool havePropertiesChanged = false;
 
 
         private TextMeshPro m_textMeshProScript;
         //private Transform m_transform;
-      
+
         private Renderer m_renderer;
         //private int m_currentMaterialID;
         //private int m_previousMaterialID;
@@ -127,14 +129,15 @@ namespace TMPro.EditorUtilities
 
         public void OnEnable()
         {
-                      
+
             //Debug.Log("OnEnable() for Inspector ID " + this.GetInstanceID() + " has been called.");
             
             // Initialize the Event Listener for Undo Events.
             Undo.undoRedoPerformed += OnUndoRedo;
-            //Undo.postprocessModifications += OnUndoRedoEvent;   
-      
+            //Undo.postprocessModifications += OnUndoRedoEvent;
+
             text_prop = serializedObject.FindProperty("m_text");
+            isRightToLeft_prop = serializedObject.FindProperty("m_isRightToLeft");
             fontAsset_prop = serializedObject.FindProperty("m_fontAsset");
 
             fontStyle_prop = serializedObject.FindProperty("m_fontStyle");
@@ -148,16 +151,17 @@ namespace TMPro.EditorUtilities
             //charSpacingMax_prop = serializedObject.FindProperty("m_charSpacingMax");
             lineSpacingMax_prop = serializedObject.FindProperty("m_lineSpacingMax");
             charWidthMaxAdj_prop = serializedObject.FindProperty("m_charWidthMaxAdj");
-            
+
             // Colors & Gradient
             fontColor_prop = serializedObject.FindProperty("m_fontColor");
             enableVertexGradient_prop = serializedObject.FindProperty ("m_enableVertexGradient");
-            fontColorGradient_prop = serializedObject.FindProperty ("m_fontColorGradient");
+            fontColorGradient_prop = serializedObject.FindProperty ("m_fontColorGradient");    
             overrideHtmlColor_prop = serializedObject.FindProperty("m_overrideHtmlColors");
 
-            characterSpacing_prop = serializedObject.FindProperty("m_characterSpacing");         
+            characterSpacing_prop = serializedObject.FindProperty("m_characterSpacing");
             lineSpacing_prop = serializedObject.FindProperty("m_lineSpacing");
             paragraphSpacing_prop = serializedObject.FindProperty("m_paragraphSpacing");
+
             textAlignment_prop = serializedObject.FindProperty("m_textAlignment");
           
             horizontalMapping_prop = serializedObject.FindProperty("m_horizontalMapping");
@@ -170,11 +174,11 @@ namespace TMPro.EditorUtilities
             textOverflowMode_prop = serializedObject.FindProperty("m_overflowMode");
             pageToDisplay_prop = serializedObject.FindProperty("m_pageToDisplay");
 
-            enableKerning_prop = serializedObject.FindProperty("m_enableKerning");     
+            enableKerning_prop = serializedObject.FindProperty("m_enableKerning");
             isOrthographic_prop = serializedObject.FindProperty("m_isOrthographic");
             //isOverlay_prop = serializedObject.FindProperty("m_isOverlay");
 
-            havePropertiesChanged_prop = serializedObject.FindProperty("havePropertiesChanged");
+            havePropertiesChanged_prop = serializedObject.FindProperty("m_havePropertiesChanged");
             inputSource_prop = serializedObject.FindProperty("m_inputSource");
             isInputPasingRequired_prop = serializedObject.FindProperty("isInputParsingRequired");
             //isAffectingWordWrapping_prop = serializedObject.FindProperty("isAffectingWordWrapping");
@@ -201,7 +205,7 @@ namespace TMPro.EditorUtilities
             
             m_textMeshProScript = target as TextMeshPro;
             //m_transform = Selection.activeGameObject.transform;
-            m_renderer = m_textMeshProScript.GetComponent<Renderer>();          
+            m_renderer = m_textMeshProScript.GetComponent<Renderer>();
             //m_sortingLayerID = m_renderer.sortingLayerID;
             //m_sortingOrder = m_renderer.sortingOrder;
             //if (m_renderer.sharedMaterial != null)
@@ -222,46 +226,90 @@ namespace TMPro.EditorUtilities
 
         public override void OnInspectorGUI()
         {
+            // Copy Default GUI Toggle Style
+            if (toggleStyle == null)
+            {
+                toggleStyle = new GUIStyle(GUI.skin.label);
+                toggleStyle.fontSize = 12;
+                toggleStyle.normal.textColor = TMP_UIStyleManager.Section_Label.normal.textColor;
+                toggleStyle.richText = true;
+            }
+
 
             serializedObject.Update();
 
-            Rect rect;
+            Rect rect = EditorGUILayout.GetControlRect(false, 25);
             float labelWidth = EditorGUIUtility.labelWidth = 130f;
             float fieldWidth = EditorGUIUtility.fieldWidth;
 
-            // TEXT INPUT BOX SECTION
-            if (GUILayout.Button("<b>TEXT INPUT BOX</b>" + (m_foldout.textInput ? uiStateLabel[1] : uiStateLabel[0]), TMP_UIStyleManager.Section_Label))
+            rect.y += 2;
+            GUI.Label(rect, "<b>TEXT INPUT BOX</b>" + (m_foldout.textInput ? uiStateLabel[1] : uiStateLabel[0]), TMP_UIStyleManager.Section_Label);
+            if (GUI.Button(new Rect(rect.x, rect.y, rect.width - 150, rect.height), GUIContent.none, GUI.skin.label))
                 m_foldout.textInput = !m_foldout.textInput;
+
+            // Toggle showing Rich Tags
+            GUI.Label(new Rect(rect.width - 125, rect.y + 4, 125, 24), "<i>Enable RTL Editor</i>", toggleStyle);
+            isRightToLeft_prop.boolValue = EditorGUI.Toggle(new Rect(rect.width - 10, rect.y + 3, 20, 24), GUIContent.none, isRightToLeft_prop.boolValue);
+
 
             if (m_foldout.textInput)
             {
                 EditorGUI.BeginChangeCheck();
+
                 text_prop.stringValue = EditorGUILayout.TextArea(text_prop.stringValue, TMP_UIStyleManager.TextAreaBoxEditor, GUILayout.Height(125), GUILayout.ExpandWidth(true));
-                if (EditorGUI.EndChangeCheck())
-                {                    
+
+                if (EditorGUI.EndChangeCheck() || (isRightToLeft_prop.boolValue && (m_RTLText == null || m_RTLText == string.Empty)))
+                {
                     inputSource_prop.enumValueIndex = 0;
                     isInputPasingRequired_prop.boolValue = true;
-                    //isAffectingWordWrapping_prop.boolValue = true;
                     havePropertiesChanged = true;
+
+                    // Handle Left to Right or Right to Left Editor
+                    if (isRightToLeft_prop.boolValue)
+                    {
+                        m_RTLText = string.Empty;
+                        string sourceText = text_prop.stringValue;
+                        // Reverse Text displayed in Text Input Box
+                        for (int i = 0; i < sourceText.Length; i++)
+                        {
+                            m_RTLText += sourceText[sourceText.Length - i - 1];
+                        }
+                    }
+                }
+
+                if (isRightToLeft_prop.boolValue)
+                {
+                    EditorGUI.BeginChangeCheck();
+                    m_RTLText = EditorGUILayout.TextArea(m_RTLText, TMP_UIStyleManager.TextAreaBoxEditor, GUILayout.Height(125), GUILayout.ExpandWidth(true));
+                    if (EditorGUI.EndChangeCheck())
+                    {
+                        // Convert RTL input
+                        string sourceText = string.Empty;
+                        // Reverse Text displayed in Text Input Box
+                        for (int i = 0; i < m_RTLText.Length; i++)
+                        {
+                            sourceText += m_RTLText[m_RTLText.Length - i - 1];
+                        }
+
+                        text_prop.stringValue = sourceText;
+                    }
                 }
             }
-
 
             // FONT SETTINGS SECTION
             if (GUILayout.Button("<b>FONT SETTINGS</b>" + (m_foldout.fontSettings ? uiStateLabel[1] : uiStateLabel[0]), TMP_UIStyleManager.Section_Label))
                 m_foldout.fontSettings = !m_foldout.fontSettings;
 
             if (m_foldout.fontSettings)
-            {              
+            {
                 // FONT ASSET
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(fontAsset_prop);
                 if (EditorGUI.EndChangeCheck())
-                {                   
+                {
                     Undo.RecordObject(m_renderer, "Asset & Material Change");
                     havePropertiesChanged = true;
                     hasFontAssetChanged_prop.boolValue = true;
-                    //isAffectingWordWrapping_prop.boolValue = true;
                 }
 
 
@@ -314,7 +362,6 @@ namespace TMPro.EditorUtilities
                 }
 
 
-                
                 // FONT SIZE
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.BeginHorizontal();
@@ -341,26 +388,26 @@ namespace TMPro.EditorUtilities
                     havePropertiesChanged = true;
                     //isAffectingWordWrapping_prop.boolValue = true;
                 }
-                
-                 
-                
+
+
                 // Show auto sizing options
                 if (autoSizing_prop.boolValue)
-                {
+                {    
                     EditorGUILayout.BeginHorizontal();
                     EditorGUILayout.PrefixLabel("Auto Size Options");
-                    EditorGUIUtility.labelWidth = 35;
+                    EditorGUIUtility.labelWidth = 24;
 
                     EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(fontSizeMin_prop, new GUIContent("Min"), GUILayout.MinWidth(50));
+                    EditorGUILayout.PropertyField(fontSizeMin_prop, new GUIContent("Min"), GUILayout.MinWidth(46));
                     if (EditorGUI.EndChangeCheck())
                     {
                         fontSizeMin_prop.floatValue = Mathf.Min(fontSizeMin_prop.floatValue, fontSizeMax_prop.floatValue);
                         havePropertiesChanged = true;
                     }
 
+                    EditorGUIUtility.labelWidth = 27;
                     EditorGUI.BeginChangeCheck();
-                    EditorGUILayout.PropertyField(fontSizeMax_prop, new GUIContent("Max"), GUILayout.MinWidth(50));
+                    EditorGUILayout.PropertyField(fontSizeMax_prop, new GUIContent("Max"), GUILayout.MinWidth(49));
                     if (EditorGUI.EndChangeCheck())
                     {
                         fontSizeMax_prop.floatValue = Mathf.Max(fontSizeMin_prop.floatValue, fontSizeMax_prop.floatValue);
@@ -368,10 +415,10 @@ namespace TMPro.EditorUtilities
                     }
 
                     EditorGUI.BeginChangeCheck();
-                    EditorGUIUtility.labelWidth = 55;
+                    EditorGUIUtility.labelWidth = 36;
                     //EditorGUILayout.PropertyField(charSpacingMax_prop, new GUIContent("Char"), GUILayout.MinWidth(50));
-                    EditorGUILayout.PropertyField(charWidthMaxAdj_prop, new GUIContent("Width %"), GUILayout.MinWidth(50));
-                    EditorGUIUtility.labelWidth = 35;
+                    EditorGUILayout.PropertyField(charWidthMaxAdj_prop, new GUIContent("WD%"), GUILayout.MinWidth(58));
+                    EditorGUIUtility.labelWidth = 28;
                     EditorGUILayout.PropertyField(lineSpacingMax_prop, new GUIContent("Line"), GUILayout.MinWidth(50));
 
                     EditorGUIUtility.labelWidth = labelWidth;
@@ -379,15 +426,13 @@ namespace TMPro.EditorUtilities
 
                     if (EditorGUI.EndChangeCheck())
                     {
-                        charWidthMaxAdj_prop.floatValue = Mathf.Clamp(charWidthMaxAdj_prop.floatValue, 0, 50); 
+                        charWidthMaxAdj_prop.floatValue = Mathf.Clamp(charWidthMaxAdj_prop.floatValue, 0, 50);
                         //charSpacingMax_prop.floatValue = Mathf.Min(0, charSpacingMax_prop.floatValue);
                         lineSpacingMax_prop.floatValue = Mathf.Min(0, lineSpacingMax_prop.floatValue);
                         havePropertiesChanged = true;
                     }
                 }
-                
-                 
-                
+
                 // CHARACTER, LINE & PARAGRAPH SPACING
                 EditorGUI.BeginChangeCheck();
 
@@ -406,10 +451,11 @@ namespace TMPro.EditorUtilities
                     havePropertiesChanged = true;
                     //isAffectingWordWrapping_prop.boolValue = true;
                 }
-                
-                
+
+
                 // TEXT ALIGNMENT
                 EditorGUI.BeginChangeCheck();
+
                 rect = EditorGUILayout.GetControlRect(false, 17);
                 GUIStyle btn = new GUIStyle(GUI.skin.button);
                 btn.margin = new RectOffset(1, 1, 1, 1);
@@ -424,7 +470,7 @@ namespace TMPro.EditorUtilities
                 selAlignGrid_B = GUI.SelectionGrid(new Rect(columnB + 23 * 4 + 10, rect.y, 23 * 5, rect.height), selAlignGrid_B, TMP_UIStyleManager.alignContent_B, 5, btn);
 
                 if (EditorGUI.EndChangeCheck())
-                {
+                { 
                     textAlignment_prop.enumValueIndex = selAlignGrid_A + selAlignGrid_B * 4;
                     havePropertiesChanged = true;
                 }
@@ -436,11 +482,12 @@ namespace TMPro.EditorUtilities
 
                 if (EditorGUI.EndChangeCheck())
                     havePropertiesChanged = true;
-                
 
 
-                // TEXT WRAPPING & OVERFLOW        
+
+                // TEXT WRAPPING & OVERFLOW
                 EditorGUI.BeginChangeCheck();
+               
                 rect = EditorGUILayout.GetControlRect(false);
                 EditorGUI.PrefixLabel(new Rect(rect.x, rect.y, 130, rect.height), new GUIContent("Wrapping & Overflow"));
                 rect.width = (rect.width - 130) / 2f;
@@ -452,6 +499,7 @@ namespace TMPro.EditorUtilities
                     havePropertiesChanged = true;
                     isInputPasingRequired_prop.boolValue = true;
                 }
+
 
                 // TEXT OVERFLOW
                 EditorGUI.BeginChangeCheck();
@@ -477,7 +525,7 @@ namespace TMPro.EditorUtilities
                 }
 
 
-                // TEXTURE MAPPING OPTIONS   
+                // TEXTURE MAPPING OPTIONS
                 EditorGUI.BeginChangeCheck();
                 rect = EditorGUILayout.GetControlRect(false);
                 EditorGUI.PrefixLabel(new Rect(rect.x, rect.y, 130, rect.height), new GUIContent("UV Mapping Options"));
@@ -506,12 +554,13 @@ namespace TMPro.EditorUtilities
                     havePropertiesChanged = true;
                 }
 
+
                 // KERNING
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PropertyField(enableKerning_prop, new GUIContent("Enable Kerning?"));
                 if (EditorGUI.EndChangeCheck())
-                {                 
+                {
                     //isAffectingWordWrapping_prop.boolValue = true;
                     havePropertiesChanged = true;
                 }
@@ -520,11 +569,11 @@ namespace TMPro.EditorUtilities
                 EditorGUI.BeginChangeCheck();
                 EditorGUILayout.PropertyField(enableExtraPadding_prop, new GUIContent("Extra Padding?"));
                 if (EditorGUI.EndChangeCheck())
-                {                 
+                {
                     havePropertiesChanged = true;
                     checkPaddingRequired_prop.boolValue = true;
                 }
-                EditorGUILayout.EndHorizontal();             
+                EditorGUILayout.EndHorizontal();
             }
 
 
@@ -551,9 +600,9 @@ namespace TMPro.EditorUtilities
                 string oldName = SortingLayerHelper.GetSortingLayerNameFromID(m_textMeshProScript.sortingLayerID);
 
                 // Use the name to look up our array index into the names list
-                int oldLayerIndex = Array.IndexOf(sortingLayerNames, oldName);
+                int oldLayerIndex = System.Array.IndexOf(sortingLayerNames, oldName);
               
-                // Show the pop-up for the names              
+                // Show the pop-up for the names
                 EditorGUIUtility.fieldWidth = 0f;
                 int newLayerIndex = EditorGUILayout.Popup(string.Empty, oldLayerIndex, sortingLayerNames, GUILayout.MinWidth(80f));
 
@@ -647,101 +696,6 @@ namespace TMPro.EditorUtilities
             */
         }
 
-        /*
-        public void OnSceneGUI()
-        {
-            
-            if (enableWordWrapping_prop.boolValue)
-            {                             
-                // Show Handles to represent Line Lenght settings      
-                Bounds meshExtents = m_textMeshProScript.bounds;
-                Vector3 lossyScale = m_transform.lossyScale;
-             
-                handlePoints[0] = m_transform.TransformPoint(new Vector3(meshExtents.min.x * lossyScale.x, meshExtents.min.y, 0));
-                handlePoints[1] = m_transform.TransformPoint(new Vector3(meshExtents.min.x * lossyScale.x, meshExtents.max.y, 0));
-                handlePoints[2] = handlePoints[1] + m_transform.TransformDirection(new Vector3(m_textMeshProScript.lineLength * lossyScale.x, 0, 0));
-                handlePoints[3] = handlePoints[0] + m_transform.TransformDirection(new Vector3(m_textMeshProScript.lineLength * lossyScale.x, 0, 0));
-
-                Handles.DrawSolidRectangleWithOutline(handlePoints, new Color32(0, 0, 0, 0), new Color32(255, 255, 0, 255));
-
-                Vector3 old_right = (handlePoints[2] + handlePoints[3]) * 0.5f;
-                Vector3 new_right = Handles.FreeMoveHandle(old_right, Quaternion.identity, HandleUtility.GetHandleSize(m_transform.position) * 0.05f, Vector3.zero, Handles.DotCap);
-                
-                if (old_right != new_right)
-                {
-                    float delta = new_right.x - old_right.x;                   
-                    m_textMeshProScript.lineLength += delta / lossyScale.x;
-                }
-            }
-            */
-
-            /* New Experimental Code
-            // Margin Frame & Handles      
-            Vector3 rectPos = m_transform.position;
-            Vector4 textRect = m_textMeshProScript.textRectangle;
-
-            handlePoints[0] = rectPos + m_transform.TransformDirection(new Vector3(- textRect.x, - textRect.w, 0)); // BL
-            handlePoints[1] = rectPos + m_transform.TransformDirection(new Vector3(- textRect.x, + textRect.y, 0)); // TL
-            handlePoints[2] = rectPos + m_transform.TransformDirection(new Vector3(+ textRect.z, + textRect.y, 0)); // TR
-            handlePoints[3] = rectPos + m_transform.TransformDirection(new Vector3(+ textRect.z, - textRect.w, 0));   // BR
-
-            Handles.DrawSolidRectangleWithOutline(handlePoints, new Color32(255, 255, 255, 0), new Color32(255, 255, 0, 255));
-
-            // Draw & process FreeMoveHandles
-
-            // LEFT HANDLE
-            Vector3 old_left = (handlePoints[0] + handlePoints[1]) * 0.5f;
-            Vector3 new_left = Handles.FreeMoveHandle(old_left, Quaternion.identity, HandleUtility.GetHandleSize(rectPos) * 0.05f, Vector3.zero, Handles.DotCap);
-            bool hasChanged = false;
-            if (old_left != new_left)
-            {
-                float delta = old_left.x - new_left.x;
-                textRect.x += delta;              
-                //Debug.Log("Left Margin H0:" + handlePoints[0] + "  H1:" + handlePoints[1]);
-                hasChanged = true;
-            }
-
-            // TOP HANDLE
-            Vector3 old_top = (handlePoints[1] + handlePoints[2]) * 0.5f;
-            Vector3 new_top = Handles.FreeMoveHandle(old_top, Quaternion.identity, HandleUtility.GetHandleSize(rectPos) * 0.05f, Vector3.zero, Handles.DotCap);
-            if (old_top != new_top)
-            {
-                float delta = old_top.y - new_top.y;             
-                textRect.y -= delta;
-                //Debug.Log("Top Margin H1:" + handlePoints[1] + "  H2:" + handlePoints[2]);   
-                hasChanged = true;
-            }
-
-            // RIGHT HANDLE
-            Vector3 old_right = (handlePoints[2] + handlePoints[3]) * 0.5f;
-            Vector3 new_right = Handles.FreeMoveHandle(old_right, Quaternion.identity, HandleUtility.GetHandleSize(rectPos) * 0.05f, Vector3.zero, Handles.DotCap);
-            if (old_right != new_right)
-            {
-                float delta = old_right.x - new_right.x;
-                textRect.z -= delta;               
-                hasChanged = true;
-                //Debug.Log("Right Margin H2:" + handlePoints[2] + "  H3:" + handlePoints[3]);
-            }
-
-            // BOTTOM HANDLE
-            Vector3 old_bottom = (handlePoints[3] + handlePoints[0]) * 0.5f;
-            Vector3 new_bottom = Handles.FreeMoveHandle(old_bottom, Quaternion.identity, HandleUtility.GetHandleSize(rectPos) * 0.05f, Vector3.zero, Handles.DotCap);
-            if (old_bottom != new_bottom)
-            {
-                float delta = old_bottom.y - new_bottom.y;
-                textRect.w += delta;              
-                hasChanged = true;
-                //Debug.Log("Bottom Margin H0:" + handlePoints[0] + "  H3:" + handlePoints[3]);
-            }
-
-            if (hasChanged)
-            {
-                m_textMeshProScript.textRectangle = textRect;
-                //m_textMeshProScript.ForceMeshUpdate();
-            }
-            
-        }
-        */
 
 
         void DrawPropertySlider(string label, SerializedProperty property)
@@ -821,7 +775,7 @@ namespace TMPro.EditorUtilities
         {
             float old_LabelWidth = EditorGUIUtility.labelWidth;
             float old_FieldWidth = EditorGUIUtility.fieldWidth;
-       
+
             Rect rect = EditorGUILayout.GetControlRect(false, 17);
             GUI.Label(new Rect(rect.x, rect.y, old_LabelWidth, rect.height), labels[0]);
 
@@ -840,17 +794,16 @@ namespace TMPro.EditorUtilities
                 }
                 else
                 {
-                    EditorGUIUtility.labelWidth = GUI.skin.textArea.CalcSize(new GUIContent(labels[i])).x;                                                              
+                    EditorGUIUtility.labelWidth = GUI.skin.textArea.CalcSize(new GUIContent(labels[i])).x;
                     EditorGUI.PropertyField(new Rect(rect.x, rect.y, rect.width - 5, rect.height), properties[i], new GUIContent(labels[i]));
-                    rect.x += rect.width;  
-                }          
-                            
+                    rect.x += rect.width;
+                }
+
             }
-           
+
             EditorGUIUtility.labelWidth = old_LabelWidth;
             EditorGUIUtility.fieldWidth = old_FieldWidth;
         }
-
 
 
         // Special Handling of Undo / Redo Events.

@@ -1,7 +1,7 @@
-// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
-// Beta Release 0.1.5 Beta 1.7
+// Beta Release 0.1.52 Beta 2b
 
 
 #if UNITY_4_6 || UNITY_5
@@ -25,7 +25,7 @@ namespace TMPro
     [RequireComponent(typeof(CanvasRenderer))]	
     [AddComponentMenu("UI/TextMeshPro Text", 12)]
     //[SelectionBase]
-    public partial class TextMeshProUGUI : Graphic, ILayoutElement, IMaskable
+    public partial class TextMeshProUGUI : MaskableGraphic, ILayoutElement
     {
         // Public Properties & Serializable Properties
         
@@ -35,7 +35,7 @@ namespace TMPro
         public string text
         {
             get { return m_text; }
-            set { m_inputSource = TextInputSources.Text; havePropertiesChanged = true; m_isCalculateSizeRequired = true; isInputParsingRequired = true; MarkLayoutForRebuild(); m_text = value; /* ScheduleUpdate(); */ }
+            set { m_inputSource = TextInputSources.Text; m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; isInputParsingRequired = true; MarkLayoutForRebuild(); m_text = value; /* ScheduleUpdate(); */ }
         }
 
 
@@ -45,7 +45,7 @@ namespace TMPro
         public TextMeshProFont font
         {
             get { return m_fontAsset; }
-            set { if (m_fontAsset != value) { m_fontAsset = value; LoadFontAsset(); havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild();/* ScheduleUpdate(); */ } }
+            set { if (m_fontAsset != value) { m_fontAsset = value; LoadFontAsset(); m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild();/* ScheduleUpdate(); */ } }
         }
 
 
@@ -66,8 +66,26 @@ namespace TMPro
             }
 
             // Assigning fontMaterial always returns an instance of the material.
-            set { SetFontMaterial(value); havePropertiesChanged = true; /* ScheduleUpdate(); */  }
+            set { SetFontMaterial(value); m_havePropertiesChanged = true; /* ScheduleUpdate(); */  }
         }
+
+
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        //public override Material material
+        //{
+        //    get
+        //    {
+        //        Debug.Log("material property called.");
+        //        return m_sharedMaterial;
+        //    }
+
+        //    set
+        //    {
+        //        m_sharedMaterial = value;
+        //    }
+        //}
 
 
 
@@ -77,7 +95,7 @@ namespace TMPro
         public Material fontSharedMaterial
         {
 			get { return m_uiRenderer.GetMaterial(); }
-            set { if (m_uiRenderer.GetMaterial() != value) { m_isNewBaseMaterial = true; SetSharedFontMaterial(value); havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
+            set { if (m_uiRenderer.GetMaterial() != value) { m_isNewBaseMaterial = true; SetSharedFontMaterial(value); m_havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -87,7 +105,7 @@ namespace TMPro
         protected Material fontBaseMaterial
         {
             get { return m_baseMaterial; }
-            set { if (m_baseMaterial != value) { SetFontBaseMaterial(value); havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
+            set { if (m_baseMaterial != value) { SetFontBaseMaterial(value); m_havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -97,38 +115,50 @@ namespace TMPro
         public bool isOverlay
         {
             get { return m_isOverlay; }
-            set { if (m_isOverlay != value) { m_isOverlay = value; SetShaderDepth(); havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
+            set { if (m_isOverlay != value) { m_isOverlay = value; SetShaderDepth(); m_havePropertiesChanged = true; /* ScheduleUpdate(); */ } }
         }
 
 
         /// <summary>
         /// This is the default vertex color assigned to each vertices. Color tags will override vertex colors unless the overrideColorTags is set.
-        /// </summary>       
+        /// </summary>
         public new Color color
         {
             get { return m_fontColor; }
-            set { if (m_fontColor != value) { havePropertiesChanged = true; m_fontColor = value;/* ScheduleUpdate(); */ } }
+            set { if (m_fontColor != value) { m_havePropertiesChanged = true; m_fontColor = value;/* ScheduleUpdate(); */ } }
         }
 
-		/// <summary>
-		/// Sets the vertex colors for each of the 4 vertices of the character quads.
-		/// </summary>
-		/// <value>The color gradient.</value>
-		public VertexGradient colorGradient
-		{
-			get { return m_fontColorGradient;}
-			set { havePropertiesChanged = true; m_fontColorGradient = value; }
-		}
-		
-		/// <summary>
-		/// Determines if Vertex Color Gradient should be used
-		/// </summary>
-		/// <value><c>true</c> if enable vertex gradient; otherwise, <c>false</c>.</value>
-		public bool enableVertexGradient
-		{
-			get { return m_enableVertexGradient; }
-			set { havePropertiesChanged = true; m_enableVertexGradient = value; }
-		}
+
+        /// <summary>
+        /// Sets the vertex color alpha value.
+        /// </summary>
+        public float alpha
+        {
+            get { return m_fontColor.a; }
+            set { Color c = m_fontColor; c.a = value; m_fontColor = c; m_havePropertiesChanged = true; }
+        }
+
+
+        /// <summary>
+        /// Sets the vertex colors for each of the 4 vertices of the character quads.
+        /// </summary>
+        /// <value>The color gradient.</value>
+        public VertexGradient colorGradient
+        {
+            get { return m_fontColorGradient;}
+            set { m_havePropertiesChanged = true; m_fontColorGradient = value; }
+        }
+
+
+        /// <summary>
+        /// Determines if Vertex Color Gradient should be used
+        /// </summary>
+        /// <value><c>true</c> if enable vertex gradient; otherwise, <c>false</c>.</value>
+        public bool enableVertexGradient
+        {
+            get { return m_enableVertexGradient; }
+            set { m_havePropertiesChanged = true; m_enableVertexGradient = value; }
+        }
 
 
         /// <summary>
@@ -137,7 +167,7 @@ namespace TMPro
         public Color32 faceColor
         {
             get { return m_faceColor; }
-            set { if (m_faceColor.Compare(value) == false) { SetFaceColor(value); havePropertiesChanged = true; m_faceColor = value; /* ScheduleUpdate(); */ } }
+            set { /* if (m_faceColor.Compare(value) == false) { */ SetFaceColor(value); m_havePropertiesChanged = true; m_faceColor = value; /* ScheduleUpdate(); */ }
         }
 
 
@@ -147,7 +177,7 @@ namespace TMPro
         public Color32 outlineColor
         {
             get { return m_outlineColor; }
-            set { if (m_outlineColor.Compare(value) == false) { SetOutlineColor(value); havePropertiesChanged = true; m_outlineColor = value; /* ScheduleUpdate(); */ } }
+            set { /* if (m_outlineColor.Compare(value) == false) { */ SetOutlineColor(value); m_havePropertiesChanged = true; m_outlineColor = value; /* ScheduleUpdate(); */ }
         }
 
 
@@ -157,7 +187,7 @@ namespace TMPro
         public float outlineWidth
         {
             get { return m_outlineWidth; }
-            set { SetOutlineThickness(value); havePropertiesChanged = true; checkPaddingRequired = true; m_outlineWidth = value; /* ScheduleUpdate(); */ }
+            set { SetOutlineThickness(value); m_havePropertiesChanged = true; m_outlineWidth = value; /* ScheduleUpdate(); */ }
         }
 
 
@@ -167,7 +197,7 @@ namespace TMPro
         public float fontSize
         {
             get { return m_fontSize; }
-            set { havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_fontSize = value; if (!m_enableAutoSizing) m_fontSizeBase = m_fontSize; }
+            set { m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_fontSize = value; if (!m_enableAutoSizing) m_fontSizeBase = m_fontSize; }
         }
 
 
@@ -177,7 +207,7 @@ namespace TMPro
         public FontStyles fontStyle
         {
             get { return m_fontStyle; }
-            set { m_fontStyle = value; havePropertiesChanged = true; checkPaddingRequired = true; }
+            set { m_fontStyle = value; m_havePropertiesChanged = true; checkPaddingRequired = true; }
         }
 
 
@@ -187,7 +217,7 @@ namespace TMPro
         public float characterSpacing
         {
             get { return m_characterSpacing; }
-            set { if (m_characterSpacing != value) { havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_characterSpacing = value; /* ScheduleUpdate(); */ } }
+            set { if (m_characterSpacing != value) { m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_characterSpacing = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -197,7 +227,7 @@ namespace TMPro
         public float lineSpacing
         {
             get { return m_lineSpacing; }
-            set { if (m_lineSpacing != value) { havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_lineSpacing = value; /* ScheduleUpdate(); */ } }
+            set { if (m_lineSpacing != value) { m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_lineSpacing = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -207,7 +237,7 @@ namespace TMPro
         public float paragraphSpacing
         {
             get { return m_paragraphSpacing; }
-            set { if (m_paragraphSpacing != value) { havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_paragraphSpacing = value; /* ScheduleUpdate(); */ } }
+            set { if (m_paragraphSpacing != value) { m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_paragraphSpacing = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -217,7 +247,17 @@ namespace TMPro
         public bool richText
         {
             get { return m_isRichText; }
-            set { m_isRichText = value; havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); isInputParsingRequired = true; }
+            set { m_isRichText = value; m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); isInputParsingRequired = true; }
+        }
+
+
+        /// <summary>
+        /// Enables or Disables parsing of CTRL characters in input text.
+        /// </summary>
+        public bool parseCtrlCharacters
+        {
+            get { return m_parseCtrlCharacters; }
+            set { m_parseCtrlCharacters = value; m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); isInputParsingRequired = true; }
         }
 
 
@@ -227,18 +267,24 @@ namespace TMPro
         public TextOverflowModes OverflowMode
         {
             get { return m_overflowMode; }
-            set { m_overflowMode = value; havePropertiesChanged = true; m_isRecalculateScaleRequired = true; }
+            set { m_overflowMode = value; m_havePropertiesChanged = true; m_isRecalculateScaleRequired = true; }
         }
 
 
         /// <summary>
-        /// Determines where word wrap will occur.
+        /// 
         /// </summary>
-        //public float lineLength
-        //{
-        //    get { return m_lineLength; }
-        //    set { if (m_lineLength != value) { havePropertiesChanged = true; isAffectingWordWrapping = true; m_lineLength = value; /* ScheduleUpdate(); */ } }
-        //}
+        public Texture texture;
+        public override Texture mainTexture
+        {
+            get
+            {
+                if ((UnityEngine.Object)this.texture == (UnityEngine.Object)null)
+                    return (Texture)Graphic.s_WhiteTexture;
+                else
+                    return this.texture;
+            }
+        }
 
 
         /// <summary>
@@ -246,7 +292,7 @@ namespace TMPro
         /// </summary>
         public Bounds bounds
         {
-            get { if (m_uiVertices != null) return m_bounds; return new Bounds(); }
+            get { if (m_mesh != null) return m_bounds; return new Bounds(); }
             //set { if (_meshExtents != value) havePropertiesChanged = true; _meshExtents = value; }
         }
 
@@ -273,7 +319,7 @@ namespace TMPro
         public TextAlignmentOptions alignment
         {
             get { return m_textAlignment; } 
-            set { if (m_textAlignment != value) { havePropertiesChanged = true; m_textAlignment = value; /* ScheduleUpdate(); */ } }
+            set { if (m_textAlignment != value) { m_havePropertiesChanged = true; m_textAlignment = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -283,7 +329,7 @@ namespace TMPro
         public bool enableKerning
         {
             get { return m_enableKerning; }
-            set { if (m_enableKerning != value) { havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_enableKerning = value; /* ScheduleUpdate(); */ } }
+            set { if (m_enableKerning != value) { m_havePropertiesChanged = true; m_isCalculateSizeRequired = true; MarkLayoutForRebuild(); m_enableKerning = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -303,7 +349,7 @@ namespace TMPro
         public bool overrideColorTags
         {
             get { return m_overrideHtmlColors; }
-            set { if (m_overrideHtmlColors != value) { havePropertiesChanged = true; m_overrideHtmlColors = value; /* ScheduleUpdate(); */ } }
+            set { if (m_overrideHtmlColors != value) { m_havePropertiesChanged = true; m_overrideHtmlColors = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -313,7 +359,7 @@ namespace TMPro
         public bool extraPadding
         {
             get { return m_enableExtraPadding; }
-            set { if (m_enableExtraPadding != value) { havePropertiesChanged = true; checkPaddingRequired = true; m_enableExtraPadding = value; m_isCalculateSizeRequired = true; MarkLayoutForRebuild();/* ScheduleUpdate(); */ } }
+            set { if (m_enableExtraPadding != value) { m_havePropertiesChanged = true; checkPaddingRequired = true; m_enableExtraPadding = value; m_isCalculateSizeRequired = true; MarkLayoutForRebuild();/* ScheduleUpdate(); */ } }
         }
 
 
@@ -323,7 +369,7 @@ namespace TMPro
         public bool enableWordWrapping
         {
             get { return m_enableWordWrapping; }
-            set { if (m_enableWordWrapping != value) { havePropertiesChanged = true; isInputParsingRequired = true; m_isRecalculateScaleRequired = true; m_enableWordWrapping = value; /* ScheduleUpdate(); */ } }
+            set { if (m_enableWordWrapping != value) { m_havePropertiesChanged = true; isInputParsingRequired = true; m_isRecalculateScaleRequired = true; m_enableWordWrapping = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -333,7 +379,7 @@ namespace TMPro
         public TextureMappingOptions horizontalMapping
         {
             get { return m_horizontalMapping; }
-            set { if (m_horizontalMapping != value) { havePropertiesChanged = true; m_horizontalMapping = value; /* ScheduleUpdate(); */ } }
+            set { if (m_horizontalMapping != value) { m_havePropertiesChanged = true; m_horizontalMapping = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -343,7 +389,7 @@ namespace TMPro
         public TextureMappingOptions verticalMapping
         {
             get { return m_verticalMapping; }
-            set { if (m_verticalMapping != value) { havePropertiesChanged = true; m_verticalMapping = value; /* ScheduleUpdate(); */ } }
+            set { if (m_verticalMapping != value) { m_havePropertiesChanged = true; m_verticalMapping = value; /* ScheduleUpdate(); */ } }
         }
 
         /// <summary>
@@ -352,7 +398,7 @@ namespace TMPro
         public bool ignoreVisibility
         {
             get { return m_ignoreCulling; }
-            set { if (m_ignoreCulling != value) { havePropertiesChanged = true; m_ignoreCulling = value; /* ScheduleUpdate(); */ } }
+            set { if (m_ignoreCulling != value) { m_havePropertiesChanged = true; m_ignoreCulling = value; /* ScheduleUpdate(); */ } }
         }
 
 
@@ -362,7 +408,7 @@ namespace TMPro
         public bool isOrthographic
         {
             get { return m_isOrthographic; }
-            set { havePropertiesChanged = true; m_isOrthographic = value; /* ScheduleUpdate(); */ }
+            set { m_havePropertiesChanged = true; m_isOrthographic = value; /* ScheduleUpdate(); */ }
         }
 
 
@@ -372,7 +418,7 @@ namespace TMPro
         public bool enableCulling
         {
             get { return m_isCullingEnabled; }
-            set { m_isCullingEnabled = value; SetCulling(); havePropertiesChanged = true; }
+            set { m_isCullingEnabled = value; SetCulling(); m_havePropertiesChanged = true; }
         }
 
 
@@ -402,17 +448,28 @@ namespace TMPro
         public TextRenderFlags renderMode
         {
             get { return m_renderMode; }
-            set { m_renderMode = value; havePropertiesChanged = true; }
+            set { m_renderMode = value; m_havePropertiesChanged = true; }
         }
 
-
-        public bool hasChanged
+        /// <summary>
+        /// Property tracking if any of the text properties have changed. Flag is set before the text is regenerated.
+        /// </summary>
+        public bool havePropertiesChanged
         {
-            get { return havePropertiesChanged; }
-            set { havePropertiesChanged = value; }
+            get { return m_havePropertiesChanged; }
+            set { m_havePropertiesChanged = value; }
         }
 
-        
+
+        ///// <summary>
+        ///// Property tracking if the text object has been re-generated since last frame.
+        ///// </summary>
+        //public bool hasChanged
+        //{
+        //    get { return m_hasChanged; }
+        //}
+
+
         /// <summary>
         /// <para>Sets the margin for the text inside the Rect Transform.</para>
         /// <para>Vector4 (left, top, right, bottom);</para>
@@ -420,7 +477,7 @@ namespace TMPro
         public Vector4 margin
         {
             get { return m_margin; }
-            set { /* if (m_margin != value) */ { m_margin = value; /* Debug.Log("Margin is " + margin); ComputeMarginSize();*/ havePropertiesChanged = true; m_marginsHaveChanged = true; } }
+            set { /* if (m_margin != value) */ { m_margin = value; /* Debug.Log("Margin is " + margin); ComputeMarginSize();*/ m_havePropertiesChanged = true; m_marginsHaveChanged = true; } }
         }      
 
 
@@ -431,7 +488,7 @@ namespace TMPro
         public int maxVisibleCharacters
         {
             get { return m_maxVisibleCharacters; }
-            set { if (m_maxVisibleCharacters != value) { havePropertiesChanged = true; m_maxVisibleCharacters = value; } }
+            set { if (m_maxVisibleCharacters != value) { m_havePropertiesChanged = true; m_maxVisibleCharacters = value; } }
         }
 
         /// <summary>
@@ -440,7 +497,7 @@ namespace TMPro
         public int maxVisibleWords
         {
             get { return m_maxVisibleWords; }
-            set { if (m_maxVisibleWords != value) { havePropertiesChanged = true; m_maxVisibleWords = value; } }
+            set { if (m_maxVisibleWords != value) { m_havePropertiesChanged = true; m_maxVisibleWords = value; } }
         }
 
         /// <summary>
@@ -449,7 +506,7 @@ namespace TMPro
         public int maxVisibleLines
         {
             get { return m_maxVisibleLines; }
-            set { if (m_maxVisibleLines != value) { havePropertiesChanged = true; isInputParsingRequired = true; m_maxVisibleLines = value; } }
+            set { if (m_maxVisibleLines != value) { m_havePropertiesChanged = true; isInputParsingRequired = true; m_maxVisibleLines = value; } }
         }
 
 
@@ -459,7 +516,7 @@ namespace TMPro
         public int pageToDisplay
         {
             get { return m_pageToDisplay; }
-            set { havePropertiesChanged = true; m_pageToDisplay = value; }
+            set { m_havePropertiesChanged = true; m_pageToDisplay = value; }
         }
 
 
@@ -708,23 +765,22 @@ namespace TMPro
         //    Debug.Log("Rebuild()");
         //    LayoutRebuilder.MarkLayoutForRebuild(m_rectTransform);
         //}
-        
-        
-        
+
+
+
         //public bool IsDestroyed()
         //{
         //    return true;
         //}
 
 
-        public override bool Raycast(Vector2 sp, Camera eventCamera)
-        {
-            //Debug.Log("Raycast Event. ScreenPoint: " + sp );
-            return true;
-            //return base.Raycast(sp, eventCamera);
-        }
+        //public override bool Raycast(Vector2 sp, Camera eventCamera)
+        //{
+        //    //Debug.Log("Raycast Event. ScreenPoint: " + sp);
+        //    return base.Raycast(sp, eventCamera);
+        //}
 
-        
+
         // MASKING RELATED PROPERTIES
         /// <summary>
         /// Sets the masking offset from the bounds of the object
@@ -732,33 +788,53 @@ namespace TMPro
         public Vector4 maskOffset
         {
             get { return m_maskOffset; }
-            set { m_maskOffset = value; UpdateMask(); havePropertiesChanged = true; }
+            set { m_maskOffset = value; UpdateMask(); m_havePropertiesChanged = true; }
         }
 
-      
+
         //public override Material defaultMaterial 
         //{
         //    get { Debug.Log("Default Material called."); return m_sharedMaterial; }
         //}
 
 
-        //public bool MaskEnabled()
+
+        //protected override void OnCanvasHierarchyChanged()
         //{
-        //    Debug.Log("MaskEnabled() called.");
-        //    return true;
+        //    //Debug.Log("OnCanvasHierarchyChanged...");
         //}
 
 
-        public void ParentMaskStateChanged()
+        /// <summary>
+        /// Method called when the state of a parent changes.
+        /// </summary>
+        public override void RecalculateClipping()
         {
-            //Debug.Log("***** PARENT MASK STATE CHANGED *****");
+            //Debug.Log("***** RecalculateClipping() *****");
+
+            base.RecalculateClipping();
+        }
+
+
+        /// <summary>
+        /// Method called when Stencil Mask needs to be updated on this element and parents.
+        /// </summary>
+        public override void RecalculateMasking()
+        {
+            //Debug.Log("***** RecalculateMasking() *****");
+
             if (m_fontAsset == null) return;
 
-            m_stencilID = MaterialManager.GetStencilID(gameObject);
-           
+            //if (m_canvas == null) m_canvas = GetComponentInParent<Canvas>();
+
+
             if (!m_isAwake)
                 return;
-     
+
+            m_stencilID = MaterialManager.GetStencilID(gameObject);
+            //m_stencilID = MaskUtilities.GetStencilDepth(this.transform, m_canvas.transform);
+            //Debug.Log("Stencil ID: " + m_stencilID + "  Stencil ID (2): " + MaskUtilities.GetStencilDepth(this.transform, m_canvas.transform));
+
             if (m_stencilID == 0)
             {
                 if (m_maskingMaterial != null)
@@ -769,7 +845,9 @@ namespace TMPro
                     m_sharedMaterial = m_baseMaterial;
                 }
                 else if (m_fontMaterial != null)
-                    m_sharedMaterial = MaterialManager.SetStencil(m_fontMaterial, 0);     
+                    m_sharedMaterial = MaterialManager.SetStencil(m_fontMaterial, 0);
+                else
+                    m_sharedMaterial = m_baseMaterial;
             }
             else
             {
@@ -791,28 +869,27 @@ namespace TMPro
                     m_maskingMaterial = MaterialManager.GetStencilMaterial(m_baseMaterial, m_stencilID);
                     m_sharedMaterial = m_maskingMaterial;
                 }
-                                               
-                  
+
+
                 if (m_isMaskingEnabled)
                     EnableMasking();
 
-                //Debug.Log("Masking Enabled. Assigning " + m_maskingMaterial.name + " with ID " + m_maskingMaterial.GetInstanceID());                           
+                //Debug.Log("Masking Enabled. Assigning " + m_maskingMaterial.name + " with ID " + m_maskingMaterial.GetInstanceID());
             }
 
-            m_uiRenderer.SetMaterial(m_sharedMaterial, null);
+            m_uiRenderer.SetMaterial(m_sharedMaterial, m_sharedMaterial.mainTexture);
             m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
-            m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
+            //m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
            
         }
 
 
-        public override void SetVerticesDirty()
-        {
-            //Debug.Log("Set Vertices Dirty called.");
-
-            if (m_fontColor != base.color) this.color = base.color;
-            base.SetVerticesDirty();
-        }
+        //public override void SetVerticesDirty()
+        //{
+        //    //Debug.Log("Set Vertices Dirty called.");
+        //    //if (m_fontColor != base.color) this.color = base.color;
+        //    base.SetVerticesDirty();
+        //}
 
         protected override void UpdateGeometry()
         {
@@ -820,11 +897,13 @@ namespace TMPro
             //base.UpdateGeometry();
         }
 
-        protected override void OnFillVBO(List<UIVertex> vbo)
+
+        protected override void UpdateMaterial()
         {
-            //Debug.Log("OnFillVBO");
-            base.OnFillVBO(vbo);
+            //Debug.Log("UpdateMaterial called.");
+        //    base.UpdateMaterial();
         }
+
 
         /*
         /// <summary>
@@ -880,9 +959,9 @@ namespace TMPro
         //}
 
         
-        public UIVertex[] mesh
+        public Mesh mesh
         {
-            get { return m_uiVertices; }
+            get { return m_mesh; }
         }
 
 
@@ -912,7 +991,7 @@ namespace TMPro
         public void UpdateMeshPadding()
         {
             m_padding = ShaderUtilities.GetPadding(new Material[] {m_uiRenderer.GetMaterial()}, m_enableExtraPadding, m_isUsingBold);
-            havePropertiesChanged = true;
+            m_havePropertiesChanged = true;
             /* ScheduleUpdate(); */
         }
 
@@ -924,7 +1003,7 @@ namespace TMPro
         {
             //Debug.Log("ForceMeshUpdate() called.");
             //havePropertiesChanged = true;
-            OnPreRenderCanvas();            
+            OnPreRenderCanvas();
         }
 
 
@@ -985,7 +1064,7 @@ namespace TMPro
         /// <param name="text">String containing the pattern."</param>
         /// <param name="arg0">Value is a float.</param>
         /// <param name="arg1">Value is a float.</param>
-        public void SetText (string text, float arg0, float arg1)            
+        public void SetText (string text, float arg0, float arg1)
         {
             SetText(text, arg0, arg1, 255);
         }
@@ -999,7 +1078,7 @@ namespace TMPro
         /// <param name="arg0">Value is a float.</param>
         /// <param name="arg1">Value is a float.</param>
         /// <param name="arg2">Value is a float.</param>
-        public void SetText (string text, float arg0, float arg1, float arg2)        
+        public void SetText (string text, float arg0, float arg1, float arg2)
         {
             // Early out if nothing has been changed from previous invocation.
             if (text == old_text && arg0 == old_arg0 && arg1 == old_arg1 && arg2 == old_arg2)
@@ -1063,7 +1142,7 @@ namespace TMPro
 
             m_inputSource = TextInputSources.SetText;
             isInputParsingRequired = true;
-            havePropertiesChanged = true;
+            m_havePropertiesChanged = true;
             /* ScheduleUpdate(); */
         }
 
@@ -1118,7 +1197,7 @@ namespace TMPro
             m_char_buffer[index] = (char)0;
 
             m_inputSource = TextInputSources.SetCharArray;
-            havePropertiesChanged = true;
+            m_havePropertiesChanged = true;
             isInputParsingRequired = true;
         }
 

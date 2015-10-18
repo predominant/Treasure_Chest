@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -15,46 +15,49 @@ namespace TMPro
     public class TMP_StyleSheet : ScriptableObject
     {
         public static TMP_StyleSheet Instance;
-        
-        //private static bool m_isInitialized;
+
+
         private static bool m_isDictionaryLoaded;
-        
+
         [SerializeField]
         private List<TMP_Style> m_StyleList = new List<TMP_Style>(1);
         private Dictionary<int, TMP_Style> m_StyleDictionary = new Dictionary<int, TMP_Style>();
 
-        
+
         void OnEnable()
         {
-            //Debug.Log("TMP_StyleSheet - OnEnable() called.");
-
             if (Instance == null)
             {
-                Instance = Resources.Load("TMP_DefaultStyleSheet") as TMP_StyleSheet;
+                // Load settings from TMP_Settings file
+                TMP_Settings settings = Resources.Load("TMP Settings") as TMP_Settings;
+                if (settings == null) return;
+
+                if (settings.styleSheet != null)
+                    Instance = settings.styleSheet;
+                else
+                    Instance = Resources.Load("Style Sheets/TMP Default Style Sheet") as TMP_StyleSheet;
+
+
                 if (!m_isDictionaryLoaded) Instance.LoadStyleDictionary();
             }
         }
 
 
-        void OnValidate()
-        {
-            //LoadStyleDictionary();   
-        }
 
-
-        
         /// <summary>
         /// Static Function to load the Default Style Sheet.
         /// </summary>
         /// <returns></returns>
         public static TMP_StyleSheet LoadDefaultStyleSheet()
         {
-            //Debug.Log("Loading Default StyleSheet.");
-
             if (Instance == null)
             {
-                Instance = Resources.Load("TMP_DefaultStyleSheet") as TMP_StyleSheet;
-                if (!m_isDictionaryLoaded) Instance.LoadStyleDictionary();
+                // Load settings from TMP_Settings file
+                TMP_Settings settings = Resources.Load("TMP Settings") as TMP_Settings;
+                if (settings != null && settings.styleSheet != null)
+                    Instance = settings.styleSheet;
+                else
+                    Instance = Resources.Load("Style Sheets/TMP Default Style Sheet") as TMP_StyleSheet;
             }
 
             return Instance;
@@ -67,7 +70,7 @@ namespace TMPro
         /// <param name="hashCode"></param>
         /// <returns></returns>
         public TMP_Style GetStyle(int hashCode)
-        {                                
+        {
             TMP_Style style;
             if (m_StyleDictionary.TryGetValue(hashCode, out style))
             {
@@ -86,7 +89,7 @@ namespace TMPro
                 TMP_Style style = m_StyleDictionary[old_key];
                 m_StyleDictionary.Add(new_key, style);
                 m_StyleDictionary.Remove(old_key);
-            }           
+            }
         }
 
 
@@ -106,7 +109,7 @@ namespace TMPro
                     m_StyleDictionary.Add(m_StyleList[i].hashCode, m_StyleList[i]);
             }
 
-            m_isDictionaryLoaded = true;          
+            m_isDictionaryLoaded = true;
         }
     }
 

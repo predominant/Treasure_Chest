@@ -1,0 +1,8 @@
+﻿Font Size - Custom Size - 62
+Font Padding - 5
+Packing Method - Optimum
+Atlas Resolution - 512x512
+Character Set - Characters from File - chars-full
+Font Style - Normal
+Font Render Mode - Distance Field 16
+Get Kerning Pairs - Yes

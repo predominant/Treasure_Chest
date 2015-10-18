@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Stephan Schaem - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Schaem & Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -42,7 +42,7 @@ Properties { // Serialized
 	_VertexOffsetX		("Vertex OffsetX", float) = 0
 	_VertexOffsetY		("Vertex OffsetY", float) = 0
 	_MaskID				("Mask ID", float) = 0
-	_MaskCoord			("Mask Coords", vector) = (0,0,100000,100000)
+	_ClipRect			("Mask Coords", vector) = (0,0,100000,100000)
 	_MaskSoftnessX		("Mask SoftnessX", float) = 0
 	_MaskSoftnessY		("Mask SoftnessY", float) = 0
 }
@@ -146,7 +146,7 @@ SubShader {
 				outlineColor,
 				input.texcoord0,
 				half4(scale, bias - outline, bias + outline, bias),
-				half4(vert.xy-_MaskCoord.xy, .5/pixelSize.xy),
+				half4(vert.xy- _ClipRect.xy, .5/pixelSize.xy),
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
 				input.texcoord0+layerOffset,
 				layerColor,
@@ -175,13 +175,13 @@ SubShader {
 		#endif
 
 		#if MASK_HARD
-			half2 m = 1-saturate((abs(input.mask.xy)-_MaskCoord.zw)*input.mask.zw);
+			half2 m = 1-saturate((abs(input.mask.xy) - _ClipRect.zw)*input.mask.zw);
 			c *= m.x*m.y;
 		#endif
 
 		#if MASK_SOFT
 			half2 s = half2(_MaskSoftnessX, _MaskSoftnessY) * input.mask.zw;
-			half2 m = 1 - saturate(((abs(input.mask.xy) - _MaskCoord.zw) * input.mask.zw + s) / (1 + s));
+			half2 m = 1 - saturate(((abs(input.mask.xy) - _ClipRect.zw) * input.mask.zw + s) / (1 + s));
 			m *= m;
 			c *= m.x * m.y;
 		#endif

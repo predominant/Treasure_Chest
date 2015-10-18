@@ -1201,7 +1201,7 @@ namespace TMPro
         /// <param name="b"></param>
         /// <param name="point"></param>
         /// <returns></returns>
-        private static float DistanceToLine(Vector3 a, Vector3 b, Vector3 point)
+        public static float DistanceToLine(Vector3 a, Vector3 b, Vector3 point)
         {            
             Vector3 n = b - a;
             Vector3 pa = a - point;
@@ -1234,7 +1234,7 @@ namespace TMPro
             int hashCode = 0;
 
             for (int i = 0; i < s.Length; i++)
-                hashCode = (hashCode << 3) - hashCode + s[i];
+                hashCode = (hashCode << 5) - hashCode + s[i];
 
             return hashCode;
         }

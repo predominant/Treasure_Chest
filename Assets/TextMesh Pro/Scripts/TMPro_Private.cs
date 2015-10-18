@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -21,8 +21,10 @@ namespace TMPro
 
         [SerializeField]
         private TextMeshProFont m_fontAsset;
+        private TextMeshProFont m_currentFontAsset;
 
         private Material m_fontMaterial;
+        private Material m_currentMaterial;
 
         private Material m_sharedMaterial;
 
@@ -46,8 +48,8 @@ namespace TMPro
         [SerializeField]
         private VertexGradient m_fontColorGradient = new VertexGradient(Color.white);
 
-		[SerializeField]
-		private bool m_enableVertexGradient;
+        [SerializeField]
+        private bool m_enableVertexGradient;
 
 
         [SerializeField]
@@ -89,11 +91,12 @@ namespace TMPro
         [SerializeField]
         private float m_paragraphSpacing = 0;
 
-      
+
         // This is now obsolete as word wrapping is now controlled by the Text Container's Width and Margins.
+        #pragma warning disable 0649
         //[UnityEngine.Serialization.FormerlySerializedAs("m_lineLength")]
         [SerializeField]
-        private float m_lineLength = 0f;
+        private float m_lineLength;
 
         // This is now obsolete as word wrapping is now controlled by the Text Container's Width and Margins.
         //[UnityEngine.Serialization.FormerlySerializedAs("m_anchor")]
@@ -125,6 +128,7 @@ namespace TMPro
         private bool m_enableWordWrapping = false;
         private bool m_isCharacterWrappingEnabled = false;
         private bool m_isNonBreakingSpace = false;
+        //private bool m_isIgnoringAlignment;
 
         [SerializeField]
         private TextOverflowModes m_overflowMode = TextOverflowModes.Overflow;
@@ -148,13 +152,17 @@ namespace TMPro
         private bool isInputParsingRequired = false; // Used to determine if the input text needs to be re-parsed.
 
         [SerializeField]
-        private bool havePropertiesChanged;  // Used to track when properties of the text object have changed.
+        private bool m_havePropertiesChanged;  // Used to track when properties of the text object have changed.
 
         [SerializeField]
         private bool hasFontAssetChanged = false; // Used to track when font properties have changed.
 
         [SerializeField]
         private bool m_isRichText = true; // Used to enable or disable Rich Text.
+        [SerializeField]
+        private bool m_parseCtrlCharacters = true;
+        [SerializeField]
+        private bool m_isRightToLeft = false;
 
 
         private enum TextInputSources { Text = 0, SetText = 1, SetCharArray = 2 };
@@ -163,7 +171,7 @@ namespace TMPro
         private string old_text; // Used by SetText to determine if the text has changed.
         private float old_arg0, old_arg1, old_arg2; // Used by SetText to determine if the args have changed.
 
-        private int m_fontIndex;
+        //private int m_fontIndex;
 
         private float m_fontScale; // Scaling of the font based on Atlas true Font Size and Rendered Font Size.  
         private bool m_isRecalculateScaleRequired = false;
@@ -174,6 +182,7 @@ namespace TMPro
 
         private float tag_LineIndent = 0;
         private float tag_Indent = 0;
+        private bool tag_NoParsing;
 
         //private bool m_isCheckingTextLength = false;
         //private float m_textLength;
@@ -185,7 +194,7 @@ namespace TMPro
 
 
         private TMP_TextInfo m_textInfo; // Class which holds information about the Text object such as characters, lines, mesh data as well as metrics.       
-        private char[] m_htmlTag = new char[32]; // Maximum length of rich text tag. This is preallocated to avoid GC.
+        private char[] m_htmlTag = new char[64]; // Maximum length of rich text tag. This is preallocated to avoid GC.
 
 
 
@@ -209,7 +218,7 @@ namespace TMPro
         private Vector4 m_alignmentPadding; // Holds the amount of padding required to account for Outline Width and Dilation with regards to text alignment.
         private bool m_isUsingBold = false; // Used to ensure GetPadding & Ratios take into consideration bold characters.
 
-        private Vector2 k_InfinityVector = new Vector2(Mathf.Infinity, Mathf.Infinity);
+        private Vector2 k_InfinityVector = new Vector2(1000000, 1000000);
 
         private bool m_isFirstAllocation; // Flag to determine if this is the first allocation of the buffers.
         private int m_max_characters = 8; // Determines the initial allocation and size of the character array / buffer.
@@ -291,11 +300,17 @@ namespace TMPro
         //}
 
         //private TriangleList[] m_triangleListArray = new TriangleList[16];
-        [SerializeField]
-        private TextMeshProFont[] m_fontAssetArray;
+        //[SerializeField]
+        //private TextMeshProFont[] m_fontAssetArray;
+
+        private Dictionary<int, TextMeshProFont> m_fontAsset_Dict = new Dictionary<int, TextMeshProFont>();
+        private Dictionary<int, Material> m_fontMaterial_Dict = new Dictionary<int, Material>();
+        private Dictionary<int, Material> m_referencedMaterials = new Dictionary<int, Material>();
+        //private int m_fontAssetCount;
+        //private int m_materialCount;
+
         //[SerializeField]
         private List<Material> m_sharedMaterials = new List<Material>(16);
-        //private int m_selectedFontAsset;
 
         // MASKING RELATED PROPERTIES
 
@@ -329,6 +344,9 @@ namespace TMPro
 
         // LINK TRACKING
         TMP_LinkInfo tag_LinkInfo = new TMP_LinkInfo();
+
+        // DEFAULT SETTINGS
+        private TMP_Settings m_settings;
 
         // STYLE TAGS
         //private TMP_StyleSheet m_defaultStyleSheet;
@@ -369,12 +387,12 @@ namespace TMPro
 
         void Awake()
         {
-            //Debug.Log("Awake() called on Object ID " + GetInstanceID());          
+            //Debug.Log("Awake() called on Object ID " + GetInstanceID());
             
             // Code to handle Compatibility related to the switch from Color32 to Color
             if (m_fontColor == Color.white && m_fontColor32 != Color.white)
             {
-                Debug.LogWarning("Converting Vertex Colors from Color32 to Color.");
+                Debug.LogWarning("Converting Vertex Colors from Color32 to Color.", this);
                 m_fontColor = m_fontColor32;
             } 
          
@@ -407,9 +425,18 @@ namespace TMPro
 
                 m_meshFilter.mesh = m_mesh;
                 //m_mesh.bounds = new Bounds(transform.position, new Vector3(1000, 1000, 0));
-            }           
+            }
             m_meshFilter.hideFlags = HideFlags.HideInInspector;
-         
+
+            // Load TMP Settings
+            if (m_settings == null) m_settings = TMP_Settings.LoadDefaultSettings();
+            if (m_settings != null)
+            {
+                //m_enableWordWrapping = m_settings.enableWordWrapping;
+                //m_enableKerning = m_settings.enableKerning;
+                //m_enableExtraPadding = m_settings.enableExtraPadding;
+            }
+
             // Load the font asset and assign material to renderer.
             LoadFontAsset();
 
@@ -422,18 +449,14 @@ namespace TMPro
             m_isFirstAllocation = true;
             
             m_textInfo = new TMP_TextInfo();
-            //m_textInfo.wordInfo = new List<TMP_WordInfo>();
-            //m_textInfo.lineInfo = new TMP_LineInfo[m_max_numberOfLines];
-            //m_textInfo.pageInfo = new TMP_PageInfo[16];
-            //m_textInfo.meshInfo = new TMP_MeshInfo();  
             
-            m_fontAssetArray = new TextMeshProFont[16];
+            //m_fontAssetArray = new TextMeshProFont[16];
 
 
             // Check if we have a font asset assigned. Return if we don't because no one likes to see purple squares on screen.
             if (m_fontAsset == null)
             {
-                Debug.LogWarning("Please assign a Font Asset to this " + transform.name + " gameobject.");
+                Debug.LogWarning("Please assign a Font Asset to this " + transform.name + " gameobject.", this);
                 return;
             }
 
@@ -443,7 +466,7 @@ namespace TMPro
 
             //// Set flags to cause ensure our text is parsed and text redrawn. 
             isInputParsingRequired = true;
-            havePropertiesChanged = true;
+            m_havePropertiesChanged = true;
 
             ForceMeshUpdate(); // Added to force OnWillRenderObject() to be called in case object is not visible so we get initial bounds for the mesh.         
         }
@@ -460,10 +483,11 @@ namespace TMPro
             if (!m_isRegisteredForEvents)
             {
 #if UNITY_EDITOR
-                TMPro_EventManager.MATERIAL_PROPERTY_EVENT += ON_MATERIAL_PROPERTY_CHANGED;
-                TMPro_EventManager.FONT_PROPERTY_EVENT += ON_FONT_PROPERTY_CHANGED;
-                TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT += ON_TEXTMESHPRO_PROPERTY_CHANGED;
-                TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT += ON_DRAG_AND_DROP_MATERIAL;
+                TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Add(ON_MATERIAL_PROPERTY_CHANGED);
+                TMPro_EventManager.FONT_PROPERTY_EVENT.Add(ON_FONT_PROPERTY_CHANGED);
+                TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Add(ON_TEXTMESHPRO_PROPERTY_CHANGED);
+                TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Add(ON_DRAG_AND_DROP_MATERIAL);
+                TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Add(ON_TEXT_STYLE_CHANGED);
 #endif
                 //TMPro_EventManager.OnPreRenderObject_Event += OnPreRenderObject;
                 m_isRegisteredForEvents = true;
@@ -492,10 +516,11 @@ namespace TMPro
 
             // Unregister the event this object was listening to
 #if UNITY_EDITOR
-            TMPro_EventManager.MATERIAL_PROPERTY_EVENT -= ON_MATERIAL_PROPERTY_CHANGED;
-            TMPro_EventManager.FONT_PROPERTY_EVENT -= ON_FONT_PROPERTY_CHANGED;
-            TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT -= ON_TEXTMESHPRO_PROPERTY_CHANGED;
-            TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT -= ON_DRAG_AND_DROP_MATERIAL;
+            TMPro_EventManager.MATERIAL_PROPERTY_EVENT.Remove(ON_MATERIAL_PROPERTY_CHANGED);
+            TMPro_EventManager.FONT_PROPERTY_EVENT.Remove(ON_FONT_PROPERTY_CHANGED);
+            TMPro_EventManager.TEXTMESHPRO_PROPERTY_EVENT.Remove(ON_TEXTMESHPRO_PROPERTY_CHANGED);
+            TMPro_EventManager.DRAG_AND_DROP_MATERIAL_EVENT.Remove(ON_DRAG_AND_DROP_MATERIAL);
+            TMPro_EventManager.TEXT_STYLE_PROPERTY_EVENT.Remove(ON_TEXT_STYLE_CHANGED);
 #endif
             //TMPro_EventManager.OnPreRenderObject_Event -= OnPreRenderObject;
             m_isRegisteredForEvents = false;
@@ -544,17 +569,17 @@ namespace TMPro
                 if (m_fontAsset != null)
                 {
                     m_renderer.sharedMaterial = m_fontAsset.material;
-                    Debug.LogWarning("No Material was assigned to " + name + ". " + m_fontAsset.material.name + " was assigned.");
+                    Debug.LogWarning("No Material was assigned to " + name + ". " + m_fontAsset.material.name + " was assigned.", this);
                 }
                 else
-                    Debug.LogWarning("No Font Asset assigned to " + name + ". Please assign a Font Asset.");
+                    Debug.LogWarning("No Font Asset assigned to " + name + ". Please assign a Font Asset.", this);
             }
 
             if (m_fontAsset.atlas.GetInstanceID() != m_renderer.sharedMaterial.GetTexture(ShaderUtilities.ID_MainTex).GetInstanceID())
             {
                 m_renderer.sharedMaterial = m_sharedMaterial;
                 //m_renderer.sharedMaterial = m_fontAsset.material;
-                Debug.LogWarning("Font Asset Atlas doesn't match the Atlas in the newly assigned material. Select a matching material or a different font asset.");
+                Debug.LogWarning("Font Asset Atlas doesn't match the Atlas in the newly assigned material. Select a matching material or a different font asset.", this);
             }
 
             if (m_renderer.sharedMaterial != m_sharedMaterial) //    || m_renderer.sharedMaterials.Contains(mat))
@@ -564,11 +589,11 @@ namespace TMPro
             }
 
             m_padding =  ShaderUtilities.GetPadding(m_renderer.sharedMaterials, m_enableExtraPadding, m_isUsingBold);
-            m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
+            //m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
             m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             UpdateMask();
             UpdateEnvMapMatrix();
-            havePropertiesChanged = true;          
+            m_havePropertiesChanged = true;
             /* ScheduleUpdate(); */
         }
 
@@ -579,7 +604,7 @@ namespace TMPro
             if (font == m_fontAsset)
             {
                 //Debug.Log("ON_FONT_PROPERTY_CHANGED event received.");
-                havePropertiesChanged = true;
+                m_havePropertiesChanged = true;
                 hasFontAssetChanged = true;
                 /* ScheduleUpdate(); */
             }
@@ -592,7 +617,7 @@ namespace TMPro
             if (obj == this)
             {
                 //Debug.Log("Undo / Redo Event Received by Object ID:" + GetInstanceID());
-                havePropertiesChanged = true;
+                m_havePropertiesChanged = true;
                 isInputParsingRequired = true;
                 /* ScheduleUpdate(); */
             }
@@ -616,6 +641,12 @@ namespace TMPro
             }
         }
 
+
+        // Event received when Text Styles are changed.
+        void ON_TEXT_STYLE_CHANGED(bool isChanged)
+        {
+            m_havePropertiesChanged = true;
+        }
 #endif
 
 
@@ -639,12 +670,16 @@ namespace TMPro
 
             if (m_fontAsset == null)  
             {
-                
-                //Debug.Log("Font Asset are Null. Trying to Load Default Arial SDF Font.");
-                m_fontAsset = Resources.Load("Fonts & Materials/ARIAL SDF", typeof(TextMeshProFont)) as TextMeshProFont;
+                // Load TMP_Settings
+                if (m_settings == null) m_settings = TMP_Settings.LoadDefaultSettings();
+                if (m_settings != null && m_settings.fontAsset != null)
+                    m_fontAsset = m_settings.fontAsset;
+                else
+                    m_fontAsset = Resources.Load("Fonts & Materials/ARIAL SDF", typeof(TextMeshProFont)) as TextMeshProFont;
+
                 if (m_fontAsset == null)
                 {
-                    Debug.LogWarning("The ARIAL SDF Font Asset was not found. There is no Font Asset assigned to " + gameObject.name + ".");
+                    Debug.LogWarning("The ARIAL SDF Font Asset was not found. There is no Font Asset assigned to " + gameObject.name + ".", this);
                     return;
                 }
 
@@ -699,14 +734,19 @@ namespace TMPro
             }
 
             m_padding = ShaderUtilities.GetPadding(m_renderer.sharedMaterials, m_enableExtraPadding, m_isUsingBold);
-            m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
+            //m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
             m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
-                      
+
 
             if (!m_fontAsset.characterDictionary.TryGetValue(95, out m_cached_Underline_GlyphInfo)) //95
-                Debug.LogWarning("Underscore character wasn't found in the current Font Asset. No characters assigned for Underline.");
+                Debug.LogWarning("Underscore character wasn't found in the current Font Asset. No characters assigned for Underline.", this);
 
-            
+            // Add Font Asset and Material to dictionaries
+            if (!m_fontAsset_Dict.ContainsKey(m_fontAsset.fontHashCode))
+                m_fontAsset_Dict.Add(m_fontAsset.fontHashCode, m_fontAsset);
+
+            int materialHashCode = TMP_TextUtilities.GetSimpleHashCode(m_sharedMaterial.name);
+            if (!m_fontMaterial_Dict.ContainsKey(materialHashCode)) m_fontMaterial_Dict.Add(materialHashCode, m_sharedMaterial);
 
             m_sharedMaterials.Add(m_sharedMaterial);
             // Hide Material Editor Component
@@ -749,20 +789,25 @@ namespace TMPro
             switch(maskType)
             {
                 case MaskingTypes.MaskOff:
-                    //m_sharedMaterial.EnableKeyword(ShaderUtilities.Keyword_MASK_OFF);
                     m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
                     m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_HARD);
+                    m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_TEX);
                     break;
                 case MaskingTypes.MaskSoft:
                     m_sharedMaterial.EnableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
                     m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_HARD);
-                    //m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_OFF);
+                    m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_TEX);
                     break;
                 case MaskingTypes.MaskHard:
                     m_sharedMaterial.EnableKeyword(ShaderUtilities.Keyword_MASK_HARD);
                     m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
-                    //m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_OFF);
+                    m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_TEX);
                     break;
+                //case MaskingTypes.MaskTex:
+                //    m_sharedMaterial.EnableKeyword(ShaderUtilities.Keyword_MASK_TEX);
+                //    m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_HARD);
+                //    m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
+                //    break;
             }
         }
 
@@ -770,13 +815,13 @@ namespace TMPro
         // Method used to set the masking coordinates
         void SetMaskCoordinates(Vector4 coords)
         {
-            m_sharedMaterial.SetVector(ShaderUtilities.ID_MaskCoord, coords);
+            m_sharedMaterial.SetVector(ShaderUtilities.ID_ClipRect, coords);
         }
 
         // Method used to set the masking coordinates
         void SetMaskCoordinates(Vector4 coords, float softX, float softY)
         {
-            m_sharedMaterial.SetVector(ShaderUtilities.ID_MaskCoord, coords);
+            m_sharedMaterial.SetVector(ShaderUtilities.ID_ClipRect, coords);
             m_sharedMaterial.SetFloat(ShaderUtilities.ID_MaskSoftnessX, softX);
             m_sharedMaterial.SetFloat(ShaderUtilities.ID_MaskSoftnessY, softY);
         }
@@ -786,11 +831,11 @@ namespace TMPro
         // Enable Masking in the Shader
         void EnableMasking()
         {
-            if (m_sharedMaterial.HasProperty(ShaderUtilities.ID_MaskCoord))
+            if (m_sharedMaterial.HasProperty(ShaderUtilities.ID_ClipRect))
             {
-                m_sharedMaterial.EnableKeyword("MASK_SOFT");
-                m_sharedMaterial.DisableKeyword("MASK_HARD");
-                //m_sharedMaterial.DisableKeyword("MASK_OFF");
+                m_sharedMaterial.EnableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
+                m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_HARD);
+                m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_TEX);
 
                 m_isMaskingEnabled = true;
                 UpdateMask();
@@ -801,11 +846,11 @@ namespace TMPro
         // Enable Masking in the Shader
         void DisableMasking()
         {
-            if (m_sharedMaterial.HasProperty(ShaderUtilities.ID_MaskCoord))
+            if (m_sharedMaterial.HasProperty(ShaderUtilities.ID_ClipRect))
             {
-                //m_sharedMaterial.EnableKeyword("MASK_OFF");
-                m_sharedMaterial.DisableKeyword("MASK_HARD");
-                m_sharedMaterial.DisableKeyword("MASK_SOFT");
+                m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_SOFT);
+                m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_HARD);
+                m_sharedMaterial.DisableKeyword(ShaderUtilities.Keyword_MASK_TEX);
 
                 m_isMaskingEnabled = false;
                 UpdateMask();
@@ -861,7 +906,7 @@ namespace TMPro
             Vector4 mask = new Vector4(center.x, center.y, width, height);
 
 
-            m_fontMaterial.SetVector(ShaderUtilities.ID_MaskCoord, mask);
+            m_fontMaterial.SetVector(ShaderUtilities.ID_ClipRect, mask);
             m_fontMaterial.SetFloat(ShaderUtilities.ID_MaskSoftnessX, softnessX);
             m_fontMaterial.SetFloat(ShaderUtilities.ID_MaskSoftnessY, softnessY);
             /*                     
@@ -964,7 +1009,6 @@ namespace TMPro
             m_fontMaterial = m_renderer.material;
             m_sharedMaterial = m_fontMaterial;
             m_padding = ShaderUtilities.GetPadding(m_renderer.sharedMaterials, m_enableExtraPadding, m_isUsingBold);
-            m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
         }
 
 
@@ -993,6 +1037,8 @@ namespace TMPro
                 m_fontMaterial = m_renderer.material;
 
             m_fontMaterial = m_renderer.material;
+            m_sharedMaterial = m_fontMaterial;
+            m_padding = ShaderUtilities.GetPadding(m_sharedMaterial, m_enableExtraPadding, m_isUsingBold);
         }
 
 
@@ -1005,7 +1051,7 @@ namespace TMPro
                 m_fontMaterial = m_renderer.material;
 
             //Debug.Log("Material ID:" + m_fontMaterial.GetInstanceID());
-            //m_faceColor = m_renderer.material;
+            m_sharedMaterial = m_fontMaterial;
         }
 
 
@@ -1018,7 +1064,7 @@ namespace TMPro
                 m_fontMaterial = m_renderer.material;
 
             //Debug.Log("Material ID:" + m_fontMaterial.GetInstanceID());
-            //m_faceColor = m_renderer.material;
+            m_sharedMaterial = m_fontMaterial;
         }
 
 
@@ -1170,10 +1216,26 @@ namespace TMPro
 
             for (int i = 0; i < text.Length; i++)
             {
-                if (text[i] == 92 && i < text.Length - 1)
+                if (m_parseCtrlCharacters && text[i] == 92 && text.Length > i + 1)
                 {
                     switch ((int)text[i + 1])
                     {
+                        case 85: // \U00000000 for UTF-32 Unicode
+                            if (text.Length > i + 9)
+                            {
+                                chars[index] = GetUTF32(i + 2);
+                                i += 9;
+                                index += 1;
+                                continue;
+                            }
+                            break;
+                        case 92: // \ escape
+                            if (text.Length <= i + 2) break;
+                            chars[index] = text[i + 1];
+                            chars[index + 1] = text[i + 2];
+                            i += 2;
+                            index += 2;
+                            continue;
                         case 110: // \n LineFeed
                             chars[index] = (char)10;
                             i += 1;
@@ -1189,7 +1251,25 @@ namespace TMPro
                             i += 1;
                             index += 1;
                             continue;
+                        case 117: // \u0000 for UTF-16 Unicode
+                            if (text.Length > i + 5)
+                            {
+                                chars[index] = (char)GetUTF16(i + 2);
+                                i += 5;
+                                index += 1;
+                                continue;
+                            }
+                            break;
                     }
+                }
+
+                // Handle UTF-32 in the input text (string).
+                if (char.IsHighSurrogate(text[i]) && char.IsLowSurrogate(text[i + 1]))
+                {
+                    chars[index] = char.ConvertToUtf32(text[i], text[i + 1]);
+                    i += 1;
+                    index += 1;
+                    continue;
                 }
 
                 chars[index] = text[i];
@@ -1217,26 +1297,13 @@ namespace TMPro
 
             for (int i = 0; i < m_charArray_Length; i++)
             {
-                if (charArray[i] == 92 && i < m_charArray_Length - 1)
+                // Handle UTF-32 in the input text (string).
+                if (char.IsHighSurrogate(charArray[i]) && char.IsLowSurrogate(charArray[i + 1]))
                 {
-                    switch ((int)charArray[i + 1])
-                    {
-                        case 110: // \n LineFeed
-                            charBuffer[index] = 10;
-                            i += 1;
-                            index += 1;
-                            continue;
-                        case 114: // \r LineFeed
-                            charBuffer[index] = 13;
-                            i += 1;
-                            index += 1;
-                            continue;
-                        case 116: // \t Tab
-                            charBuffer[index] = 9;
-                            i += 1;
-                            index += 1;
-                            continue;
-                    }
+                    charBuffer[index] = char.ConvertToUtf32(charArray[i], charArray[i + 1]);
+                    i += 1;
+                    index += 1;
+                    continue;
                 }
 
                 charBuffer[index] = charArray[i];
@@ -1259,6 +1326,7 @@ namespace TMPro
             int totalCount = 0;
             int tagEnd = 0;
             m_isUsingBold = false;
+            m_isParsingText = false;
 
             m_VisibleCharacters.Clear();
 
@@ -1280,7 +1348,7 @@ namespace TMPro
                     }
                 }
 
-                if (c != 32 && c != 9 && c != 10 && c != 13)
+                if (c != 9 && c != 10 && c != 13 && c != 32 && c != 160)
                 {
                     visibleCount += 1;
                 }
@@ -1288,7 +1356,7 @@ namespace TMPro
                 m_VisibleCharacters.Add((char)c);  
                 totalCount += 1;
             }
-                   
+
             return totalCount;
         }
 
@@ -1304,8 +1372,14 @@ namespace TMPro
             int totalCount = 0;
             int tagEnd = 0;
             m_isUsingBold = false;
+            m_isParsingText = false;
 
             m_VisibleCharacters.Clear();
+
+            // Handling of Multi Font Assets & Material tracking
+            m_referencedMaterials.Clear();
+            m_referencedMaterials.Add(m_currentMaterial.GetHashCode(), m_currentMaterial);
+
 
             for (int i = 0; chars[i] != 0; i++)
             {
@@ -1325,7 +1399,7 @@ namespace TMPro
                     }
                 }
 
-                if (c != 32 && c != 9 && c != 10 && c != 13)
+                if (c != 9 && c != 10 && c != 13 && c != 32 && c != 160)
                 {
                     visibleCount += 1;
                 }
@@ -1334,9 +1408,11 @@ namespace TMPro
                 totalCount += 1;
             }
 
+            //Debug.Log("Text object uses " + 0 + " font assets and " + m_referencedMaterials.Count + " materials.");
+
 
             if (m_textInfo.characterInfo == null || totalCount > m_textInfo.characterInfo.Length)
-            {                
+            {
                 m_textInfo.characterInfo = new TMP_CharacterInfo[totalCount > 1024 ? totalCount + 256 : Mathf.NextPowerOfTwo(totalCount)];
             }
 
@@ -1391,7 +1467,7 @@ namespace TMPro
 
         void OnDidApplyAnimationProperties()
         {
-            havePropertiesChanged = true;
+            m_havePropertiesChanged = true;
             isMaskUpdateRequired = true;
             //Debug.Log("Animation Properties have changed.");
         }
@@ -1440,7 +1516,7 @@ namespace TMPro
                     isMaskUpdateRequired = true;
                     
                     m_textContainer.hasChanged = false;
-                    havePropertiesChanged = true;
+                    m_havePropertiesChanged = true;
                 }
 
 
@@ -1449,17 +1525,17 @@ namespace TMPro
                 if (currentLossyScale != m_previousLossyScale)
                 {
                     // Update UV2 Scale - only if we don't have to regenerate the text object anyway.
-                    if (havePropertiesChanged == false && m_previousLossyScale.z != 0 && m_text != string.Empty)
+                    if (m_havePropertiesChanged == false && m_previousLossyScale.z != 0 && m_text != string.Empty)
                         UpdateSDFScale(m_previousLossyScale.z, currentLossyScale.z);
                     else
-                        havePropertiesChanged = true;
+                        m_havePropertiesChanged = true;
 
                     m_previousLossyScale = currentLossyScale;
                 }
             }
-                     
 
-            if (havePropertiesChanged || m_fontAsset.propertiesChanged)
+
+            if (m_havePropertiesChanged || m_fontAsset.propertiesChanged)
             {
                 //Debug.Log("Properties have changed!"); // Assigned Material is:" + m_sharedMaterial); // New Text is: " + m_text + ".");                
 
@@ -1503,15 +1579,9 @@ namespace TMPro
                 m_isCharacterWrappingEnabled = false;
                 m_isTextTruncated = false;
 
+                m_havePropertiesChanged = false;
                 GenerateTextMesh();
-                havePropertiesChanged = false;
                 //isAlreadyScheduled = false;
-
-				// boris Tue Mar 24 14:45:51 EET 2015
-				// FlexibleUI components are using this event
-				if (onTextMeshUpdate != null) {
-					onTextMeshUpdate();
-				}
             }
         }
 
@@ -1524,7 +1594,7 @@ namespace TMPro
         void GenerateTextMesh()
         {
             //Debug.Log("***** GenerateTextMesh() ***** Iteration Count: " + loopCountA + ".  Min: " + m_minFontSize + "  Max: " + m_maxFontSize + "  Font size is " + m_fontSize);
-            
+
             // Early exit if no font asset was assigned. This should not be needed since Arial SDF will be assigned by default.
             if (m_fontAsset.characterDictionary == null)
             {
@@ -1537,7 +1607,7 @@ namespace TMPro
                 m_textInfo.Clear();
 
 
-            // Early exit if we don't have any Text to generate.          
+            // Early exit if we don't have any Text to generate.
             if (m_char_buffer == null || m_char_buffer.Length == 0 || m_char_buffer[0] == (char)0)
             {
                 //Debug.Log("Early Out!");
@@ -1551,19 +1621,19 @@ namespace TMPro
                 m_preferredHeight = 0;
                 return;
             }
-            
+
+            m_currentFontAsset = m_fontAsset;
+            m_currentMaterial = m_sharedMaterial;
+
             // Determine how many characters will be visible and make the necessary allocations (if needed).
             int totalCharacterCount = SetArraySizes(m_char_buffer);
 
-            m_fontIndex = 0; // Will be used when support for using different font assets or sprites within the same object will be added.
-            m_fontAssetArray[m_fontIndex] = m_fontAsset;
-
             // Scale the font to approximately match the point size
-            m_fontScale = (m_fontSize / m_fontAssetArray[m_fontIndex].fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
+            m_fontScale = (m_fontSize / m_currentFontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
             float baseScale = m_fontScale; // BaseScale keeps the character aligned vertically since <size=+000> results in font of different scale.
-            m_maxFontScale = 0;
-            float previousFontScale = 0;
-            //float lastVisibleCharacterScale = 0;
+            m_maxFontScale = baseScale;
+            float previousLineMaxScale = baseScale;
+            float firstVisibleCharacterScale = 0;
             m_currentFontSize = m_fontSize;
             float fontSizeDelta = 0;
 
@@ -1579,7 +1649,7 @@ namespace TMPro
             {
                 checkPaddingRequired = false;
                 m_padding = ShaderUtilities.GetPadding(m_renderer.sharedMaterials, m_enableExtraPadding, m_isUsingBold);
-                m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
+                //m_alignmentPadding = ShaderUtilities.GetFontExtent(m_sharedMaterial);
                 m_isMaskingEnabled = ShaderUtilities.IsMaskingEnabled(m_sharedMaterial);
             }
 
@@ -1609,7 +1679,6 @@ namespace TMPro
 
             m_lineOffset = 0; // Amount of space between lines (font line spacing + m_linespacing).
             m_lineHeight = 0;
-            float maxLineHeight = 0;
 
             m_cSpacing = 0;
             m_monoSpacing = 0;
@@ -1619,9 +1688,12 @@ namespace TMPro
 
             tag_LineIndent = 0; // Used for indentation of text.
             tag_Indent = 0;
+            tag_NoParsing = false;
+            //m_isIgnoringAlignment = false;
 
             m_characterCount = 0; // Total characters in the char[]
             m_visibleCharacterCount = 0; // # of visible characters.
+            //m_visibleSpriteCount = 0;
 
             // Tracking of line information
             m_firstCharacterOfLine = 0;
@@ -1703,7 +1775,7 @@ namespace TMPro
 
                         if (m_isRecalculateScaleRequired)
                         {
-                            m_fontScale = (m_currentFontSize / m_fontAssetArray[m_fontIndex].fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
+                            m_fontScale = (m_currentFontSize / m_currentFontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
                             m_isRecalculateScaleRequired = false;
                         }
 
@@ -1719,12 +1791,12 @@ namespace TMPro
                 //if (m_fontIndex != 0)
                 //{
                 //    // Check if we need to load the new font asset
-                //    if (m_fontAssetArray[m_fontIndex] == null)
+                //    if (m_currentFontAsset == null)
                 //    {
                 //        Debug.Log("Loading secondary font asset.");
-                //        m_fontAssetArray[m_fontIndex] = Resources.Load("Fonts & Materials/Bangers SDF", typeof(TextMeshProFont)) as TextMeshProFont;
-                //        //m_sharedMaterials.Add(m_fontAssetArray[m_fontIndex].material);
-                //        //m_renderer.sharedMaterials = new Material[] { m_sharedMaterial, m_fontAssetArray[m_fontIndex].material }; // m_sharedMaterials.ToArray();
+                //        m_currentFontAsset = Resources.Load("Fonts & Materials/Bangers SDF", typeof(TextMeshProFont)) as TextMeshProFont;
+                //        //m_sharedMaterials.Add(m_currentFontAsset.material);
+                //        //m_renderer.sharedMaterials = new Material[] { m_sharedMaterial, m_currentFontAsset.material }; // m_sharedMaterials.ToArray();
                 //    }
                 //}              
                 //Debug.Log("Char [" + (char)charCode + "] ASCII " + charCode); //is using FontIndex: " + m_fontIndex);
@@ -1736,24 +1808,24 @@ namespace TMPro
                 {
                     // If this character is lowercase, switch to uppercase.
                     if (char.IsLower((char)charCode))
-                        charCode -= 32;
+                        charCode = char.ToUpper((char)charCode);
 
                 }
                 else if ((m_style & FontStyles.LowerCase) == FontStyles.LowerCase)
                 {
                     // If this character is uppercase, switch to lowercase.
                     if (char.IsUpper((char)charCode))
-                        charCode += 32;
+                        charCode = char.ToLower((char)charCode);
                 }
                 else if ((m_fontStyle & FontStyles.SmallCaps) == FontStyles.SmallCaps || (m_style & FontStyles.SmallCaps) == FontStyles.SmallCaps)
                 {
                     if (char.IsLower((char)charCode))
                     {
-                        m_fontScale = m_currentFontSize * 0.8f / m_fontAssetArray[m_fontIndex].fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f);
-                        charCode -= 32;
+                        m_fontScale = m_currentFontSize * 0.8f / m_currentFontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f);
+                        charCode = char.ToUpper((char)charCode);
                     }
                     else
-                        m_fontScale = m_currentFontSize / m_fontAssetArray[m_fontIndex].fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f);
+                        m_fontScale = m_currentFontSize / m_currentFontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f);
 
                 }
                 #endregion
@@ -1761,7 +1833,7 @@ namespace TMPro
 
                 // Look up Character Data from Dictionary and cache it.
                 #region Look up Character Data
-                m_fontAssetArray[m_fontIndex].characterDictionary.TryGetValue(charCode, out m_cached_GlyphInfo);
+                m_currentFontAsset.characterDictionary.TryGetValue(charCode, out m_cached_GlyphInfo);
                 if (m_cached_GlyphInfo == null)
                 {
                     // Character wasn't found in the Dictionary.
@@ -1769,40 +1841,47 @@ namespace TMPro
                     // Check if Lowercase & Replace by Uppercase if possible
                     if (char.IsLower((char)charCode))
                     {
-                        if (m_fontAssetArray[m_fontIndex].characterDictionary.TryGetValue(charCode - 32, out m_cached_GlyphInfo))
-                            charCode -= 32;
+                        if (m_currentFontAsset.characterDictionary.TryGetValue(char.ToUpper((char)charCode), out m_cached_GlyphInfo))
+                            charCode = char.ToUpper((char)charCode);
                     }
                     else if (char.IsUpper((char)charCode))
                     {
-                        if (m_fontAssetArray[m_fontIndex].characterDictionary.TryGetValue(charCode + 32, out m_cached_GlyphInfo))
-                            charCode += 32;
+                        if (m_currentFontAsset.characterDictionary.TryGetValue(char.ToLower((char)charCode), out m_cached_GlyphInfo))
+                            charCode = char.ToLower((char)charCode);
                     }
 
                     // Still don't have a replacement?
                     if (m_cached_GlyphInfo == null)
                     {
-                        m_fontAssetArray[m_fontIndex].characterDictionary.TryGetValue(88, out m_cached_GlyphInfo);
+                        m_currentFontAsset.characterDictionary.TryGetValue(88, out m_cached_GlyphInfo);
                         if (m_cached_GlyphInfo != null)
                         {
-                            Debug.LogWarning("Character with ASCII value of " + charCode + " was not found in the Font Asset Glyph Table.");
+                            Debug.LogWarning("Character with ASCII value of " + charCode + " was not found in the Font Asset Glyph Table.", this);
                             // Replace the missing character by X (if it is found)
                             charCode = 88;
                             isMissingCharacter = true;
                         }
                         else
-                        {  // At this point the character isn't in the Dictionary, the replacement X isn't either so ...                         
-                            Debug.LogWarning("Character with ASCII value of " + charCode + " was not found in the Font Asset Glyph Table.");
+                        {  // At this point the character isn't in the Dictionary, the replacement X isn't either so ...
+                            Debug.LogWarning("Character with ASCII value of " + charCode + " was not found in the Font Asset Glyph Table.", this);
                             continue;
                         }
                     }
                 }
                 #endregion
 
+
+                if (m_isRightToLeft)
+                    m_xAdvance -= ((m_cached_GlyphInfo.xAdvance * xadvance_multiplier + m_characterSpacing) * m_fontScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
+
+
                 // Store some of the text object's information
                 m_textInfo.characterInfo[m_characterCount].character = (char)charCode;
+                m_textInfo.characterInfo[m_characterCount].pointSize = m_currentFontSize;
                 m_textInfo.characterInfo[m_characterCount].color = m_htmlColor;
                 m_textInfo.characterInfo[m_characterCount].style = m_style;
                 m_textInfo.characterInfo[m_characterCount].index = (short)i;
+                //m_textInfo.characterInfo[m_characterCount].isIgnoringAlignment = m_isIgnoringAlignment;
 
 
                 // Handle Kerning if Enabled.
@@ -1814,7 +1893,7 @@ namespace TMPro
 
                     KerningPair pair;
 
-                    m_fontAssetArray[m_fontIndex].kerningDictionary.TryGetValue(keyValue.key, out pair);
+                    m_currentFontAsset.kerningDictionary.TryGetValue(keyValue.key, out pair);
                     if (pair != null)
                     {
                         m_xAdvance += pair.XadvanceOffset * m_fontScale;
@@ -1825,8 +1904,12 @@ namespace TMPro
 
                 // Handle Mono Spacing
                 #region Handle Mono Spacing
-                if (m_monoSpacing != 0 && m_xAdvance != 0)
-                    m_xAdvance -= (m_cached_GlyphInfo.width / 2 + m_cached_GlyphInfo.xOffset) * m_fontScale * (1 - m_charWidthAdjDelta);
+                float monoAdvance = 0;
+                if (m_monoSpacing != 0)
+                {
+                    monoAdvance = (m_monoSpacing / 2 - (m_cached_GlyphInfo.width / 2 + m_cached_GlyphInfo.xOffset) * m_fontScale) * (1 - m_charWidthAdjDelta);
+                    m_xAdvance += monoAdvance;
+                }
                 #endregion
 
 
@@ -1834,12 +1917,12 @@ namespace TMPro
                 #region Handle Style Padding
                 if ((m_style & FontStyles.Bold) == FontStyles.Bold || (m_fontStyle & FontStyles.Bold) == FontStyles.Bold) // Checks for any combination of Bold Style.
                 {
-                    style_padding = m_fontAssetArray[m_fontIndex].BoldStyle * 2;
-                    xadvance_multiplier = 1.07f; // Increase xAdvance for bold characters.
+                    style_padding = m_currentFontAsset.BoldStyle * 2;
+                    xadvance_multiplier = 1 + m_currentFontAsset.boldSpacing * 0.01f;
                 }
                 else
                 {
-                    style_padding = m_fontAssetArray[m_fontIndex].NormalStyle * 2;
+                    style_padding = m_currentFontAsset.NormalStyle * 2;
                     xadvance_multiplier = 1.0f;
                 }
                 #endregion Handle Style Padding
@@ -1856,7 +1939,7 @@ namespace TMPro
                 if ((m_style & FontStyles.Italic) == FontStyles.Italic || (m_fontStyle & FontStyles.Italic) == FontStyles.Italic)
                 {
                     // Shift Top vertices forward by half (Shear Value * height of character) and Bottom vertices back by same amount. 
-                    float shear_value = m_fontAssetArray[m_fontIndex].ItalicStyle * 0.01f;
+                    float shear_value = m_currentFontAsset.ItalicStyle * 0.01f;
                     Vector3 topShear = new Vector3(shear_value * ((m_cached_GlyphInfo.yOffset + m_padding + style_padding) * m_fontScale), 0, 0);
                     Vector3 bottomShear = new Vector3(shear_value * (((m_cached_GlyphInfo.yOffset - m_cached_GlyphInfo.height - m_padding - style_padding)) * m_fontScale), 0, 0);
 
@@ -1874,6 +1957,7 @@ namespace TMPro
                 m_textInfo.characterInfo[m_characterCount].topRight = top_right;
                 m_textInfo.characterInfo[m_characterCount].bottomRight = bottom_right;
                 m_textInfo.characterInfo[m_characterCount].baseLine = 0 - m_lineOffset + m_baselineOffset;
+                m_textInfo.characterInfo[m_characterCount].scale = m_fontScale;
 
 
                 // Compute MaxAscender & MaxDescender which is used for AutoScaling & other type layout options
@@ -1887,7 +1971,7 @@ namespace TMPro
                 if (m_lineOffset == 0) pageAscender = pageAscender > ascender ? pageAscender : ascender;
 
                 // Track Line Height
-                maxLineHeight = Mathf.Max(m_lineHeight, maxLineHeight);
+                //maxLineHeight = Mathf.Max(m_lineHeight, maxLineHeight);
 
                 // Used to adjust line spacing when larger fonts or the size tag is used.
                 if (m_baselineOffset == 0)
@@ -1899,7 +1983,7 @@ namespace TMPro
 
                 // Setup Mesh for visible characters. ie. not a SPACE / LINEFEED / CARRIAGE RETURN.
                 #region Handle Visible Characters
-                if (charCode != 10 && charCode != 13 && charCode != 32)
+                if (charCode != 10 && charCode != 13 && charCode != 32 && charCode != 160)
                 {
                     m_textInfo.characterInfo[m_characterCount].isVisible = true;
 
@@ -1910,7 +1994,7 @@ namespace TMPro
                     m_textInfo.lineInfo[m_lineNumber].width = width;
                     m_textInfo.lineInfo[m_lineNumber].marginLeft = m_marginLeft;
 
-                    if (m_xAdvance + m_cached_GlyphInfo.xAdvance * (1 - m_charWidthAdjDelta) * m_fontScale > width && !m_textContainer.isDefaultWidth)
+                    if (Mathf.Abs(m_xAdvance) + (!m_isRightToLeft ? m_cached_GlyphInfo.xAdvance : 0) * (1 - m_charWidthAdjDelta) * m_fontScale > width && !m_textContainer.isDefaultWidth)
                     {
                         ellipsisIndex = m_characterCount - 1; // Last safely rendered character
 
@@ -1969,11 +2053,12 @@ namespace TMPro
 
                             //Debug.Log("Line # " + m_lineNumber + " Last Character of Line is [" + m_textInfo.characterInfo[m_characterCount - 1].character + "]. Last Visible Character is [" + m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].character + "].");
 
-                            // Check if we need to Adjust LineOffset & Restore State to the start of the line.
-                            if (m_lineNumber > 0 && m_maxFontScale != 0 && m_lineHeight == 0 && m_maxFontScale != previousFontScale && !m_isNewPage)
+                            // Check if Line Spacing of previous line needs to be adjusted.
+                            FaceInfo face = m_currentFontAsset.fontInfo;
+                            float gap = m_lineHeight == 0 ? face.LineHeight - (face.Ascender - face.Descender) : m_lineHeight - (face.Ascender - face.Descender);
+                            if (m_lineNumber > 0 && m_maxFontScale != 0 && m_lineHeight == 0 && firstVisibleCharacterScale != m_maxFontScale && !m_isNewPage)
                             {
-                                // Compute Offset
-                                float offsetDelta = (m_fontAssetArray[m_fontIndex].fontInfo.LineHeight + m_lineSpacing + m_paragraphSpacing + m_lineSpacingDelta) * m_maxFontScale;
+                                float offsetDelta = 0 - face.Descender * previousLineMaxScale + (face.Ascender + gap + m_lineSpacing + m_paragraphSpacing + m_lineSpacingDelta) * m_maxFontScale;
                                 m_lineOffset += offsetDelta - lineOffsetDelta;
                                 AdjustLineOffset(m_firstCharacterOfLine, m_characterCount - 1, offsetDelta - lineOffsetDelta);
                                 m_SavedWordWrapState.lineOffset = m_lineOffset;
@@ -2009,6 +2094,7 @@ namespace TMPro
                             m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
                             m_textInfo.lineInfo[m_lineNumber].lineLength = m_textInfo.lineInfo[m_lineNumber].lineExtents.max.x - m_padding * m_maxFontScale;
                             m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - m_characterSpacing * m_fontScale;
+                            m_textInfo.lineInfo[m_lineNumber].maxScale = m_maxFontScale;
 
                             m_firstCharacterOfLine = m_characterCount; // Store first character of the next line.
 
@@ -2040,18 +2126,16 @@ namespace TMPro
                                 ResizeLineExtents(m_lineNumber);
 
                             // Apply Line Spacing based on scale of the last character of the line.
-                            if (maxLineHeight == 0)
-                            {
-                                lineOffsetDelta = (m_fontAssetArray[m_fontIndex].fontInfo.LineHeight + m_lineSpacing + m_lineSpacingDelta) * m_fontScale;
-                                m_lineOffset += lineOffsetDelta;
-                            }
-                            else
-                                m_lineOffset += (maxLineHeight + m_lineSpacing) * baseScale; // Special handling when line-height tag is used.
+                            FontStyles style = m_textInfo.characterInfo[m_characterCount].style;
+                            float scale = (style & FontStyles.Subscript) == FontStyles.Subscript || (style & FontStyles.Superscript) == FontStyles.Superscript ? m_maxFontScale : m_textInfo.characterInfo[m_characterCount].scale;
+                            lineOffsetDelta = 0 - face.Descender * m_maxFontScale + (face.Ascender + gap + m_lineSpacing + m_lineSpacingDelta) * scale;
+                            m_lineOffset += lineOffsetDelta;
 
-                            previousFontScale = m_fontScale;
-                            m_xAdvance = 0 + tag_Indent;
+
+                            previousLineMaxScale = m_maxFontScale;
+                            firstVisibleCharacterScale = scale;
                             m_maxFontScale = 0;
-                            maxLineHeight = 0;
+                            m_xAdvance = 0 + tag_Indent;
 
                             continue;
                         }
@@ -2158,7 +2242,7 @@ namespace TMPro
                             vertexColor = m_htmlColor;
 
 
-                        // Set Alpha to the lesser of vertex color or color tag alpha).                 
+                        // Set Alpha to the lesser of vertex color or color tag alpha).
                         vertexColor.a = m_fontColor32.a < vertexColor.a ? m_fontColor32.a : vertexColor.a;
 
                         if (!m_enableVertexGradient)
@@ -2200,9 +2284,9 @@ namespace TMPro
 
                         // Setup UVs for the Mesh
                         #region Setup UVs
-                        Vector2 uv0 = new Vector2((m_cached_GlyphInfo.x - m_padding - style_padding) / m_fontAssetArray[m_fontIndex].fontInfo.AtlasWidth, 1 - (m_cached_GlyphInfo.y + m_padding + style_padding + m_cached_GlyphInfo.height) / m_fontAssetArray[m_fontIndex].fontInfo.AtlasHeight);  // bottom left
-                        Vector2 uv1 = new Vector2(uv0.x, 1 - (m_cached_GlyphInfo.y - m_padding - style_padding) / m_fontAssetArray[m_fontIndex].fontInfo.AtlasHeight);  // top left
-                        Vector2 uv2 = new Vector2((m_cached_GlyphInfo.x + m_padding + style_padding + m_cached_GlyphInfo.width) / m_fontAssetArray[m_fontIndex].fontInfo.AtlasWidth, uv0.y); // bottom right
+                        Vector2 uv0 = new Vector2((m_cached_GlyphInfo.x - m_padding - style_padding) / m_currentFontAsset.fontInfo.AtlasWidth, 1 - (m_cached_GlyphInfo.y + m_padding + style_padding + m_cached_GlyphInfo.height) / m_currentFontAsset.fontInfo.AtlasHeight);  // bottom left
+                        Vector2 uv1 = new Vector2(uv0.x, 1 - (m_cached_GlyphInfo.y - m_padding - style_padding) / m_currentFontAsset.fontInfo.AtlasHeight);  // top left
+                        Vector2 uv2 = new Vector2((m_cached_GlyphInfo.x + m_padding + style_padding + m_cached_GlyphInfo.width) / m_currentFontAsset.fontInfo.AtlasWidth, uv0.y); // bottom right
                         Vector2 uv3 = new Vector2(uv2.x, uv1.y); // top right
 
                         m_uvs[0 + index_X4] = uv0;
@@ -2231,7 +2315,7 @@ namespace TMPro
                 {   // This is a Space, LineFeed or Carriage Return
 
                     // Track # of spaces per line which is used for line justification.
-                    if (charCode == 9 || charCode == 32)
+                    if (charCode == 9 || charCode == 32 || charCode == 160)
                     {
                         m_textInfo.lineInfo[m_lineNumber].spaceCount += 1;
                         m_textInfo.spaceCount += 1;
@@ -2377,12 +2461,14 @@ namespace TMPro
                 #region XAdvance, Tabulation & Stops
                 if (charCode == 9)
                 {
-                    m_xAdvance += m_fontAsset.fontInfo.TabWidth * m_fontScale; // * m_fontAsset.TabSize;
+                    m_xAdvance += m_fontAsset.fontInfo.TabWidth * m_fontScale;
                 }
                 else if (m_monoSpacing != 0)
-                    m_xAdvance += ((m_monoSpacing + m_cached_GlyphInfo.width / 2 + m_cached_GlyphInfo.xOffset + m_characterSpacing) * m_fontScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
-                else
+                    m_xAdvance += (m_monoSpacing - monoAdvance + (m_characterSpacing * m_fontScale) + m_cSpacing) * (1 - m_charWidthAdjDelta);
+                else if (!m_isRightToLeft)
+                {
                     m_xAdvance += ((m_cached_GlyphInfo.xAdvance * xadvance_multiplier + m_characterSpacing) * m_fontScale + m_cSpacing) * (1 - m_charWidthAdjDelta);
+                }
 
 
                 // Store xAdvance information
@@ -2406,12 +2492,12 @@ namespace TMPro
                 #region Check for Line Feed and Last Character
                 if (charCode == 10 || m_characterCount == totalCharacterCount - 1)
                 {
-                    //Debug.Log("Line # " + m_lineNumber + " Last Character of Line is [" + m_textInfo.characterInfo[m_characterCount].character + "]. Last Visible Character is [" + m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].character + "].");
-
-                    // Handle Line Spacing Changes
-                    if (m_lineNumber > 0 && m_maxFontScale != 0 && m_lineHeight == 0 && m_maxFontScale != previousFontScale && !m_isNewPage)
+                    // Check if Line Spacing of previous line needs to be adjusted.
+                    FaceInfo face = m_currentFontAsset.fontInfo;
+                    float gap = m_lineHeight == 0 ? face.LineHeight - (face.Ascender - face.Descender) : m_lineHeight - (face.Ascender - face.Descender);
+                    if (m_lineNumber > 0 && m_maxFontScale != 0 && m_lineHeight == 0 && firstVisibleCharacterScale != m_maxFontScale && !m_isNewPage)
                     {
-                        float offsetDelta = (m_fontAssetArray[m_fontIndex].fontInfo.LineHeight + m_lineSpacing + m_paragraphSpacing + m_lineSpacingDelta) * m_maxFontScale;
+                        float offsetDelta = 0 - face.Descender * previousLineMaxScale + (face.Ascender + gap + m_lineSpacing + m_paragraphSpacing + m_lineSpacingDelta) * m_maxFontScale;
                         m_lineOffset += offsetDelta - lineOffsetDelta;
                         AdjustLineOffset(m_firstCharacterOfLine, m_characterCount, offsetDelta - lineOffsetDelta);
                     }
@@ -2446,6 +2532,7 @@ namespace TMPro
                     m_textInfo.lineInfo[m_lineNumber].lineExtents.max = new Vector2(m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].topRight.x, lineAscender);
                     m_textInfo.lineInfo[m_lineNumber].lineLength = m_textInfo.lineInfo[m_lineNumber].lineExtents.max.x - (m_padding * m_maxFontScale);
                     m_textInfo.lineInfo[m_lineNumber].maxAdvance = m_textInfo.characterInfo[m_lastVisibleCharacterOfLine].xAdvance - m_characterSpacing * m_fontScale;
+                    m_textInfo.lineInfo[m_lineNumber].maxScale = m_maxFontScale;
 
                     m_firstCharacterOfLine = m_characterCount + 1;
 
@@ -2459,8 +2546,6 @@ namespace TMPro
                         m_preferredWidth = Mathf.Max(m_maxXAdvance, m_preferredWidth + m_xAdvance + (m_alignmentPadding.z * m_fontScale));
 
                     m_preferredHeight = m_maxAscender - m_maxDescender;
-
-
 
                     //Debug.Log("LineInfo for line # " + (m_lineNumber) + " First character [" + m_textInfo.characterInfo[m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex].character + "] at Index: " + m_textInfo.lineInfo[m_lineNumber].firstCharacterIndex +
                     //                                                    " Last character [" + m_textInfo.characterInfo[m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex].character + "] at index: " + m_textInfo.lineInfo[m_lineNumber].lastCharacterIndex +
@@ -2487,18 +2572,16 @@ namespace TMPro
                         if (m_lineNumber >= m_textInfo.lineInfo.Length)
                             ResizeLineExtents(m_lineNumber);
 
-                        // Apply Line Spacing based on scale of the last character of the line.
-                        if (maxLineHeight == 0)
-                        {
-                            lineOffsetDelta = (m_fontAssetArray[m_fontIndex].fontInfo.LineHeight + m_paragraphSpacing + m_lineSpacing + m_lineSpacingDelta) * m_fontScale;
-                            m_lineOffset += lineOffsetDelta;
-                        }
-                        else
-                            m_lineOffset += (maxLineHeight + m_lineSpacing + m_paragraphSpacing) * baseScale;
+                        // Apply Line Spacing
+                        float scale = (m_style & FontStyles.Subscript) == FontStyles.Subscript || (m_style & FontStyles.Superscript) == FontStyles.Superscript ? m_maxFontScale : m_fontScale;
+                        lineOffsetDelta = 0 - face.Descender * m_maxFontScale + (face.Ascender + gap + m_lineSpacing + m_paragraphSpacing + m_lineSpacingDelta) * scale;
+                        m_lineOffset += lineOffsetDelta;
 
-                        previousFontScale = m_fontScale;
+
+                        previousLineMaxScale = m_maxFontScale;
+                        firstVisibleCharacterScale = scale;
                         m_maxFontScale = 0;
-                        maxLineHeight = 0;
+                        //spriteScale = 1;
                         m_xAdvance = 0 + tag_LineIndent + tag_Indent;
 
                         ellipsisIndex = m_characterCount - 1;
@@ -2509,12 +2592,12 @@ namespace TMPro
 
                 // Store Rectangle positions for each Character.
                 #region Save CharacterInfo for the current character.
-                m_textInfo.characterInfo[m_characterCount].topLine = m_textInfo.characterInfo[m_characterCount].baseLine + (m_fontAssetArray[m_fontIndex].fontInfo.Ascender + m_alignmentPadding.y) * m_fontScale; // Ascender
-                m_textInfo.characterInfo[m_characterCount].bottomLine = m_textInfo.characterInfo[m_characterCount].baseLine + (m_fontAssetArray[m_fontIndex].fontInfo.Descender - m_alignmentPadding.w) * m_fontScale; // Descender
+                m_textInfo.characterInfo[m_characterCount].topLine = m_textInfo.characterInfo[m_characterCount].baseLine + (m_currentFontAsset.fontInfo.Ascender + m_alignmentPadding.y) * m_fontScale; // Ascender
+                m_textInfo.characterInfo[m_characterCount].bottomLine = m_textInfo.characterInfo[m_characterCount].baseLine + (m_currentFontAsset.fontInfo.Descender - m_alignmentPadding.w) * m_fontScale; // Descender
                 m_textInfo.characterInfo[m_characterCount].padding = m_padding * m_fontScale;
                 m_textInfo.characterInfo[m_characterCount].aspectRatio = m_cached_GlyphInfo.width / m_cached_GlyphInfo.height;
-                m_textInfo.characterInfo[m_characterCount].scale = m_fontScale;
-                //Debug.Log("Char [" + charCode + "] Ascender: " + m_textInfo.characterInfo[m_characterCount].topLine .ToString("f3") + "  Descender: " + m_textInfo.characterInfo[m_characterCount].bottomLine.ToString("f3"));
+                //m_textInfo.characterInfo[m_characterCount].scale = m_fontScale;
+
 
                 // Determine the bounds of the Mesh.
                 if (m_textInfo.characterInfo[m_characterCount].isVisible)
@@ -2636,7 +2719,6 @@ namespace TMPro
             // Partial clear of the vertices array to mark unused vertices as degenerate.
             Array.Clear(m_vertices, last_vert_index, m_vertices.Length - last_vert_index);
 
-
             // Handle Text Alignment
             #region Text Vertical Alignment
             switch (m_textAlignment)
@@ -2674,10 +2756,11 @@ namespace TMPro
                         m_anchorOffset = corners[0] + new Vector3(0 + margins.x, 0 - m_textInfo.pageInfo[pageToDisplay].descender + margins.w, 0);
                     break;
 
-                // Baseline Vertically 
+                // Baseline Vertically
+                case TextAlignmentOptions.Baseline:
                 case TextAlignmentOptions.BaselineLeft:
                 case TextAlignmentOptions.BaselineRight:
-                case TextAlignmentOptions.Baseline:
+                case TextAlignmentOptions.BaselineJustified:
                     m_anchorOffset = (corners[0] + corners[1]) / 2 + new Vector3(0 + margins.x, 0, 0);
                     break;
 
@@ -2713,9 +2796,12 @@ namespace TMPro
             float underlineBaseLine = Mathf.Infinity;
             int lastPage = 0;
 
+            float strikethroughPointSize = 0;
             float strikethroughScale = 0;
             float strikethroughBaseline = 0;
 
+            m_meshExtents.min = k_InfinityVector;
+            m_meshExtents.max = -k_InfinityVector;
 
             // Second Pass : Line Justification, UV Mapping, Character & Line Visibility & more.
             #region Handle Line Justification & UV Mapping & Character Visibility & More
@@ -2737,7 +2823,10 @@ namespace TMPro
                     case TextAlignmentOptions.BottomLeft:
                     case TextAlignmentOptions.BaselineLeft:
                     case TextAlignmentOptions.MidlineLeft:
-                        justificationOffset = new Vector3(0 + lineInfo.marginLeft, 0, 0);
+                        if (!m_isRightToLeft)
+                            justificationOffset = new Vector3(0 + lineInfo.marginLeft, 0, 0);
+                        else
+                            justificationOffset = new Vector3(0 - lineInfo.maxAdvance, 0, 0);
                         break;
                     case TextAlignmentOptions.Top:
                     case TextAlignmentOptions.Center:
@@ -2751,7 +2840,10 @@ namespace TMPro
                     case TextAlignmentOptions.BottomRight:
                     case TextAlignmentOptions.BaselineRight:
                     case TextAlignmentOptions.MidlineRight:
-                        justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width - lineInfo.maxAdvance, 0, 0);
+                        if (!m_isRightToLeft)
+                            justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width - lineInfo.maxAdvance, 0, 0);
+                        else
+                            justificationOffset = new Vector3(lineInfo.marginLeft + lineInfo.width, 0, 0);
                         break;
                     case TextAlignmentOptions.TopJustified:
                     case TextAlignmentOptions.Justified:
@@ -2769,7 +2861,7 @@ namespace TMPro
                                 justificationOffset = new Vector3(lineInfo.marginLeft, 0, 0);
                             else
                             {
-                                if (charCode == 9 || charCode == 32)
+                                if (charCode == 9 || charCode == 32 || charCode == 160)
                                 {
                                     justificationOffset += new Vector3(gap * (1 - m_wordWrappingRatios) / (lineInfo.spaceCount - 1), 0, 0);
                                 }
@@ -2809,9 +2901,9 @@ namespace TMPro
                             m_uv2s[vert_index_X4 + 3].x = 1 + m_uvOffset.x;
                             break;
 
-                        case TextureMappingOptions.Line:                          
+                        case TextureMappingOptions.Line:
                             if (m_textAlignment != TextAlignmentOptions.Justified)
-                            {                               
+                            {
                                 m_uv2s[vert_index_X4 + 0].x = (m_vertices[vert_index_X4 + 0].x - lineExtents.min.x) / (lineExtents.max.x - lineExtents.min.x) + uvOffset;
                                 m_uv2s[vert_index_X4 + 1].x = (m_vertices[vert_index_X4 + 1].x - lineExtents.min.x) / (lineExtents.max.x - lineExtents.min.x) + uvOffset;
                                 m_uv2s[vert_index_X4 + 2].x = (m_vertices[vert_index_X4 + 2].x - lineExtents.min.x) / (lineExtents.max.x - lineExtents.min.x) + uvOffset;
@@ -2827,7 +2919,7 @@ namespace TMPro
                                 break;
                             }
 
-                        case TextureMappingOptions.Paragraph:                         
+                        case TextureMappingOptions.Paragraph:
                             m_uv2s[vert_index_X4 + 0].x = (m_vertices[vert_index_X4 + 0].x + justificationOffset.x - m_meshExtents.min.x) / (m_meshExtents.max.x - m_meshExtents.min.x) + uvOffset;
                             m_uv2s[vert_index_X4 + 1].x = (m_vertices[vert_index_X4 + 1].x + justificationOffset.x - m_meshExtents.min.x) / (m_meshExtents.max.x - m_meshExtents.min.x) + uvOffset;
                             m_uv2s[vert_index_X4 + 2].x = (m_vertices[vert_index_X4 + 2].x + justificationOffset.x - m_meshExtents.min.x) / (m_meshExtents.max.x - m_meshExtents.min.x) + uvOffset;
@@ -2845,14 +2937,14 @@ namespace TMPro
                                     m_uv2s[vert_index_X4 + 3].y = 1 + m_uvOffset.y;
                                     break;
 
-                                case TextureMappingOptions.Line:                                  
+                                case TextureMappingOptions.Line:
                                     m_uv2s[vert_index_X4 + 0].y = (m_vertices[vert_index_X4].y - lineExtents.min.y) / (lineExtents.max.y - lineExtents.min.y) + uvOffset;
                                     m_uv2s[vert_index_X4 + 1].y = (m_vertices[vert_index_X4 + 1].y - lineExtents.min.y) / (lineExtents.max.y - lineExtents.min.y) + uvOffset;
                                     m_uv2s[vert_index_X4 + 2].y = m_uv2s[vert_index_X4].y;
                                     m_uv2s[vert_index_X4 + 3].y = m_uv2s[vert_index_X4 + 1].y;
                                     break;
 
-                                case TextureMappingOptions.Paragraph:                                   
+                                case TextureMappingOptions.Paragraph:
                                     m_uv2s[vert_index_X4 + 0].y = (m_vertices[vert_index_X4].y - m_meshExtents.min.y) / (m_meshExtents.max.y - m_meshExtents.min.y) + uvOffset;
                                     m_uv2s[vert_index_X4 + 1].y = (m_vertices[vert_index_X4 + 1].y - m_meshExtents.min.y) / (m_meshExtents.max.y - m_meshExtents.min.y) + uvOffset;
                                     m_uv2s[vert_index_X4 + 2].y = m_uv2s[vert_index_X4].y;
@@ -2866,7 +2958,7 @@ namespace TMPro
 
                             //float xDelta = 1 - (_uv2s[vert_index + 0].y * textMeshCharacterInfo[i].AspectRatio); // Left aligned
                             float xDelta = (1 - ((m_uv2s[vert_index_X4 + 0].y + m_uv2s[vert_index_X4 + 1].y) * m_textInfo.characterInfo[i].aspectRatio)) / 2; // Center of Rectangle
-                            //float xDelta = 0;                           
+                            //float xDelta = 0;
 
                             m_uv2s[vert_index_X4 + 0].x = (m_uv2s[vert_index_X4 + 0].y * m_textInfo.characterInfo[i].aspectRatio) + xDelta + uvOffset;
                             m_uv2s[vert_index_X4 + 1].x = m_uv2s[vert_index_X4 + 0].x;
@@ -2899,7 +2991,7 @@ namespace TMPro
                             break;
 
                         case TextureMappingOptions.MatchAspect:
-                            //float yDelta = 1 - (_uv2s[vert_index + 2].x / textMeshCharacterInfo[i].AspectRatio); // Top Corner                       
+                            //float yDelta = 1 - (_uv2s[vert_index + 2].x / textMeshCharacterInfo[i].AspectRatio); // Top Corner
                             float yDelta = (1 - ((m_uv2s[vert_index_X4 + 0].x + m_uv2s[vert_index_X4 + 2].x) / m_textInfo.characterInfo[i].aspectRatio)) / 2; // Center of Rectangle
                             //float yDelta = 0;
 
@@ -2934,9 +3026,10 @@ namespace TMPro
                     m_uv2s[vert_index_X4 + 1] = PackUV(x0, y1, xScale);
                     m_uv2s[vert_index_X4 + 2] = PackUV(x1, y0, xScale);
                     m_uv2s[vert_index_X4 + 3] = PackUV(x1, y1, xScale);
-
+                    #endregion
 
                     // Enables control of the visibility of Characters, Lines and Pages.
+                    #region Handle Character, Word and Line visibility.
                     if (i < m_maxVisibleCharacters && currentLine < m_maxVisibleLines && m_overflowMode != TextOverflowModes.Page)
                     {
                         m_vertices[vert_index_X4 + 0] += offset;
@@ -2958,10 +3051,9 @@ namespace TMPro
                         m_vertices[vert_index_X4 + 2] *= 0;
                         m_vertices[vert_index_X4 + 3] *= 0;
                     }
-                    
-                    vert_index_X4 += 4;
-                    
                     #endregion
+
+                    vert_index_X4 += 4;
                 }
                 #endregion
 
@@ -2975,6 +3067,12 @@ namespace TMPro
                 m_textInfo.characterInfo[i].bottomLine += offset.y;
                 m_textInfo.characterInfo[i].baseLine += offset.y;
 
+                // Update MeshExtents
+                if (isCharacterVisible)
+                {
+                    m_meshExtents.min = new Vector2(Mathf.Min(m_meshExtents.min.x, m_textInfo.characterInfo[i].bottomLeft.x), Mathf.Min(m_meshExtents.min.y, m_textInfo.characterInfo[i].bottomLeft.y));
+                    m_meshExtents.max = new Vector2(Mathf.Max(m_meshExtents.max.x, m_textInfo.characterInfo[i].topRight.x), Mathf.Max(m_meshExtents.max.y, m_textInfo.characterInfo[i].topLeft.y));
+                }
 
                 // Store Max Ascender & Descender
                 m_textInfo.lineInfo[currentLine].ascender = m_textInfo.characterInfo[i].topLine > m_textInfo.lineInfo[currentLine].ascender ? m_textInfo.characterInfo[i].topLine : m_textInfo.lineInfo[currentLine].ascender;
@@ -3057,7 +3155,7 @@ namespace TMPro
                         isUnderlineVisible = false;
 
                     // We only use the scale of visible characters.
-                    if (currentCharacter != 10 && currentCharacter != 13 && currentCharacter != 32)
+                    if (currentCharacter != 10 && currentCharacter != 13 && currentCharacter != 32 && currentCharacter != 160)
                     {
                         underlineMaxScale = Mathf.Max(underlineMaxScale, m_textInfo.characterInfo[i].scale);
                         underlineBaseLine = Mathf.Min(currentPage == lastPage ? underlineBaseLine : Mathf.Infinity, m_textInfo.characterInfo[i].baseLine + font.fontInfo.Underline * underlineMaxScale);
@@ -3066,7 +3164,7 @@ namespace TMPro
 
                     if (beginUnderline == false && isUnderlineVisible == true && i <= lineInfo.lastVisibleCharacterIndex && currentCharacter != 10 && currentCharacter != 13)
                     {
-                        if (i == lineInfo.lastVisibleCharacterIndex && currentCharacter == 32)
+                        if (i == lineInfo.lastVisibleCharacterIndex && (currentCharacter == 32 || currentCharacter == 160))
                         { }
                         else
                         {
@@ -3092,7 +3190,7 @@ namespace TMPro
                     else if (beginUnderline && (i == lineInfo.lastCharacterIndex || i >= lineInfo.lastVisibleCharacterIndex))
                     {
                         // Terminate underline at previous visible character if space or carriage return.
-                        if (currentCharacter == 32 || currentCharacter == 10 || currentCharacter == 13)
+                        if (currentCharacter == 10 || currentCharacter == 13 || currentCharacter == 32 || currentCharacter == 160)
                         {
                             int lastVisibleCharacterIndex = lineInfo.lastVisibleCharacterIndex;
                             underline_end = new Vector3(m_textInfo.characterInfo[lastVisibleCharacterIndex].topRight.x, underlineBaseLine, 0);
@@ -3150,11 +3248,12 @@ namespace TMPro
 
                     if (beginStrikethrough == false && isStrikeThroughVisible && i <= lineInfo.lastVisibleCharacterIndex && currentCharacter != 10 && currentCharacter != 13)
                     {
-                        if (i == lineInfo.lastVisibleCharacterIndex && currentCharacter == 32)
+                        if (i == lineInfo.lastVisibleCharacterIndex && (currentCharacter == 32 || currentCharacter == 160))
                         { }
                         else
                         {
                             beginStrikethrough = true;
+                            strikethroughPointSize = m_textInfo.characterInfo[i].pointSize;
                             strikethroughScale = m_textInfo.characterInfo[i].scale;
                             strikethrough_start = new Vector3(m_textInfo.characterInfo[i].bottomLeft.x, m_textInfo.characterInfo[i].baseLine + (font.fontInfo.Ascender + font.fontInfo.Descender) / 2.75f * strikethroughScale, 0);
                             strikethroughColor = m_textInfo.characterInfo[i].color;
@@ -3174,7 +3273,7 @@ namespace TMPro
                     else if (beginStrikethrough && i == lineInfo.lastCharacterIndex)
                     {
                         // Terminate Strikethrough at previous visible character if space or carriage return.
-                        if (currentCharacter == 32 || currentCharacter == 10 || currentCharacter == 13)
+                        if (currentCharacter == 10 || currentCharacter == 13 || currentCharacter == 32 || currentCharacter == 160)
                         {
                             int lastVisibleCharacterIndex = lineInfo.lastVisibleCharacterIndex;
                             strikethrough_end = new Vector3(m_textInfo.characterInfo[lastVisibleCharacterIndex].topRight.x, m_textInfo.characterInfo[lastVisibleCharacterIndex].baseLine + (font.fontInfo.Ascender + font.fontInfo.Descender) / 2 * strikethroughScale, 0);
@@ -3188,7 +3287,7 @@ namespace TMPro
                         beginStrikethrough = false;
                         DrawUnderlineMesh(strikethrough_start, strikethrough_end, ref last_vert_index, strikethroughScale, strikethroughScale, strikethroughScale, strikethroughColor);
                     }
-                    else if (beginStrikethrough && i < m_characterCount && (m_textInfo.characterInfo[i + 1].scale != strikethroughScale || !TMP_Math.Equals(m_textInfo.characterInfo[i + 1].baseLine + offset.y, strikethroughBaseline)))
+                    else if (beginStrikethrough && i < m_characterCount && (m_textInfo.characterInfo[i + 1].pointSize != strikethroughPointSize || !TMP_Math.Equals(m_textInfo.characterInfo[i + 1].baseLine + offset.y, strikethroughBaseline)))
                     {
                         // Terminate Strikethrough if scale changes.
                         beginStrikethrough = false;
@@ -3239,9 +3338,9 @@ namespace TMPro
 
             // Store Mesh information in MeshInfo
             m_textInfo.meshInfo.vertices = m_vertices;
-            m_textInfo.meshInfo.uv0s = m_uvs;
-            m_textInfo.meshInfo.uv2s = m_uv2s;
-            m_textInfo.meshInfo.vertexColors = m_vertColors;
+            m_textInfo.meshInfo.uvs0 = m_uvs;
+            m_textInfo.meshInfo.uvs2 = m_uv2s;
+            m_textInfo.meshInfo.colors32 = m_vertColors;
 
 
             // If Advanced Layout Component is present, don't upload the mesh.
@@ -3258,11 +3357,11 @@ namespace TMPro
 
                 //m_maskOffset = new Vector4(m_mesh.bounds.center.x, m_mesh.bounds.center.y, m_mesh.bounds.size.x, m_mesh.bounds.size.y);
             }
- 
-            // Setting Mesh Bounds manually is more efficient.   
-            //m_mesh.bounds = new Bounds(new Vector3((m_meshExtents.max.x + m_meshExtents.min.x) / 2, (m_meshExtents.max.y + m_meshExtents.min.y) / 2, 0), new Vector3(m_meshExtents.max.x - m_meshExtents.min.x, m_meshExtents.max.y - m_meshExtents.min.y, 0));           
+
+            // Setting Mesh Bounds manually is more efficient.
+            //m_mesh.bounds = new Bounds(new Vector3((m_meshExtents.max.x + m_meshExtents.min.x) / 2, (m_meshExtents.max.y + m_meshExtents.min.y) / 2, 0), new Vector3(m_meshExtents.max.x - m_meshExtents.min.x, m_meshExtents.max.y - m_meshExtents.min.y, 0));
             m_mesh.RecalculateBounds();
-            
+
 
             //m_isCharacterWrappingEnabled = false;
             //Debug.Log("Corners [0] " + corners[0] + "  [1] " + corners[1] + " [2] " + corners[2] + " [3] " + corners[3]);
@@ -3307,9 +3406,10 @@ namespace TMPro
             //                                 + "  Length: " + m_textInfo.lineInfo[i].lineLength
             //                                 + "  Line Extents: " + m_textInfo.lineInfo[i].lineExtents);
             //}
-            
 
-           
+            // Event indicating the text has been regenerated.
+            TMPro_EventManager.ON_TEXT_CHANGED(this);
+
             //Profiler.EndSample();
             //m_StopWatch.Stop(); 
             //Debug.Log("Preferred Width: " + m_preferredWidth + "  Height: " + m_preferredHeight); // + "  Margin Width: " + marginWidth + "  xAdvance Total: " + totalxAdvance);
@@ -3323,6 +3423,12 @@ namespace TMPro
         // Draws the Underline
         void DrawUnderlineMesh(Vector3 start, Vector3 end, ref int index, float startScale, float endScale, float maxScale, Color32 underlineColor)
         {
+            if (m_cached_Underline_GlyphInfo == null)
+            {
+                Debug.LogWarning("Unable to add underline since the Font Asset doesn't contain the underline character.", this);
+                return;
+            }
+
             int verticesCount = index + 12;
             // Check to make sure our current mesh buffer allocations can hold these new Quads.  
             if (verticesCount > m_vertices.Length)
@@ -3548,6 +3654,8 @@ namespace TMPro
             state.previous_WordBreak = index;
             state.total_CharacterCount = count;
             state.visible_CharacterCount = m_visibleCharacterCount;
+            //state.visible_SpriteCount = m_visibleSpriteCount;
+            state.visible_LinkCount = m_textInfo.linkCount;
             state.firstCharacterIndex = m_firstCharacterOfLine;
             state.firstVisibleCharacterIndex = m_firstVisibleCharacterOfLine;
             state.lastVisibleCharIndex = m_lastVisibleCharacterOfLine;
@@ -3586,6 +3694,8 @@ namespace TMPro
 
             m_characterCount = state.total_CharacterCount + 1;
             m_visibleCharacterCount = state.visible_CharacterCount;
+            //m_visibleSpriteCount = state.visible_SpriteCount;
+            m_textInfo.linkCount = state.visible_LinkCount;
             m_firstCharacterOfLine = state.firstCharacterIndex;
             m_firstVisibleCharacterOfLine = state.firstVisibleCharacterIndex;
             m_lastVisibleCharacterOfLine = state.lastVisibleCharIndex;
@@ -3670,6 +3780,41 @@ namespace TMPro
         }
 
 
+        /// <summary>
+        /// Convert UTF-16 Hex to Char
+        /// </summary>
+        /// <returns>The Unicode hex.</returns>
+        /// <param name="i">The index.</param>
+        int GetUTF16(int i)
+        {
+            int unicode = HexToInt (text [i]) * 4096;
+            unicode += HexToInt (text [i + 1]) * 256;
+            unicode += HexToInt (text [i + 2]) * 16;
+            unicode += HexToInt (text [i + 3]);
+            return unicode;
+        }
+
+
+        /// <summary>
+        /// Convert UTF-32 Hex to Char
+        /// </summary>
+        /// <returns>The Unicode hex.</returns>
+        /// <param name="i">The index.</param>
+        int GetUTF32(int i)
+        {
+            int unicode = 0;
+            unicode += HexToInt(text[i]) * 268435456;
+            unicode += HexToInt(text[i + 1]) * 16777216;
+            unicode += HexToInt(text[i + 2]) * 1048576;
+            unicode += HexToInt(text[i + 3]) * 65536;
+            unicode += HexToInt(text[i + 4]) * 4096;
+            unicode += HexToInt(text[i + 5]) * 256;
+            unicode += HexToInt(text[i + 6]) * 16;
+            unicode += HexToInt(text[i + 7]);
+            return unicode;
+        }
+
+
         Color32 HexCharsToColor(char[] hexChars, int tagCount)
         {
             if (tagCount == 7)
@@ -3739,6 +3884,8 @@ namespace TMPro
 
             for (int i = startIndex; i < endIndex + 1; i++)
             {
+                if (!char.IsDigit(chars[i]) && chars[i] != 46) return -9999;
+
                 switch (decimalPointIndex - i)
                 {
                     case 4:
@@ -3774,8 +3921,10 @@ namespace TMPro
             Array.Clear(m_htmlTag, 0, m_htmlTag.Length);
             int tagCharCount = 0;
             int tagHashCode = 0;
-            int attribute1_HashCode = 0;
-            //int attribute2_HashCode = 0;
+
+            TagAttribute attribute_1 = new TagAttribute();
+            TagAttribute attribute_2 = new TagAttribute();
+            byte attributeFlag = 0;
 
             TagUnits tagUnits = TagUnits.Pixels;
 
@@ -3805,15 +3954,40 @@ namespace TMPro
 
 
                 // Compute HashCode for 1st attribute
-                if (numSequenceStart != 0)
+                if (attributeFlag == 1)
                 {
                     if (chars[i] != 34) // Exclude quotes from the HashCode.
-                        attribute1_HashCode = (attribute1_HashCode << 3) - attribute1_HashCode + chars[i];
+                    {
+                        if (attribute_1.startIndex == 0) attribute_1.startIndex = tagCharCount - 1;
+
+                        attribute_1.hashCode = (attribute_1.hashCode << 5) - attribute_1.hashCode + chars[i];
+                        attribute_1.length += 1;
+                    }
+                    else
+                        if (attribute_1.startIndex != 0) attributeFlag = 2;
                 }
+
+                // Compute HashCode for 2st attribute
+                if (attributeFlag == 3)
+                {
+                    if (chars[i] != 34) // Exclude quotes from the HashCode.
+                    {
+                        if (attribute_2.startIndex == 0) attribute_2.startIndex = tagCharCount - 1;
+
+                        attribute_2.hashCode = (attribute_2.hashCode << 5) - attribute_2.hashCode + chars[i];
+                        attribute_2.length += 1;
+                    }
+                    else
+                        if (attribute_2.startIndex != 0) attributeFlag = 0;
+                }
+
 
                 // Extract numerical value and unit type (px, em, %)
                 if (chars[i] == 61)  // '='
+                {
                     numSequenceStart = tagCharCount;
+                    attributeFlag += 1;
+                }
                 else if (chars[i] == 46) // '.'
                     numSequenceDecimalPos = tagCharCount - 1;
                 else if (numSequenceStart != 00 && !hasNumericalValue && char.IsDigit((char)chars[i]))
@@ -3830,7 +4004,6 @@ namespace TMPro
                 if (numSequenceStart == 0)
                     tagHashCode = (tagHashCode << 3) - tagHashCode + chars[i];
 
-
             }
 
             if (!isValidHtmlTag)
@@ -3840,6 +4013,15 @@ namespace TMPro
 
 
             //Debug.Log("Tag is [" + m_htmlTag.ArrayToString() + "].  Tag HashCode: " + tagHashCode + "  Attribute HashCode: " + attribute1_HashCode);
+
+            // Special handling of the NoParsing tag
+            if (tag_NoParsing && tagHashCode != 53822163)
+                return false;
+            else if (tagHashCode == 53822163)
+            {
+                tag_NoParsing = false;
+                return true;
+            }
 
             // Color <#FF00FF>
             if (m_htmlTag[0] == 35 && tagCharCount == 7) // if Tag begins with # and contains 7 characters. 
@@ -3859,6 +4041,8 @@ namespace TMPro
             }
             else
             {
+                float value = 0;
+
                 switch (tagHashCode)
                 {
                     case 98: // <b>
@@ -3893,50 +4077,58 @@ namespace TMPro
                         m_currentFontSize *= m_fontAsset.fontInfo.SubSize > 0 ? m_fontAsset.fontInfo.SubSize : 1; // Subscript characters are half size.
                         m_fontScale = (m_currentFontSize / m_fontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
                         m_baselineOffset = m_fontAsset.fontInfo.SubscriptOffset * m_fontScale;
+                        m_style |= FontStyles.Subscript;
                         //m_isRecalculateScaleRequired = true;
                         return true;
                     case 22673: // </sub>
                         m_currentFontSize /= m_fontAsset.fontInfo.SubSize > 0 ? m_fontAsset.fontInfo.SubSize : 1; //m_fontSize / m_fontAsset.FontInfo.PointSize * .1f;
                         m_baselineOffset = 0;
                         m_fontScale = (m_currentFontSize / m_fontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
+                        m_style &= ~FontStyles.Subscript;
                         //m_isRecalculateScaleRequired = true;
                         return true;
                     case 6566: // <sup>
                         m_currentFontSize *= m_fontAsset.fontInfo.SubSize > 0 ? m_fontAsset.fontInfo.SubSize : 1;
                         m_fontScale = (m_currentFontSize / m_fontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
                         m_baselineOffset = m_fontAsset.fontInfo.SuperscriptOffset * m_fontScale;
+                        m_style |= FontStyles.Superscript;
                         //m_isRecalculateScaleRequired = true;
                         return true;
                     case 22687: // </sup>
                         m_currentFontSize /= m_fontAsset.fontInfo.SubSize > 0 ? m_fontAsset.fontInfo.SubSize : 1; //m_fontSize / m_fontAsset.FontInfo.PointSize * .1f;
                         m_baselineOffset = 0;
                         m_fontScale = (m_currentFontSize / m_fontAsset.fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
+                        m_style &= ~FontStyles.Superscript;
                         //m_isRecalculateScaleRequired = true;
                         return true;
                     case 6380: // <pos=000.00px> <pos=0em> <pos=50%>
-                        float spacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_xAdvance = spacing;
+                                m_xAdvance = value;
                                 return true;
                             case TagUnits.FontUnits:
-                                m_xAdvance = spacing * m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
+                                m_xAdvance = value * m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 return true;
                             case TagUnits.Percentage:
-                                m_xAdvance = m_marginWidth * spacing / 100;
+                                m_xAdvance = m_marginWidth * value / 100;
                                 return true;
                         }
                         return false;
                     case 16034505: // <voffset>
-                        float val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_baselineOffset = val;
+                                m_baselineOffset = value;
                                 return true;
                             case TagUnits.FontUnits:
-                                m_baselineOffset = val * m_fontScale * m_fontAsset.fontInfo.Ascender;
+                                m_baselineOffset = value * m_fontScale * m_fontAsset.fontInfo.Ascender;
                                 return true;
                             case TagUnits.Percentage:
                                 //m_baselineOffset = m_marginHeight * val / 100;
@@ -3965,42 +4157,36 @@ namespace TMPro
                         m_isNonBreakingSpace = false;
                         return true;
                     case 45545: // <size=>
-                        val = 0;
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
 
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
                                 if (m_htmlTag[5] == 43) // <size=+00>
                                 {
-                                    val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                    m_currentFontSize = m_fontSize + val;
+                                    m_currentFontSize = m_fontSize + value;
                                     m_isRecalculateScaleRequired = true;
                                     return true;
                                 }
                                 else if (m_htmlTag[5] == 45) // <size=-00>
                                 {
-                                    val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                    m_currentFontSize = m_fontSize + val;
+                                    m_currentFontSize = m_fontSize + value;
                                     m_isRecalculateScaleRequired = true;
                                     return true;
                                 }
                                 else // <size=00.0>
                                 {
-                                    val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                    //if (val == 0) return false; // if tag is <size> with no values.
-                                    m_currentFontSize = val;
+                                    m_currentFontSize = value;
                                     m_isRecalculateScaleRequired = true;
                                     return true;
                                 }
                             case TagUnits.FontUnits:
-                                val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                m_currentFontSize *= val;
+                                m_currentFontSize *= value;
                                 m_isRecalculateScaleRequired = true;
                                 return true;
                             case TagUnits.Percentage:
-                                val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                if (val == 0) return false;
-                                m_currentFontSize = m_fontSize * val / 100;
+                                m_currentFontSize = m_fontSize * value / 100;
                                 m_isRecalculateScaleRequired = true;
                                 return true;
                         }
@@ -4011,35 +4197,90 @@ namespace TMPro
                         //m_fontScale = m_fontSize / m_fontAsset.fontInfo.PointSize * .1f;
                         return true;
                     case 41311: // <font=xx>
-                        Debug.Log("This feature is coming soon!");
+                        //Debug.Log("Font name: \"" + new string(m_htmlTag, attribute_1.startIndex, attribute_1.length) + "\"   HashCode: " + attribute_1.hashCode + "   Material Name: \"" + new string(m_htmlTag, attribute_2.startIndex, attribute_2.length) + "\"   Hashcode: " + attribute_2.hashCode);
 
-                        /*
-                        m_fontIndex = (int)ConvertToFloat(m_htmlTag, numSequenceStart, tagCharCount - 1, numSequenceDecimalPos);
+                        int fontHashCode = attribute_1.hashCode;
+                        int materialHashCode = attribute_2.hashCode;
 
-                        if(m_fontAssetArray[m_fontIndex] == null)
+                        TextMeshProFont tempFont;
+                        Material tempMaterial;
+
+                        // HANDLE NEW FONT ASSET
+                        if (m_fontAsset_Dict.TryGetValue(fontHashCode, out tempFont))
                         {
-                            // Load new font asset into index
-                            //Debug.Log("Loading Font Asset at Index " + m_fontIndex);
-                            m_fontAssetArray[m_fontIndex] = m_fontAsset; // Resources.Load("Fonts & Materials/Bangers SDF", typeof(TextMeshProFont)) as TextMeshProFont; // Hard coded right now to a specific font
+                            if (tempFont != m_currentFontAsset)
+                            {
+                                //Debug.Log("Assigning Font Asset: " + tempFont.name);
+                                m_currentFontAsset = m_fontAsset_Dict[fontHashCode];
+                                m_isRecalculateScaleRequired = true;
+                            }
                         }
                         else
                         {
-                            //Debug.Log("Font Asset at Index " + m_fontIndex + " has already been loaded.");
+                            // Load new font asset
+                            tempFont = Resources.Load("Fonts & Materials/" + new string(m_htmlTag, attribute_1.startIndex, attribute_1.length), typeof(TextMeshProFont)) as TextMeshProFont;
+                            if (tempFont != null)
+                            {
+                                //Debug.Log("Loading and Assigning Font Asset: " + tempFont.name);
+                                m_fontAsset_Dict.Add(fontHashCode, tempFont);
+                                m_currentFontAsset = tempFont;
+                                m_isRecalculateScaleRequired = true;
+                            }
+                            else
+                                return false;
                         }
 
 
-                        //m_fontScale = (m_fontSize / m_fontAssetArray[m_fontIndex].fontInfo.PointSize * (m_isOrthographic ? 1 : 0.1f));
-                        */
+                        // HANDLE NEW MATERIAL
+                        if (materialHashCode == 0)
+                        {
+                            if (!m_fontMaterial_Dict.ContainsKey(m_currentFontAsset.materialHashCode))
+                                m_fontMaterial_Dict.Add(m_currentFontAsset.materialHashCode, m_currentFontAsset.material);
+
+                            if (m_currentMaterial != m_currentFontAsset.material)
+                            {
+                                //Debug.Log("Assigning Default Font Asset Material: " + m_currentFontAsset.material.name);
+                                m_currentMaterial = m_currentFontAsset.material;
+                            }
+                        }
+                        else if (m_fontMaterial_Dict.TryGetValue(materialHashCode, out tempMaterial))
+                        {
+                            if (tempMaterial != m_currentMaterial)
+                            {
+                                //Debug.Log("Assigning Material: " + tempMaterial.name);
+                                m_currentMaterial = tempMaterial;
+                            }
+                        }
+                        else
+                        {
+                            // Load new material
+                            tempMaterial = Resources.Load("Fonts & Materials/" + new string(m_htmlTag, attribute_2.startIndex, attribute_2.length), typeof(Material)) as Material;
+                            if (tempMaterial != null)
+                            {
+                                //Debug.Log("Loading and Assigning Material: " + tempMaterial.name);
+                                m_fontMaterial_Dict.Add(materialHashCode, tempMaterial);
+                                m_currentMaterial = tempMaterial;
+                            }
+                            else
+                                return false;
+                        }
+
+                        // Track Materials References.
+                        materialHashCode = m_currentMaterial.GetHashCode();
+                        if (!m_referencedMaterials.ContainsKey(materialHashCode)) m_referencedMaterials.Add(materialHashCode, m_currentMaterial);
+
                         return true;
                     case 320078: // <space=000.00>
-                        spacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_xAdvance += spacing;
+                                m_xAdvance += value;
                                 return true;
                             case TagUnits.FontUnits:
-                                m_xAdvance += spacing * m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
+                                m_xAdvance += value * m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 return true;
                             case TagUnits.Percentage:
                                 // Not applicable
@@ -4057,7 +4298,7 @@ namespace TMPro
                     case 43066: // <link="name">
                         if (m_isParsingText)
                         {
-                            tag_LinkInfo.hashCode = attribute1_HashCode;
+                            tag_LinkInfo.hashCode = attribute_1.hashCode;
                             tag_LinkInfo.firstCharacterIndex = m_characterCount;
                             //Debug.Log("Link begin at Character # " + m_characterCount);
                         }
@@ -4074,18 +4315,18 @@ namespace TMPro
                         }
                         return true;
                     case 275917: // <align=>
-                        switch (attribute1_HashCode)
+                        switch (attribute_1.hashCode)
                         {
-                            case 42823: // <align=left>
+                            case 3317767: // <align=left>
                                 m_lineJustification = TextAlignmentOptions.Left;
                                 return true;
-                            case 315620: // <align=right>
+                            case 108511772: // <align=right>
                                 m_lineJustification = TextAlignmentOptions.Right;
                                 return true;
-                            case 1950629: // <align=center>
+                            case -1364013995: // <align=center>
                                 m_lineJustification = TextAlignmentOptions.Center;
                                 return true;
-                            case 723195727: // <align=justified>
+                            case 1838536479: // <align=justified>
                                 m_lineJustification = TextAlignmentOptions.Justified;
                                 return true;
                         }
@@ -4094,17 +4335,19 @@ namespace TMPro
                         m_lineJustification = m_textAlignment;
                         return true;
                     case 327550: // <width=xx>
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_width = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                                m_width = value;
                                 break;
                             case TagUnits.FontUnits:
                                 return false;
                             //break;
                             case TagUnits.Percentage:
-                                val = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                m_width = m_marginWidth * val / 100;
+                                m_width = m_marginWidth * value / 100;
                                 break;
                         }
                         return true;
@@ -4112,7 +4355,7 @@ namespace TMPro
                         m_width = -1;
                         return true;
                     case 322689: // <style="name">
-                        TMP_Style style = TMP_StyleSheet.Instance.GetStyle(attribute1_HashCode);
+                        TMP_Style style = TMP_StyleSheet.Instance.GetStyle(attribute_1.hashCode);
 
                         if (style == null) return false;
 
@@ -4127,7 +4370,7 @@ namespace TMPro
                         }
                         return true;
                     case 1112618: // </style>
-                        style = TMP_StyleSheet.Instance.GetStyle(attribute1_HashCode);
+                        style = TMP_StyleSheet.Instance.GetStyle(attribute_1.hashCode);
 
                         if (style == null)
                         {
@@ -4164,44 +4407,44 @@ namespace TMPro
                         }
 
                         // <color=name>
-                        switch (attribute1_HashCode)
+                        switch (attribute_1.hashCode)
                         {
-                            case 6393: // <color=red>
+                            case 112785: // <color=red>
                                 m_htmlColor = Color.red;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 39826: // <color=blue>
+                            case 3027034: // <color=blue>
                                 m_htmlColor = Color.blue;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 277895: // <color=black>
+                            case 93818879: // <color=black>
                                 m_htmlColor = Color.black;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 292171: // <color=green>
+                            case 98619139: // <color=green>
                                 m_htmlColor = Color.green;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 327449: // <color=white>
+                            case 113101865: // <color=white>
                                 m_htmlColor = Color.white;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 2178774: // <color=orange>
+                            case -1008851410: // <color=orange>
                                 m_htmlColor = new Color32(255, 128, 0, 255);
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 2208748: // <color=purple>
+                            case -976943172: // <color=purple>
                                 m_htmlColor = new Color32(160, 32, 240, 255);
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
                                 return true;
-                            case 2319380: // <color=yellow>
+                            case -734239628: // <color=yellow>
                                 m_htmlColor = Color.yellow;
                                 m_colorStack[m_colorStackIndex] = m_htmlColor;
                                 m_colorStackIndex += 1;
@@ -4209,13 +4452,16 @@ namespace TMPro
                         }
                         return false;
                     case 1983971: // <cspace=xx.x>
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_cSpacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                                m_cSpacing = value;
                                 break;
                             case TagUnits.FontUnits:
-                                m_cSpacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                                m_cSpacing = value;
                                 m_cSpacing *= m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 break;
                             case TagUnits.Percentage:
@@ -4226,14 +4472,17 @@ namespace TMPro
                         m_cSpacing = 0;
                         return true;
                     case 2152041: // <mspace=xx.x>
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                m_monoSpacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos) / m_fontScale;
+                                m_monoSpacing = value;
                                 break;
                             case TagUnits.FontUnits:
-                                m_monoSpacing = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
-                                m_monoSpacing *= m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize * 2;
+                                m_monoSpacing = value;
+                                m_monoSpacing *= m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 break;
                             case TagUnits.Percentage:
                                 return false;
@@ -4259,18 +4508,20 @@ namespace TMPro
 
                         return true;
                     case 2068980: // <indent=10px> <indent=10em> <indent=50%>
-                        tag_Indent = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
 
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                //m_xAdvance = tag_Offset;
+                                tag_Indent = value;
                                 break;
                             case TagUnits.FontUnits:
+                                tag_Indent = value;
                                 tag_Indent *= m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 break;
                             case TagUnits.Percentage:
-                                tag_Indent = m_marginWidth * tag_Indent / 100;
+                                tag_Indent = m_marginWidth * value / 100;
                                 break;
                         }
 
@@ -4280,18 +4531,20 @@ namespace TMPro
                         tag_Indent = 0;
                         return true;
                     case 1109386397: // <line-indent>
-                        tag_LineIndent = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos); // * m_fontScale * m_fontAsset.fontInfo.TabWidth;
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
 
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
-                                //m_xAdvance = tag_Offset;
+                                tag_LineIndent = value;
                                 break;
                             case TagUnits.FontUnits:
+                                tag_LineIndent = value;
                                 tag_LineIndent *= m_fontScale * m_fontAsset.fontInfo.TabWidth / m_fontAsset.TabSize;
                                 break;
                             case TagUnits.Percentage:
-                                tag_LineIndent = m_marginWidth * tag_LineIndent / 100;
+                                tag_LineIndent = m_marginWidth * value / 100;
                                 break;
                         }
 
@@ -4301,9 +4554,18 @@ namespace TMPro
                         tag_LineIndent = 0;
                         return true;
                     case 2246877: // <sprite=x>
-                        //m_spriteIndex = (int)ConvertToFloat(m_htmlTag, numSequenceStart, tagCharCount - 1, numSequenceDecimalPos);
-                        //Debug.Log("Sprite Index is " + ((int)ConvertToFloat(m_htmlTag, numSequenceStart, tagCharCount - 1, numSequenceDecimalPos)));
+                        //if (char.IsDigit(m_htmlTag[7]))
+                        //    m_spriteIndex = (int)ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        //else
+                        //{
+                        //    // Get sprite index by looking it up by name.
+                        //    m_spriteIndex = m_inlineGraphics.GetSpriteIndex(attribute_1.hashCode);
+                        //    if (m_spriteIndex == -1)
+                        //        return false;
+                        //    //Debug.Log("Sprite name is: \"" + new string(m_htmlTag, attribute_1.startIndex, attribute_1.length) + "\" with HashCode: " + attribute_1.hashCode);
+                        //}
                         //m_isSprite = true;
+                        //return true;
                         return false;
                     case 13526026: // <allcaps>
                         m_style |= FontStyles.UpperCase;
@@ -4319,8 +4581,10 @@ namespace TMPro
                         m_isRecalculateScaleRequired = true;
                         return true;
                     case 2109854: // <margin=00.0> <margin=00em> <margin=50%>
-                        m_marginLeft = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos); // px
-                        if (m_marginLeft == 0) return false;
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
+                        m_marginLeft = value;
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
@@ -4333,6 +4597,7 @@ namespace TMPro
                                 m_marginLeft = (m_marginWidth - (m_width != -1 ? m_width : 0)) * m_marginLeft / 100;
                                 break;
                         }
+
                         m_marginLeft = m_marginLeft >= 0 ? m_marginLeft : 0;
                         m_marginRight = m_marginLeft;
                         return true;
@@ -4341,7 +4606,10 @@ namespace TMPro
                         m_marginRight = 0;
                         return true;
                     case 1100728678: // <margin-left=xx.x>
-                        m_marginLeft = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos); // px
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
+                        m_marginLeft = value; // px
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
@@ -4357,7 +4625,10 @@ namespace TMPro
                         m_marginLeft = m_marginLeft >= 0 ? m_marginLeft : 0;
                         return true;
                     case -884817987: // <margin-right=xx.x>
-                        m_marginRight = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos); // px
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
+
+                        m_marginRight = value; // px
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
@@ -4373,8 +4644,10 @@ namespace TMPro
                         m_marginRight = m_marginRight >= 0 ? m_marginRight : 0;
                         return true;
                     case 1109349752: // <line-height=xx.x>
-                        m_lineHeight = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        value = ConvertToFloat(m_htmlTag, numSequenceStart, numSequenceEnd, numSequenceDecimalPos);
+                        if (value == -9999 || value == 0) return false;
 
+                        m_lineHeight = value;
                         switch (tagUnits)
                         {
                             case TagUnits.Pixels:
@@ -4390,6 +4663,9 @@ namespace TMPro
                         return true;
                     case -445573839: // </line-height>
                         m_lineHeight = 0;
+                        return true;
+                    case 15115642: // <noparse>
+                        tag_NoParsing = true;
                         return true;
                 }
             }

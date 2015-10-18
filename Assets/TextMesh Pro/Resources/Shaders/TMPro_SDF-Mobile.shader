@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Stephan Schaem - All Rights Reserved
+// Copyright (C) 2014 - 2015 Stephan Schaem & Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -41,8 +41,11 @@ Properties { // Serialized
 
 	_VertexOffsetX		("Vertex OffsetX", float) = 0
 	_VertexOffsetY		("Vertex OffsetY", float) = 0
-	_MaskID				("Mask ID", float) = 0
-	_MaskCoord			("Mask Coords", vector) = (0,0,100000,100000)
+	
+	
+	//_MaskID				("Mask ID", float) = 0
+	_MaskTex			("Mask Texture", 2D) = "white" {}
+	_ClipRect			("Mask Coords", vector) = (0,0,100000,100000)
 	_MaskSoftnessX		("Mask SoftnessX", float) = 0
 	_MaskSoftnessY		("Mask SoftnessY", float) = 0
 	
@@ -52,7 +55,7 @@ Properties { // Serialized
 	_StencilWriteMask ("Stencil Write Mask", Float) = 255
 	_StencilReadMask ("Stencil Read Mask", Float) = 255
 	
-	//_ColorMask ("Color Mask", Float) = 15	
+	//_ColorMask ("Color Mask", Float) = 15
 }
 
 SubShader {
@@ -79,7 +82,7 @@ SubShader {
 	Fog { Mode Off }
 	ZTest [_ZTestMode]	// [unity_GUIZTestMode]
 	Blend One OneMinusSrcAlpha
-	//ColorMask [_ColorMask]	
+	//ColorMask [_ColorMask]
 
 	Pass {
 		CGPROGRAM
@@ -87,11 +90,13 @@ SubShader {
 		#pragma fragment PixShader
 		#pragma fragmentoption ARB_precision_hint_fastest
 		#pragma shader_feature __ UNDERLAY_ON UNDERLAY_INNER
-		#pragma shader_feature __ MASK_HARD MASK_SOFT		
+		#pragma shader_feature __ MASK_HARD MASK_SOFT
 
 		#include "UnityCG.cginc"
+		#include "UnityUI.cginc"
+		#include "TMPro_Properties.cginc"
 
-		#include "TMPro_Properties.cginc" 
+		bool	_UseClipRect;
 
 		struct vertex_t {
 			float4	vertex			: POSITION;
@@ -107,7 +112,7 @@ SubShader {
 			fixed4	outlineColor	: COLOR1;
 			float2	texcoord0		: TEXCOORD0;
 			half4	param			: TEXCOORD1;			// Scale(x), BiasIn(y), BiasOut(z), Bias(w)
-			half4	mask			: TEXCOORD2;			// Position(xy) in object space, pixel Size(zw) in screen space
+			half4	mask			: TEXCOORD2;
 		#if (UNDERLAY_ON | UNDERLAY_INNER)
 			float2	texcoord1		: TEXCOORD3;
 			fixed4	underlayColor	: TEXCOORD4;
@@ -140,12 +145,16 @@ SubShader {
 			float outline = _OutlineWidth * _ScaleRatioA * 0.5 * scale;
 
 			float opacity = input.color.a;
-			fixed4 faceColor = fixed4(input.color.rgb, opacity)*_FaceColor;
+			fixed4 faceColor = fixed4(input.color.rgb, opacity) * _FaceColor;
 			fixed4 outlineColor = _OutlineColor;
 			faceColor.rgb *= faceColor.a;
 			outlineColor.a *= opacity;
 			outlineColor.rgb *= outlineColor.a;
 			outlineColor = lerp(faceColor, outlineColor, sqrt(min(1.0, (outline * 2))));
+
+			//Computer Center and Size of _ClipRect
+			//float2 clipSize = (_ClipRect.zw - _ClipRect.xy) * 0.5;
+			//float2 clipCenter = _ClipRect.xy + clipSize;
 
 		#if (UNDERLAY_ON | UNDERLAY_INNER)
 			float4 layerColor = _UnderlayColor;
@@ -166,7 +175,7 @@ SubShader {
 				outlineColor,
 				input.texcoord0,
 				half4(scale, bias - outline, bias + outline, bias),
-				half4(vert.xy - _MaskCoord.xy, .5 / pixelSize.xy),
+				half4(vert.xy, 0.5 / pixelSize.xy),
 			#if (UNDERLAY_ON | UNDERLAY_INNER)
 				input.texcoord0 + layerOffset,
 				layerColor,
@@ -194,17 +203,35 @@ SubShader {
 			c += input.underlayColor * (1 - saturate(d - input.underlayParam.y)) * sd * (1 - c.a);
 		#endif
 
+		half2 clipSize = (_ClipRect.zw - _ClipRect.xy) * 0.5;
+		half2 clipCenter = _ClipRect.xy + clipSize;
+
+
+		if (_UseClipRect)
+		{
+			half2 s = half2(_MaskSoftnessX, _MaskSoftnessY) * input.mask.zw;
+			half2 m = 1 - saturate(((abs(input.mask.xy - clipCenter) - clipSize) * input.mask.zw + s) / (1 + s));
+			m *= m;
+			c *= m.x * m.y;
+		}
+
+			
 		#if MASK_HARD
-			half2 m = 1 - saturate((abs(input.mask.xy) - _MaskCoord.zw) * input.mask.zw);
+			half2 m = 1 - saturate((abs(input.mask.xy - clipCenter) - clipSize) * input.mask.zw);
 			c *= m.x * m.y;
 		#endif
-
+			
 		#if MASK_SOFT
 			half2 s = half2(_MaskSoftnessX, _MaskSoftnessY) * input.mask.zw;
-			half2 m = 1 - saturate(((abs(input.mask.xy) - _MaskCoord.zw) * input.mask.zw + s) / (1 + s));
+			half2 m = 1 - saturate(((abs(input.mask.xy - clipCenter) - clipSize) * input.mask.zw + s) / (1 + s));
 			m *= m;
-			c *= m.x * m.y;			
+			c *= m.x * m.y;
 		#endif
+			
+		//#if MASK_TEX
+		//	c = tex2D(_MaskTex, (input.mask.xy - _ClipRect.xy) / (_ClipRect.zw - _ClipRect.xy)).a;
+		//#endif
+		
 
 			return c;
 		}

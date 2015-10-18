@@ -18,6 +18,13 @@ public class SceneManager : MonoBehaviour
 			ToScene = toScene;
 			LocatorName = locatorName;
 		}
+
+		public SceneTransition(string toScene, string locatorName)
+		{
+			FromScene = Application.loadedLevelName;
+			ToScene = toScene;
+			LocatorName = locatorName;
+		}
 	}
 #endregion
 

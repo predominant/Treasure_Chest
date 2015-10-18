@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2014 Stephan Bouchard - All Rights Reserved
+﻿// Copyright (C) 2014 - 2015 Stephan Bouchard - All Rights Reserved
 // This code can only be used under the standard Unity Asset Store End User License Agreement
 // A Copy of the EULA APPENDIX 1 is available at http://unity3d.com/company/legal/as_terms
 
@@ -56,12 +56,13 @@ namespace TMPro
         public static int ID_EnvMatrix;
         public static int ID_EnvMatrixRotation;
 
-        public static int ID_MaskID;
-        public static int ID_MaskCoord; 
+        //public static int ID_MaskID;
+        public static int ID_ClipRect; 
         public static int ID_MaskSoftnessX; 
         public static int ID_MaskSoftnessY; 
         public static int ID_VertexOffsetX; 
         public static int ID_VertexOffsetY;
+        public static int ID_UseClipRect;
 
         public static int ID_StencilID;
         public static int ID_StencilComp;
@@ -78,6 +79,7 @@ namespace TMPro
         //public static string Keyword_MASK_OFF = "MASK_OFF";
         public static string Keyword_MASK_SOFT = "MASK_SOFT";
         public static string Keyword_MASK_HARD = "MASK_HARD";
+        public static string Keyword_MASK_TEX = "MASK_TEX";
 
         public static string ShaderTag_ZTestMode = "_ZTestMode";
         public static string ShaderTag_CullMode = "_CullMode";
@@ -137,8 +139,10 @@ namespace TMPro
                 ID_GlowPower = Shader.PropertyToID("_GlowPower");
                 ID_GlowOuter = Shader.PropertyToID("_GlowOuter");
 
-                ID_MaskID = Shader.PropertyToID("_MaskID");
-                ID_MaskCoord = Shader.PropertyToID("_MaskCoord");
+                //ID_MaskID = Shader.PropertyToID("_MaskID");
+                ID_ClipRect = Shader.PropertyToID("_ClipRect");
+                //ID_ClipRect = Shader.PropertyToID("_ClipRect");
+                ID_UseClipRect = Shader.PropertyToID("_UseClipRect");
                 ID_MaskSoftnessX = Shader.PropertyToID("_MaskSoftnessX");
                 ID_MaskSoftnessY = Shader.PropertyToID("_MaskSoftnessY");
                 ID_VertexOffsetX = Shader.PropertyToID("_VertexOffsetX");
@@ -155,7 +159,6 @@ namespace TMPro
         }
 
 
-       
 
         // Scale Ratios to ensure property ranges are optimum in Material Editor  
         public static void UpdateShaderRatios(Material mat, bool isBold)
@@ -166,14 +169,14 @@ namespace TMPro
             float ratio_B = 1;
             float ratio_C = 1;
 
-            bool isRatioEnabled = !mat.shaderKeywords.Contains(Keyword_Ratios);          
+            bool isRatioEnabled = !mat.shaderKeywords.Contains(Keyword_Ratios);
 
             // Compute Ratio A
             float scale = mat.GetFloat(ID_GradientScale);
             float faceDilate = mat.GetFloat(ID_FaceDilate);
             float outlineThickness = mat.GetFloat(ID_OutlineWidth);
             float outlineSoftness = mat.GetFloat(ID_OutlineSoftness);
-            float weight = !isBold ? mat.GetFloat(ID_WeightNormal) * 2 / scale : mat.GetFloat(ID_WeightBold) * 2 / scale;        
+            float weight = !isBold ? mat.GetFloat(ID_WeightNormal) * 2 / scale : mat.GetFloat(ID_WeightBold) * 2 / scale;
            
             float t = Mathf.Max(1, weight + faceDilate + outlineThickness + outlineSoftness);
 
@@ -185,7 +188,7 @@ namespace TMPro
             {
                 float glowOffset = mat.GetFloat(ID_GlowOffset);
                 float glowOuter = mat.GetFloat(ID_GlowOuter);
-                float range = (weight + faceDilate) * (scale - m_clamp);              
+                float range = (weight + faceDilate) * (scale - m_clamp);
  
                 t = Mathf.Max(1, glowOffset + glowOuter);
 
@@ -214,6 +217,10 @@ namespace TMPro
         // Function to calculate padding required for Outline Width & Dilation for proper text alignment
         public static Vector4 GetFontExtent(Material material)
         {
+            // Revised implementation where style no longer affects alignment
+            return Vector4.zero;
+
+            /*
             if (material == null || !material.HasProperty(ShaderUtilities.ID_GradientScale))
                 return Vector4.zero;   // We are using an non SDF Shader.
             
@@ -225,16 +232,17 @@ namespace TMPro
             extent *= material.GetFloat(ID_GradientScale);
 
             return new Vector4(extent, extent, extent, extent);
+            */
         }
 
 
         // Function to check if Masking is enabled
         public static bool IsMaskingEnabled(Material material)
         {
-            if (material == null || !material.HasProperty(ShaderUtilities.ID_MaskCoord))
+            if (material == null || !material.HasProperty(ShaderUtilities.ID_ClipRect))
                 return false;
 
-            if (material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_SOFT) || material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_HARD))
+            if (material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_SOFT) || material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_HARD) || material.shaderKeywords.Contains(ShaderUtilities.Keyword_MASK_TEX))
                 return true;
 
             return false;
