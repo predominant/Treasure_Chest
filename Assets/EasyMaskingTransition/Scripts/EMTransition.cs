@@ -106,19 +106,28 @@ public class EMTransition : MonoBehaviour
 
 		if(!m_ignoreTimeScale)
 		{
-			while(Time.time - t < m_duration)
+			while(true)
 			{
 				m_threshold = m_curve.Evaluate((Time.time - t) / m_duration);
 				material.SetFloat("_Cutoff", m_threshold);
+
+				if (Time.time - t >= m_duration)
+					break;
+
 				yield return null;
 			}
 
 		} else {
 
-			while(Time.realtimeSinceStartup - t < m_duration)
+			while(true)
 			{
+
 				m_threshold = m_curve.Evaluate((Time.realtimeSinceStartup - t) / m_duration);
 				material.SetFloat("_Cutoff", m_threshold);
+
+				if (Time.realtimeSinceStartup - t >= m_duration)
+					break; 
+					
 				yield return null;
 			}
 		}

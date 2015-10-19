@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Linq;
+using GameSparks;
+using GameSparks.Core;
+using GameSparks.Api;
+using GameSparks.Api.Requests;
 
 public class Player : MonoBehaviour
 {
@@ -9,6 +14,34 @@ public class Player : MonoBehaviour
 	protected AIPath m_Path = null;
 	protected Seeker m_Seeker = null;
 
+	#region Events
+	public Action<uint> LevelChanged;			// uint = delta level
+	public Action<float> ExperienceChanged;		// float = delta experience
+	public Action<string> NicknameChanged;		// string = new nickname
+	public Action<float> EnergyChanged;			// float = delta energy
+	public Action<float> MaxEnergyChanged;		// float = delta max energy
+	public Action<float> EnergyRegenChanged;	// float = delta energy regen
+	#endregion
+
+	#region Properties
+	public uint Level			{ get { return m_Level;			} set { if( value != Level )		{ if( null != LevelChanged )		{ LevelChanged(value-Level); }				m_Level = value;		} } }
+	public float Experience		{ get { return m_Experience;	} set { if( value != Experience )	{ if( null != ExperienceChanged )	{ ExperienceChanged(value-Experience); }	m_Experience = value;	} } }
+	public string Nickname		{ get { return m_Nickname;		} set { if( value != Nickname )		{ if( null != NicknameChanged )		{ NicknameChanged(value); }					m_Nickname = value;		} } }
+	public float Energy			{ get { return m_Energy;		} set { if( value != Energy )		{ if( null != EnergyChanged )		{ EnergyChanged(value-Energy); }			m_Energy = value;		} } }
+	public float MaxEnergy		{ get { return m_MaxEnergy;		} set { if( value != MaxEnergy )	{ if( null != MaxEnergyChanged )	{ MaxEnergyChanged(value-MaxEnergy); }		m_MaxEnergy = value;	} } }
+	public float EnergyRegen	{ get { return m_EnergyRegen;	} set { if( value != EnergyRegen )	{ if( null != EnergyRegenChanged )	{ EnergyRegenChanged(value-EnergyRegen); }	m_EnergyRegen = value;	} } }
+	#endregion
+
+	#region Server Stored Data
+	private uint m_Level		= 0;			// "Level": 4
+	private float m_Experience	= 0f;			// "Experience"
+	private string m_Nickname	= string.Empty;	// "Nickname": "The Master",
+	private float m_Energy		= 100f;			// "Energy": 100,
+	private float m_MaxEnergy	= 100f;			// "MaxEnergy": 100,
+	private float m_EnergyRegen	= 0f;			// "EnergyRegen": 0.2,
+	#endregion
+
+	#region Unity Events
 	void Awake()
 	{
 		GameObject[] playerObjs = GameObject.FindGameObjectsWithTag( "Player" );
@@ -42,6 +75,8 @@ public class Player : MonoBehaviour
 				}
 			}
 		}
+
+		Net_SyncData();
 	}
 
 	void OnLevelWasLoaded(int level)
@@ -87,4 +122,37 @@ public class Player : MonoBehaviour
 		//		break;
 		//}
 	}
+	#endregion
+
+	#region Server Actions
+	public void Net_SyncData()
+	{
+		new LogEventRequest()
+			.SetEventKey("GET_PLAYER_INFO")
+			.Send((response) =>
+			{
+				if (response.HasErrors)
+				{
+					Debug.Log("[GS] GET_PLAYER_INFO failed: " + response.Errors.JSON);
+				}
+				else
+				{
+					int? tLevel			= response.ScriptData.GetInt("Level");
+					float? tExperience	= response.ScriptData.GetFloat("Experience");
+					string tNickname	= response.ScriptData.GetString("Nickname");
+					float? tEnergy		= response.ScriptData.GetFloat("Energy");
+					float? tMaxEnergy	= response.ScriptData.GetFloat("MaxEnergy");
+					float? tEnergyRegen	= response.ScriptData.GetFloat("EnergyRegen");
+
+					Level = (uint)tLevel;
+					Experience = (float)tExperience;
+					Nickname = tNickname;
+					Energy = (float)tEnergy;
+					MaxEnergy = (float)tMaxEnergy;
+					EnergyRegen = (float)EnergyRegen;
+				}
+			});
+	}
+
+	#endregion
 }

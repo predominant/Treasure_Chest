@@ -84,9 +84,9 @@ public static class ServerDataProxy
 
 					Debug.Log("Node Data [" + (_jobType).ToString() + "][" + _nodeTypeName + "]: Experience: " + experience + ", EnergyCost: " + energyCost + ", Cooldown: " + cooldown);
 
-					data.Experience = (int)energyCost;
+					data.Experience = (int)experience;
 					data.EnergyCost = (int)energyCost;
-					data.Cooldown = (int)cooldown;
+					data.Cooldown = (float)cooldown;
 
 					// Cache this node data information
 					m_NodeDataEntries[_jobType][_nodeTypeName] = data;
