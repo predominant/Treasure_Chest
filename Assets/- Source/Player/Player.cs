@@ -15,21 +15,21 @@ public class Player : MonoBehaviour
 	protected Seeker m_Seeker = null;
 
 	#region Events
-	public Action<uint> LevelChanged;			// uint = delta level
-	public Action<float> ExperienceChanged;		// float = delta experience
-	public Action<string> NicknameChanged;		// string = new nickname
-	public Action<float> EnergyChanged;			// float = delta energy
-	public Action<float> MaxEnergyChanged;		// float = delta max energy
-	public Action<float> EnergyRegenChanged;	// float = delta energy regen
+	public Action<uint> LevelChanged;
+	public Action<float> ExperienceChanged;	
+	public Action<string> NicknameChanged;
+	public Action<float> EnergyChanged;
+	public Action<float> MaxEnergyChanged;
+	public Action<float> EnergyRegenChanged;
 	#endregion
 
 	#region Properties
-	public uint Level			{ get { return m_Level;			} set { if( value != Level )		{ if( null != LevelChanged )		{ LevelChanged(value-Level); }				m_Level = value;		} } }
-	public float Experience		{ get { return m_Experience;	} set { if( value != Experience )	{ if( null != ExperienceChanged )	{ ExperienceChanged(value-Experience); }	m_Experience = value;	} } }
-	public string Nickname		{ get { return m_Nickname;		} set { if( value != Nickname )		{ if( null != NicknameChanged )		{ NicknameChanged(value); }					m_Nickname = value;		} } }
-	public float Energy			{ get { return m_Energy;		} set { if( value != Energy )		{ if( null != EnergyChanged )		{ EnergyChanged(value-Energy); }			m_Energy = value;		} } }
-	public float MaxEnergy		{ get { return m_MaxEnergy;		} set { if( value != MaxEnergy )	{ if( null != MaxEnergyChanged )	{ MaxEnergyChanged(value-MaxEnergy); }		m_MaxEnergy = value;	} } }
-	public float EnergyRegen	{ get { return m_EnergyRegen;	} set { if( value != EnergyRegen )	{ if( null != EnergyRegenChanged )	{ EnergyRegenChanged(value-EnergyRegen); }	m_EnergyRegen = value;	} } }
+	public uint Level			{ get { return m_Level;			} set { if( value != Level )		{ m_Level = value;			if( null != LevelChanged )			{ LevelChanged(value); }		} } }
+	public float Experience		{ get { return m_Experience;	} set { if( value != Experience )	{ m_Experience = value;		if( null != ExperienceChanged )		{ ExperienceChanged(value); }	} } }
+	public string Nickname		{ get { return m_Nickname;		} set { if( value != Nickname )		{ m_Nickname = value;		if( null != NicknameChanged )		{ NicknameChanged(value); }		} } }
+	public float Energy			{ get { return m_Energy;		} set { if( value != Energy )		{ m_Energy = value;			if( null != EnergyChanged )			{ EnergyChanged(value); }		} } }
+	public float MaxEnergy		{ get { return m_MaxEnergy;		} set { if( value != MaxEnergy )	{ m_MaxEnergy = value;		if( null != MaxEnergyChanged )		{ MaxEnergyChanged(value); }	} } }
+	public float EnergyRegen	{ get { return m_EnergyRegen;	} set { if( value != EnergyRegen )	{ m_EnergyRegen = value;	if( null != EnergyRegenChanged )	{ EnergyRegenChanged(value); }	} } }
 	#endregion
 
 	#region Server Stored Data
