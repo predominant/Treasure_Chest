@@ -25,7 +25,7 @@ public class AstarPath : MonoBehaviour {
 	 */
 	public static System.Version Version {
 		get {
-			return new System.Version (3,7,2);
+			return new System.Version (3,7,4);
 		}
 	}
 
@@ -1225,7 +1225,7 @@ public class AstarPath : MonoBehaviour {
 
 			GraphUpdateThreading threading = s.order == GraphUpdateOrder.FloodFill ? GraphUpdateThreading.SeparateThread : s.graph.CanUpdateAsync(s.obj);
 
-			#if !UNITY_WEBGL
+#if !UNITY_WEBGL
 			bool forceUnityThread = force;
 
 			// When not playing or when not using a graph update thread (or if it has crashed), everything runs in the Unity thread
@@ -2539,7 +2539,7 @@ AstarPath.RegisterSafeUpdate (delegate () {
 				AstarProfiler.StartFastProfile (9);
 
 				//Log path results
-                //astar.LogPathResults (p);
+				astar.LogPathResults (p);
 
 				if ( p.immediateCallback != null ) p.immediateCallback (p);
 

@@ -64,6 +64,7 @@ public static class ServerDataProxy
 		if( !GS.Available )
 		{
 			Debug.LogError("!!Unhandled behaviour!! Requesting node data without an active GS connection" );
+			return;
 		}
 
 		new LogEventRequest()

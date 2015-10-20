@@ -609,14 +609,14 @@ namespace Pathfinding {
 					return AstarMath.NearestPoint (ray.origin,ray.origin+ray.direction,hit.point);
 				}
 
-				walkable &= unwalkableWhenNoGround;
+				walkable &= !unwalkableWhenNoGround;
 			} else {
 				// Cast a ray from above downwards to try to find the ground
 				if (Physics.Raycast (position+up*fromHeight, -up,out hit, fromHeight+0.005F, heightMask)) {
 					return hit.point;
 				}
 
-				walkable &= unwalkableWhenNoGround;
+				walkable &= !unwalkableWhenNoGround;
 			}
 			return position;
 		}
@@ -638,13 +638,13 @@ namespace Pathfinding {
 					return AstarMath.NearestPoint (ray.origin,ray.origin+ray.direction,hit.point);
 				}
 
-				walkable &= unwalkableWhenNoGround;
+				walkable &= !unwalkableWhenNoGround;
 			} else {
 				if (Physics.Raycast (origin, -up,out hit, fromHeight+0.005F, heightMask)) {
 					return hit.point;
 				}
 
-				walkable &= unwalkableWhenNoGround;
+				walkable &= !unwalkableWhenNoGround;
 			}
 			return origin -up*fromHeight;
 		}

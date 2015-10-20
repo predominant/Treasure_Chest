@@ -7,7 +7,7 @@ public class CameraLocatorController : MonoBehaviour
     public Quaternion m_TargetOrientation = Quaternion.identity;
     public Vector3 m_TargetPosition = Vector3.zero;
 	
-	void Update()
+	void LateUpdate()
     {
         transform.rotation = m_TargetOrientation;
         transform.localPosition = m_HeadOffset + m_TargetPosition;

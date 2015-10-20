@@ -23,12 +23,19 @@ public class PlayerUIBinding : MonoBehaviour
 		m_LevelText.text = level.ToString();
 
 		uint totalLevelXP = Experience.Table[level];
+		if( level > 0 )
+			totalLevelXP -= Experience.Table[level-1];
+
 		m_ExperienceBar.SetValueRange(0, totalLevelXP);
 	}
 
 	private void OnExperienceChanged(float exp)
 	{
-		m_ExperienceBar.SetValue( exp );
+		float baseExp = 0f;
+		if( m_Player.Level > 0 )
+			baseExp = Experience.Table[m_Player.Level-1];
+
+		m_ExperienceBar.SetValue( exp - baseExp );
 	}
 
 

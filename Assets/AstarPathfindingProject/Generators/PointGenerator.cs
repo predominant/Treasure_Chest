@@ -185,7 +185,7 @@ namespace Pathfinding {
 
 		public override void GetNodes (GraphNodeDelegateCancelable del) {
 			if (nodes == null) return;
-			for (int i=0;i<nodeCount && del (nodes[i]);i++) {}
+			for (int i = 0; i < nodeCount && del (nodes[i]); i++) {}
 		}
 
 		public override NNInfo GetNearest (Vector3 position, NNConstraint constraint, GraphNode hint) {

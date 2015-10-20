@@ -1,5 +1,21 @@
 /** \page changelog Changelog
 
+- TODO
+	- http://forum.arongranberg.com/t/bug-tiled-recast-scan-ignores-graph-bounds/2137
+
+- 3.7.4 (2015-09-13)
+	- Changes
+		- AIPath now uses the cached transform field in all cases for slightly better performance.
+	- Fixes
+		- Fixed recast/navmesh graphs could in rare cases think that a point on the navmesh was
+		   in fact not on the navmesh which could cause odd paths and agents teleporting short distances.
+	- Documentation Fixes
+		- Fixed the Seeker class not appearing in the documentation due to a bug in Doxygen (documentation generator).
+
+- 3.7.3 (2015-08-18)
+	- Fixed GridGraph->Unwalkable When No Ground used the negated value (true meant false and false meant true).
+		This bug was introduced in 3.7 when some code was refactored. Thanks DrowningMonkeys for reporting it.
+
 - 3.7.2 (2015-08-06)
 	- Fixed penalties not working on navmesh based graphs (navmesh graphs and recast graphs) due to incorrectly configured compiler directives.
 	- Removed undocumented compiler directive ASTAR_CONSTANT_PENALTY and replaced with ASTAR_NO_TRAVERSAL_COST which

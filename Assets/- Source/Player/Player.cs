@@ -6,6 +6,7 @@ using GameSparks;
 using GameSparks.Core;
 using GameSparks.Api;
 using GameSparks.Api.Requests;
+using Devdog.InventorySystem;
 
 public class Player : MonoBehaviour
 {
@@ -25,7 +26,7 @@ public class Player : MonoBehaviour
 
 	#region Properties
 	public uint Level			{ get { return m_Level;			} set { if( value != Level )		{ m_Level = value;			if( null != LevelChanged )			{ LevelChanged(value); }		} } }
-	public float Experience		{ get { return m_Experience;	} set { if( value != Experience )	{ m_Experience = value;		if( null != ExperienceChanged )		{ ExperienceChanged(value); }	} } }
+	public float Exp			{ get { return m_Exp;			} set { if( value != Exp )			{ SetExperience(value);		if( null != ExperienceChanged )		{ ExperienceChanged(value); }	} } }
 	public string Nickname		{ get { return m_Nickname;		} set { if( value != Nickname )		{ m_Nickname = value;		if( null != NicknameChanged )		{ NicknameChanged(value); }		} } }
 	public float Energy			{ get { return m_Energy;		} set { if( value != Energy )		{ m_Energy = value;			if( null != EnergyChanged )			{ EnergyChanged(value); }		} } }
 	public float MaxEnergy		{ get { return m_MaxEnergy;		} set { if( value != MaxEnergy )	{ m_MaxEnergy = value;		if( null != MaxEnergyChanged )		{ MaxEnergyChanged(value); }	} } }
@@ -33,12 +34,20 @@ public class Player : MonoBehaviour
 	#endregion
 
 	#region Server Stored Data
-	private uint m_Level		= 0;			// "Level": 4
-	private float m_Experience	= 0f;			// "Experience"
-	private string m_Nickname	= string.Empty;	// "Nickname": "The Master",
-	private float m_Energy		= 100f;			// "Energy": 100,
-	private float m_MaxEnergy	= 100f;			// "MaxEnergy": 100,
-	private float m_EnergyRegen	= 0f;			// "EnergyRegen": 0.2,
+	private uint m_Level		= uint.MaxValue;	// "Level": 4
+	private float m_Exp	= -1f;				// "Experience"
+	private string m_Nickname	= string.Empty;		// "Nickname": "The Master",
+	private float m_Energy		= -1f;				// "Energy": 100,
+	private float m_MaxEnergy	= -1f;				// "MaxEnergy": 100,
+	private float m_EnergyRegen	= -1f;				// "EnergyRegen": 0.2,
+	#endregion
+
+	#region Public Variables
+	public static Player instance = null;
+	#endregion
+
+	#region Protected Variables
+	public Inventory m_Inventory = null;
 	#endregion
 
 	#region Unity Events
@@ -53,10 +62,17 @@ public class Player : MonoBehaviour
 		}
 		
 		DontDestroyOnLoad( gameObject );
+		instance = this;
 	}
 
 	void Start()
 	{
+		GameObject goItemManager = GameObject.FindGameObjectsWithTag("GameManager").FirstOrDefault( (go) => go.name == "Item Manager" );
+		if( null == goItemManager )
+			Debug.LogError( "Failed to find Item Manager game object");
+		else
+			m_Inventory = new Inventory( goItemManager.GetComponent<InventoryManager>() );
+
 		m_Path = GetComponent<AIPath>();
 		m_Seeker = GetComponent<Seeker>();
 
@@ -75,12 +91,12 @@ public class Player : MonoBehaviour
 				}
 			}
 		}
-
-		Net_SyncData();
 	}
 
 	void OnLevelWasLoaded(int level)
 	{
+		Net_SyncData();
+
 		SceneManager.SceneTransition transition = SceneManager.instance.NewestTransition;
 
 		if( null == transition )
@@ -114,14 +130,47 @@ public class Player : MonoBehaviour
 		m_Path.SearchPath();
 	}
 
-	public void OnTriggerEnter(Collider collider)
+	void FixedUpdate()
 	{
-		//switch( collider.gameObject.tag )
-		//{ 
-		//	case "Portal":
-		//		break;
-		//}
+		Energy += Time.fixedDeltaTime * EnergyRegen;
+		Energy = Mathf.Clamp( Energy, 0f, MaxEnergy );
 	}
+	#endregion
+
+	#region Mutators
+	private void SetExperience(float exp)
+	{
+		// Try a simple next-level search (most cases)
+		if( exp > m_Exp &&
+			Level < Experience.Table.Length - 1 &&
+			exp > Experience.Table[Level] &&
+			exp < Experience.Table[Level+1]
+			)
+		{
+			m_Exp = exp;
+			Level += 1;
+			return;
+		}
+
+		m_Exp = exp;
+
+		// Is the exp zero'd out?
+		if( m_Exp == 0f )
+			Level = 0;
+		else
+		{
+			if( m_Exp > Experience.Table.Last() )
+				Level = (uint)(Experience.Table.Length - 1);
+			else
+				for( int i = 0; i < Experience.Table.Length; ++i )
+					if( Experience.Table[i] > m_Exp )
+					{
+						Level = (uint)i;
+						break;
+					}
+		}
+	}
+
 	#endregion
 
 	#region Server Actions
@@ -145,14 +194,13 @@ public class Player : MonoBehaviour
 					float? tEnergyRegen	= response.ScriptData.GetFloat("EnergyRegen");
 
 					Level = (uint)tLevel;
-					Experience = (float)tExperience;
+					Exp = (float)tExperience;
 					Nickname = tNickname;
 					Energy = (float)tEnergy;
 					MaxEnergy = (float)tMaxEnergy;
-					EnergyRegen = (float)EnergyRegen;
+					EnergyRegen = (float)tEnergyRegen;
 				}
 			});
 	}
-
 	#endregion
 }

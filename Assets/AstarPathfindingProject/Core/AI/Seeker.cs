@@ -49,6 +49,7 @@ public class Seeker : MonoBehaviour, ISerializationCallbackReceiver {
 	 */
 	[UnityEngine.Serialization.FormerlySerializedAs("traversableTags")]
 	[SerializeField]
+	[HideInInspector]
 	protected TagMask traversableTagsCompatibility = new TagMask(-1,-1);
 
 	/** Penalties for each tag.
@@ -365,7 +366,8 @@ public class Seeker : MonoBehaviour, ISerializationCallbackReceiver {
 	 * Path p = seeker.GetNewPath (transform.position, transform.position+transform.forward*100);
 	 * // Disable heuristics on just this path for example
 	 * p.heuristic = Heuristic.None;
-	 * seeker.StartPath (p, OnPathComplete);\endcode
+	 * seeker.StartPath (p, OnPathComplete);
+	 * \endcode
 	 */
 	public ABPath GetNewPath (Vector3 start, Vector3 end) {
 		// Construct a path with start and end points

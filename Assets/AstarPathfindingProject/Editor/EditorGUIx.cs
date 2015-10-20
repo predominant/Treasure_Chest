@@ -410,7 +410,6 @@ namespace Pathfinding {
 
 		/** Displays a LayerMask field.
 		 * \param label Label to display
-		 * \param showSpecial Use the Nothing and Everything selections
 		 * \param selected Current LayerMask
 		 * \note Unity 3.5 and up will use the EditorGUILayout.MaskField instead of a custom written one.
 		 */

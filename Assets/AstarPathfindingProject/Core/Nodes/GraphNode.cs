@@ -57,6 +57,10 @@ namespace Pathfinding {
 			}
 		}
 
+		/** Internal unique index.
+		 * Every node will get a unique index.
+		 * This index is not necessarily correlated with e.g the position of the node in the graph.
+		 */
 		public int NodeIndex { get {return nodeIndex;}}
 
 		public Int3 position;

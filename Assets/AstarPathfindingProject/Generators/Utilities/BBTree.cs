@@ -172,6 +172,7 @@ namespace Pathfinding {
 			return box;
 		}
 
+		/** Calculates the bounding box in XZ space of all nodes between \a from (inclusive) and \a to (exclusive) */
 		static IntRect NodeBounds (MeshNode[] nodes, int from, int to) {
 			if (to - from <= 0) throw new ArgumentException();
 
@@ -181,13 +182,14 @@ namespace Pathfinding {
 
 			for (int j = from; j < to; j++) {
 				var node = nodes[j];
-				for (int i=1;i<node.GetVertexCount();i++) {
+				var nverts = node.GetVertexCount();
+				for (int i = 0; i < nverts; i++) {
 					var p = node.GetVertex(i);
-					min.x = Math.Min (min.x,p.x);
-					min.y = Math.Min (min.y,p.z);
+					min.x = Math.Min (min.x, p.x);
+					min.y = Math.Min (min.y, p.z);
 
-					max.x = Math.Max (max.x,p.x);
-					max.y = Math.Max (max.y,p.z);
+					max.x = Math.Max (max.x, p.x);
+					max.y = Math.Max (max.y, p.z);
 				}
 			}
 

@@ -14,7 +14,7 @@ public class InputController : MonoBehaviour
 	public Animator m_PlayerAnimator = null;
 	protected Seeker m_Seeker = null;
     protected AIPath m_Path = null;
-    protected GameObject m_InteractTarget;
+    protected Interactable m_InteractTarget;
 
     void Start()
     {
@@ -80,24 +80,22 @@ public class InputController : MonoBehaviour
     #endregion
 
     #region Interaction
-    public void SetInteractTarget(GameObject go)
+    public void SetInteractTarget(Interactable _interactable)
     {
-        Interactable i = go.GetComponent<Interactable>();
-
-        if (null == i)
+        if (null == _interactable)
             return;
 
-        Vector3 toTarget = go.transform.position - transform.position;
+        Vector3 toTarget = _interactable.InteractLocator.position - transform.position;
         float maxInteractRngSqr = m_MaxInteractRange * m_MaxInteractRange;
 
         if (toTarget.sqrMagnitude > maxInteractRngSqr)
         {
             //m_Path.endReachedDistance = m_MaxInteractRange;
-            MoveTo(go.transform.position);
-            m_InteractTarget = go;
+			MoveTo(_interactable.InteractLocator.position);
+			m_InteractTarget = _interactable;
         }
         else
-            i.HandleInteraction();
+            _interactable.HandleInteraction();
     }
     private bool TryInteractMouse()
     {
@@ -109,7 +107,10 @@ public class InputController : MonoBehaviour
 
             if (Physics.Raycast(ray, out hitInfo, Mathf.Infinity, m_TouchMask))
             {
-                SetInteractTarget(hitInfo.collider.gameObject);
+				Interactable i = hitInfo.collider.gameObject.GetComponent<Interactable>();
+				if (null != i)
+					SetInteractTarget(i);
+
                 return true;
             }
         }
@@ -123,12 +124,11 @@ public class InputController : MonoBehaviour
             Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
             RaycastHit hitInfo;
 
-            if (Physics.Raycast(ray, out hitInfo, LayerMask.NameToLayer("Touchable")))
+			if (Physics.Raycast(ray, out hitInfo, m_TouchMask))
             {
                 Interactable i = hitInfo.collider.gameObject.GetComponent<Interactable>();
-
                 if (null != i)
-                    i.HandleInteraction();
+					SetInteractTarget(i);
 
                 return true;
             }

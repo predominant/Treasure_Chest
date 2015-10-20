@@ -8,14 +8,14 @@ using Pathfinding;
 namespace Pathfinding {
 
 	/** Finds all nodes within a specified distance from the start.
-	 This class will search outwards from the start point and find all nodes which it costs less than ConstantPath.maxGScore to reach, this is usually the same as the distance to them multiplied with 100
+	 This class will search outwards from the start point and find all nodes which it costs less than ConstantPath.maxGScore to reach, this is usually the same as the distance to them multiplied with 1000
 
 	 The path can be called like:
 	 \code
 //Here you create a new path and set how far it should search. Null is for the callback, but the seeker will handle that
-ConstantPath cpath = new ConstantPath(transform.position,2000,null);
+ConstantPath cpath = ConstantPath.Construct (transform.position, 2000, null);
 //Set the seeker to search for the path (where mySeeker is a variable referencing a Seeker component)
-mySeeker.StartPath (cpath,myCallbackFunction);
+mySeeker.StartPath (cpath, myCallbackFunction);
 	 \endcode
 
 	 Then when getting the callback, all nodes will be stored in the variable ConstantPath.allNodes (remember that you need to cast it from Path to ConstantPath first to get the variable).

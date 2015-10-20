@@ -33,6 +33,8 @@ public abstract class Node : MonoBehaviour, Interactable
 	#endregion
 
 	#region Properties
+	Transform Interactable.InteractLocator { get { return m_InteractLocator; } }
+
 	public abstract Job.Type JobType { get; }
 
 	public abstract string NodeTypeName { get; }
@@ -65,6 +67,7 @@ public abstract class Node : MonoBehaviour, Interactable
 	// Server node UID for this node group
 	public int m_ServerGroupNodeUID = 0;
 	public DateTime m_AvailableTime = DateTime.MinValue;
+	public Transform m_InteractLocator = null;
 	#endregion
 
 	#region Private Variables
@@ -73,7 +76,7 @@ public abstract class Node : MonoBehaviour, Interactable
 	#endregion
 
 	#region Overrides
-	public virtual void HandleInteraction()
+	void Interactable.HandleInteraction()
 	{
 		if (!IsAvailable)
 			return;
@@ -105,6 +108,8 @@ public abstract class Node : MonoBehaviour, Interactable
 
 						Debug.Log( "Item: " + itemType.ToString() + ", Yield: " + itemAmt + ", Experience: " + expAmt );
 						Debug.Log( "Next collection time in " + (m_AvailableTime - collectTime).ToString() );
+
+						Player.instance.Exp += (float)expAmt;
 					}
 
 					m_AwaitingResponse = false;

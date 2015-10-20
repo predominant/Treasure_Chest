@@ -514,8 +514,17 @@ public override void Recycle () {
 		 * If you are using a path, you will want to claim it when you first get it and then release it when you will not
 		 * use it anymore. When there are no claims on the path, it will be recycled and put in a pool.
 		 *
+		 * This is essentially just reference counting.
+		 *
+		 * The object passed to this method is merely used as a way to more easily detect when pooling is not done correctly.
+		 * It can be any object, when used from a movement script you can just pass "this". This class will throw an exception
+		 * if you try to call Claim on the same path twice with the same object (which is usually not what you want) or
+		 * if you try to call Release with an object that has not been used in a Claim call for that path.
+		 * The object passed to the Claim method needs to be the same as the one you pass to this method.
+		 *
 		 * \see Release
 		 * \see Recycle
+		 * \see \ref pooling
 		 */
 		public void Claim (System.Object o) {
 			if (System.Object.ReferenceEquals (o, null)) throw new System.ArgumentNullException ("o");

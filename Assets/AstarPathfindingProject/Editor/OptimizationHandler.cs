@@ -9,7 +9,11 @@ using System.Linq;
 using UnityEditor;
 
 namespace Pathfinding {
-	/** \astarpro */
+	/**
+	 * Helper for enabling or disabling compiler directives.
+	 * Used only in the editor.
+	 * \astarpro
+	 */
 	public class OptimizationHandler {
 
 		public class DefineDefinition {
@@ -38,7 +42,7 @@ namespace Pathfinding {
 				string defineString = PlayerSettings.GetScriptingDefineSymbolsForGroup ((BuildTargetGroup)buildTypes[i]);
 				if (defineString == null) continue;
 
-				var defines = defineString.Split (';').Select ((s) => s.Trim ()).ToList ();
+				var defines = defineString.Split (';').Select (s => s.Trim ()).ToList ();
 
 				// Already enabled
 				if (defines.Contains (name)) {
@@ -60,10 +64,10 @@ namespace Pathfinding {
 
 				if (defineString == null) continue;
 
-				var defines = defineString.Split (';').Select ((s) => s.Trim ()).ToList ();
+				var defines = defineString.Split (';').Select (s => s.Trim ()).ToList ();
 
 				if (defines.Remove (name)) {
-					defineString = string.Join (";",defines.Distinct().ToArray());
+					defineString = string.Join (";", defines.Distinct().ToArray());
 					PlayerSettings.SetScriptingDefineSymbolsForGroup ((BuildTargetGroup)buildTypes[i], defineString);
 				}
 			}
@@ -101,8 +105,13 @@ namespace Pathfinding {
 				// Read a file consisting of lines with the format
 				// NAME;Description
 				// Ignore empty lines and lines which do not contain exactly 1 ';'
-				var definePairs = System.IO.File.ReadAllLines (path).Select ((line) => line.Trim()).Where ((line) => line.Length > 0).Select ((line) => line.Split (';')).Where ((opts) => opts.Length == 2);
-				return definePairs.Select ((opts) => {
+				var definePairs = System.IO.File.ReadAllLines (path)
+					.Select (line => line.Trim())
+					.Where (line => line.Length > 0)
+					.Select (line => line.Split (';'))
+					.Where (opts => opts.Length == 2);
+
+				return definePairs.Select (opts => {
 					var def = new DefineDefinition {name=opts[0].Trim(), description=opts[1].Trim()};
 					IsDefineEnabled (def.name, out def.enabled, out def.consistent);
 					return def;

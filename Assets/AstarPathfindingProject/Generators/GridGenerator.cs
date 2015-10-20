@@ -1895,7 +1895,7 @@ AstarPath.active.Scan();
 			return true;
 		}
 
-		/** Returns if there is an obstacle between \a \a and \a \b on the graph.
+		/** Returns if there is an obstacle between \a _a and \a _b on the graph.
 		 * \param [in] _a Point to linecast from
 		 * \param [in] _b Point to linecast to
 		 * \param [out] hit Contains info on what was hit, see GraphHitInfo
@@ -2099,8 +2099,8 @@ AstarPath.active.Scan();
 		/** Returns if there is an obstacle between \a \a and \a \b on the graph.
 		 * This function is different from the other Linecast functions since it 1) snaps the start and end positions directly to the graph.
 		 *
-		 * \param [in] _a Point to linecast from
-		 * \param [in] _b Point to linecast to
+		 * \param [in] a Point to linecast from
+		 * \param [in] b Point to linecast to
 		 * \param [out] hit Contains info on what was hit, see GraphHitInfo
 		 * \param [in] hint \deprecated
 		 *
